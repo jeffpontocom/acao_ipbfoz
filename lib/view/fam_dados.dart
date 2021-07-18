@@ -1,15 +1,11 @@
-import 'package:acao_ipbfoz/view/familia_page.dart';
+import 'familia_page.dart';
 
-import '/models/familia.dart';
-import '/ui/decoration.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../ui/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class FamiliaDados extends StatefulWidget {
-  FamiliaDados(this.reference, this.editMode);
-  final DocumentReference<Familia> reference;
-  final bool editMode;
+  FamiliaDados();
 
   @override
   _FamiliaDadosState createState() => _FamiliaDadosState();
@@ -47,7 +43,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
           ),
           // Familiar responsável (combo box)
           TextFormField(
-            enabled: widget.editMode,
+            enabled: editMode,
             decoration: mTextFieldDecoration.copyWith(
                 labelText: 'Familiar responsável'),
           ),
@@ -60,9 +56,18 @@ class _FamiliaDadosState extends State<FamiliaDados> {
               Expanded(
                 flex: 1,
                 child: TextFormField(
-                  enabled: widget.editMode,
+                  enabled: editMode,
+                  initialValue:
+                      phoneMask.maskText(familia.famTelefone1.toString()),
+                  inputFormatters: [phoneMask],
+                  keyboardType: TextInputType.phone,
+                  textInputAction: TextInputAction.next,
                   decoration:
                       mTextFieldDecoration.copyWith(labelText: 'Whatsapp'),
+                  onChanged: (value) {
+                    familia.famTelefone1 =
+                        int.parse(phoneMask.getUnmaskedText());
+                  },
                 ),
               ),
               Expanded(
@@ -75,9 +80,18 @@ class _FamiliaDadosState extends State<FamiliaDados> {
               Expanded(
                 flex: 1,
                 child: TextFormField(
-                  enabled: widget.editMode,
+                  enabled: editMode,
+                  initialValue:
+                      phoneMask.maskText(familia.famTelefone2.toString()),
+                  inputFormatters: [phoneMask],
+                  keyboardType: TextInputType.phone,
+                  textInputAction: TextInputAction.next,
                   decoration: mTextFieldDecoration.copyWith(
                       labelText: 'Telefone (outro)'),
+                  onChanged: (value) {
+                    familia.famTelefone2 =
+                        int.parse(phoneMask.getUnmaskedText());
+                  },
                 ),
               ),
             ],
@@ -99,8 +113,15 @@ class _FamiliaDadosState extends State<FamiliaDados> {
               Expanded(
                 flex: 1,
                 child: TextFormField(
-                  enabled: widget.editMode,
+                  enabled: editMode,
+                  initialValue: cepMask.maskText(familia.endCEP.toString()),
+                  inputFormatters: [cepMask],
+                  keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.next,
                   decoration: mTextFieldDecoration.copyWith(labelText: 'CEP'),
+                  onChanged: (value) {
+                    familia.endCEP = int.parse(cepMask.getUnmaskedText());
+                  },
                 ),
               ),
               Expanded(
@@ -113,9 +134,15 @@ class _FamiliaDadosState extends State<FamiliaDados> {
               Expanded(
                 flex: 1,
                 child: TextFormField(
-                  enabled: widget.editMode,
+                  enabled: editMode,
+                  initialValue: familia.endNumero,
+                  keyboardType: TextInputType.datetime,
+                  textInputAction: TextInputAction.next,
                   decoration:
                       mTextFieldDecoration.copyWith(labelText: 'Número'),
+                  onChanged: (value) {
+                    familia.endNumero = value;
+                  },
                 ),
               ),
             ],
@@ -125,15 +152,21 @@ class _FamiliaDadosState extends State<FamiliaDados> {
           ),
           // Logradouro
           TextFormField(
-            enabled: widget.editMode,
+            enabled: editMode,
+            initialValue: familia.endLogradouro,
+            keyboardType: TextInputType.streetAddress,
+            textInputAction: TextInputAction.next,
             decoration: mTextFieldDecoration.copyWith(labelText: 'Logradouro'),
+            onChanged: (value) {
+              familia.endLogradouro = value;
+            },
           ),
           SizedBox(
             height: 8.0,
           ),
           // Bairro
           TextFormField(
-            enabled: widget.editMode,
+            enabled: editMode,
             decoration: mTextFieldDecoration.copyWith(labelText: 'Bairro'),
           ),
           SizedBox(
@@ -141,7 +174,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
           ),
           // Referencia
           TextFormField(
-            enabled: widget.editMode,
+            enabled: editMode,
             decoration: mTextFieldDecoration.copyWith(labelText: 'Referência'),
           ),
           SizedBox(
@@ -157,7 +190,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
           ),
           // Renda Media
           TextFormField(
-            enabled: widget.editMode,
+            enabled: editMode,
             decoration: mTextFieldDecoration.copyWith(labelText: 'Renda Média'),
           ),
           SizedBox(
@@ -165,7 +198,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
           ),
           // Beneficio Governo (combo box)
           TextFormField(
-            enabled: widget.editMode,
+            enabled: editMode,
             decoration: mTextFieldDecoration.copyWith(
                 labelText: 'Benefício do governo'),
           ),
@@ -182,7 +215,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
           ),
           // Informacao Extra
           TextFormField(
-            enabled: widget.editMode,
+            enabled: editMode,
             initialValue: familia.extraInfo,
             decoration:
                 mTextFieldDecoration.copyWith(labelText: 'Informação Extra'),
@@ -192,7 +225,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
           ),
           // Solicitante
           TextFormField(
-            enabled: widget.editMode,
+            enabled: editMode,
             initialValue: familia.cadSolicitante,
             decoration: mTextFieldDecoration.copyWith(labelText: 'Solicitante'),
           ),
@@ -201,7 +234,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
           ),
           // Diacono Responsavel (combo box)
           TextFormField(
-            enabled: widget.editMode,
+            enabled: editMode,
             initialValue: familia.cadDiacono,
             decoration:
                 mTextFieldDecoration.copyWith(labelText: 'Diácono responsável'),

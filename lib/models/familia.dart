@@ -3,28 +3,28 @@ import '/models/morador.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Familia {
-  final bool cadAtivo;
-  final String cadDiacono; // OBRIGATORIO
-  final Timestamp cadData; // OBRIGATORIO
-  final String cadSolicitante;
+  late bool cadAtivo;
+  late String cadDiacono; // OBRIGATORIO
+  late Timestamp cadData; // OBRIGATORIO
+  late String cadSolicitante;
 
-  final int famResponsavel;
-  final String famFoto;
-  final int famTelefone1; // OBRIGATORIO
-  final int famTelefone2;
-  final int famRendaMedia;
-  final int famBeneficioGov;
+  late int famResponsavel;
+  late String famFoto;
+  late int famTelefone1; // OBRIGATORIO
+  late int famTelefone2;
+  late int famRendaMedia;
+  late int famBeneficioGov;
 
-  final GeoPoint endGeopoint;
-  final int endCEP; // OBRIGATORIO
-  final String endLogradouro;
-  final String endNumero; // OBRIGATORIO
-  final String endBairro;
-  final String endReferencia;
+  late GeoPoint endGeopoint;
+  late int endCEP; // OBRIGATORIO
+  late String endLogradouro;
+  late String endNumero; // OBRIGATORIO
+  late String endBairro;
+  late String endReferencia;
 
-  final String extraInfo;
+  late String extraInfo;
 
-  final List<Morador> moradores; // 1 item OBRIGATORIO
+  late List<Morador> moradores; // 1 item OBRIGATORIO
 
   Familia({
     required this.cadAtivo,

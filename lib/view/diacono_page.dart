@@ -1,12 +1,8 @@
-import '/models/diacono.dart';
-import '/ui/decoration.dart';
+import '../models/diacono.dart';
+import '../ui/styles.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
-
-var phoneMask = new MaskTextInputFormatter(
-    mask: '(##) #####-####', filter: {"#": RegExp(r'[0-9]')});
 
 class DiaconoPage extends StatefulWidget {
   final Diacono diacono;

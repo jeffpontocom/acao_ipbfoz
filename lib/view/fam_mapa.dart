@@ -1,10 +1,7 @@
-import '/models/familia.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class FamiliaMapa extends StatefulWidget {
-  FamiliaMapa(this.familia);
-  final DocumentReference<Familia> familia;
+  FamiliaMapa();
 
   @override
   _FamiliaMapaState createState() => _FamiliaMapaState();

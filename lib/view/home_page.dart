@@ -5,7 +5,7 @@ import 'package:flutter/scheduler.dart';
 import '/main.dart';
 import '/models/diacono.dart';
 import '/models/familia.dart';
-import '/ui/decoration.dart';
+import '../ui/styles.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -105,8 +105,11 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                 ),
-                SizedBox(
-                  width: 16.0,
+                Expanded(
+                  flex: 0,
+                  child: SizedBox(
+                    width: 16.0,
+                  ),
                 ),
                 Expanded(
                   flex: 1,
@@ -135,23 +138,20 @@ class _HomePageState extends State<HomePage> {
             ),
             Visibility(
               visible: _auth.currentUser != null ? true : false,
-              child: Expanded(
-                flex: 1,
-                child: OutlinedButton.icon(
-                  label: Text('Cadastrar nova família'),
-                  icon: Icon(Icons.add_business_sharp),
-                  style: mOutlinedButtonStyle,
-                  onPressed: () {
-                    refFamilia = FirebaseFirestore.instance
-                        .collection('familias')
-                        .doc()
-                        .withConverter(
-                            fromFirestore: (snapshot, _) =>
-                                Familia.fromJson(snapshot.data()!),
-                            toFirestore: (document, _) => document.toJson());
-                    Navigator.pushNamed(context, 'familia').then(onGoBack);
-                  },
-                ),
+              child: OutlinedButton.icon(
+                label: Text('Cadastrar nova família'),
+                icon: Icon(Icons.add_business_sharp),
+                style: mOutlinedButtonStyle,
+                onPressed: () {
+                  refFamilia = FirebaseFirestore.instance
+                      .collection('familias')
+                      .doc()
+                      .withConverter(
+                          fromFirestore: (snapshot, _) =>
+                              Familia.fromJson(snapshot.data()!),
+                          toFirestore: (document, _) => document.toJson());
+                  Navigator.pushNamed(context, 'familia').then(onGoBack);
+                },
               ),
             ),
             SizedBox(

@@ -1,11 +1,11 @@
-import '/models/entrega.dart';
-import '/models/familia.dart';
+import 'familia_page.dart';
+
+import '../models/entrega.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class FamiliaEntregas extends StatefulWidget {
-  FamiliaEntregas(this.familia);
-  final DocumentReference<Familia> familia;
+  FamiliaEntregas();
 
   @override
   _FamiliaEntregasState createState() => _FamiliaEntregasState();
@@ -20,7 +20,7 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           StreamBuilder<QuerySnapshot<Entrega>>(
-              stream: widget.familia
+              stream: reference
                   .collection('entregas')
                   .orderBy('data', descending: false)
                   .withConverter<Entrega>(
