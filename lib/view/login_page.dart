@@ -1,3 +1,5 @@
+import 'package:acao_ipbfoz/main.dart';
+
 import '../models/diacono.dart';
 import '../ui/styles.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -15,11 +17,13 @@ class _LoginPageState extends State<LoginPage> {
   late String email;
   late String password;
 
+  final _formKey = new GlobalKey<FormState>();
+  final _senhaController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leadingWidth: 32.0,
         title: Text('AÇÃO SOCIAL | Login'),
       ),
       body: InkWell(
@@ -28,68 +32,108 @@ class _LoginPageState extends State<LoginPage> {
           FocusScope.of(context).requestFocus(FocusNode());
         },
         child: Center(
-          child: Padding(
-            padding: EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Image(
-                  image: AssetImage('assets/icons/ic_launcher.png'),
-                  height: 128,
-                  width: 128,
-                ),
-                SizedBox(
-                  height: 24.0,
-                ),
-                TextField(
-                  keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.next,
-                  onChanged: (value) {
-                    email = value;
-                  },
-                  decoration:
-                      mTextFieldDecoration.copyWith(labelText: 'E-mail'),
-                ),
-                SizedBox(
-                  height: 8.0,
-                ),
-                TextField(
-                  obscureText: true,
-                  textInputAction: TextInputAction.done,
-                  onChanged: (value) {
-                    password = value;
-                  },
-                  decoration: mTextFieldDecoration.copyWith(labelText: 'Senha'),
-                  onSubmitted: (value) {
-                    _logar();
-                  },
-                ),
-                SizedBox(
-                  height: 24.0,
-                ),
-                OutlinedButton.icon(
-                  icon: Icon(Icons.login_rounded),
-                  label: Text('ENTRAR'),
-                  style: mOutlinedButtonStyle.merge(OutlinedButton.styleFrom(
-                    primary: Colors.white,
-                    backgroundColor: Colors.blue,
-                  )),
-                  onPressed: () {
-                    _logar();
-                  },
-                ),
-                SizedBox(
-                  height: 36.0,
-                ),
-              ],
-            ),
+          child: SingleChildScrollView(
+            child: Padding(
+                padding: EdgeInsets.all(24.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Image(
+                        image: AssetImage('assets/icons/ic_launcher.png'),
+                        height: 128,
+                        width: 128,
+                      ),
+                      SizedBox(
+                        height: 24.0,
+                      ),
+                      TextFormField(
+                        validator: (value) => !_isEmail(value!)
+                            ? "Informe um endereço de e-mail valido"
+                            : null,
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
+                        onChanged: (value) {
+                          email = value;
+                          _validar();
+                        },
+                        decoration: mTextFieldDecoration.copyWith(
+                            labelText: 'E-mail',
+                            prefixIcon: Icon(Icons.email_rounded)),
+                      ),
+                      SizedBox(
+                        height: 8.0,
+                      ),
+                      TextFormField(
+                        obscureText: true,
+                        textInputAction: TextInputAction.done,
+                        controller: _senhaController,
+                        validator: (value) => value!.length < 6
+                            ? "Senha deve conter no mínimo 6 caracteres"
+                            : null,
+                        onChanged: (value) {
+                          password = value;
+                          _validar();
+                        },
+                        decoration: mTextFieldDecoration.copyWith(
+                            labelText: 'Senha',
+                            prefixIcon: Icon(Icons.password_rounded)),
+                        onFieldSubmitted: (value) {
+                          _logar();
+                        },
+                      ),
+                      SizedBox(
+                        height: 24.0,
+                      ),
+                      OutlinedButton.icon(
+                        icon: Icon(Icons.login_rounded),
+                        label: Text('ENTRAR'),
+                        style:
+                            mOutlinedButtonStyle.merge(OutlinedButton.styleFrom(
+                          primary: Colors.white,
+                          backgroundColor: Colors.blue,
+                        )),
+                        onPressed: () {
+                          _logar();
+                        },
+                      ),
+                      SizedBox(
+                        height: 36.0,
+                      ),
+                      TextButton(
+                        child: Text(
+                          'Esqueci minha senha',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                        onPressed: () {
+                          _reenviarSenha();
+                        },
+                      ),
+                    ],
+                  ),
+                )),
           ),
         ),
       ),
     );
   }
 
+  bool _isEmail(String value) {
+    String regex =
+        r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
+
+    RegExp regExp = new RegExp(regex);
+
+    return value.isNotEmpty && regExp.hasMatch(value);
+  }
+
+  bool _validar() {
+    return _formKey.currentState!.validate();
+  }
+
   void _logar() async {
+    if (!_validar()) return;
     // Abre circulo de progresso
     showDialog(
       context: context,
@@ -113,11 +157,11 @@ class _LoginPageState extends State<LoginPage> {
             .then((DocumentSnapshot<Diacono> documentSnapshot) {
           Navigator.pop(context); // Fecha progresso
           if (documentSnapshot.exists) {
-            Navigator.pop(context);
+            Navigator.pushReplacementNamed(context, '/home');
           } else {
             Diacono.instance.email = credential.user!.email!;
             Diacono.instance.uid = credential.user!.uid;
-            Navigator.pushReplacementNamed(context, 'diacono');
+            Navigator.pushReplacementNamed(context, '/diacono');
           }
         });
         return;
@@ -133,7 +177,7 @@ class _LoginPageState extends State<LoginPage> {
           return AlertDialog(
             title: Text('Não foi possível logar'),
             content: Text('Verifique seu usuário e senha.\n\n' +
-                'Apenas diáconos previamente cadastrados podem acessar o sistema.\n\n' +
+                'Apenas usuários previamente cadastrados podem acessar o sistema.\n\n' +
                 'Qualquer dúvida fale com o administrador do sistema.'),
             actions: <Widget>[
               new OutlinedButton(
@@ -145,5 +189,25 @@ class _LoginPageState extends State<LoginPage> {
             ],
           );
         });
+  }
+
+  Future<void> _reenviarSenha() async {
+    if (!_validar()) return;
+    try {
+      await auth.sendPasswordResetEmail(email: email);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              'Verifique a sua caixa de entrada para redefinir a sua senha!'),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              'Não foi possível localizar o email $email em nosso cadastro!'),
+        ),
+      );
+    }
   }
 }

@@ -29,6 +29,13 @@ class _FamiliaPageState extends State<FamiliaPage> {
     initializeDateFormatting('pt_BR');
     reference = widget.reference;
     editMode = widget.editMode;
+    reference.get().then((value) {
+      if (value.exists) {
+        familia = value.data()!;
+      } else {
+        familia = new Familia.novaFamilia();
+      }
+    });
     super.initState();
   }
 
@@ -38,20 +45,33 @@ class _FamiliaPageState extends State<FamiliaPage> {
         future: reference.get(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return Text("Algo errado!");
+            return Scaffold(
+              resizeToAvoidBottomInset: true,
+              appBar: AppBar(
+                title: Text('Erro!'),
+              ),
+              body: Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24.0),
+                  child: Text(
+                    "Algo errado!\nAparentemente você está sem conexão com a Internet.",
+                  ),
+                ),
+              ),
+            );
           }
 
           if (!snapshot.hasData) {
-            return Center(child: CircularProgressIndicator());
-          }
-
-          if (snapshot.data!.exists) {
-            familia = snapshot.data!.data()!;
-          } else {
-            familia = Familia.novaFamilia();
+            return Scaffold(
+              resizeToAvoidBottomInset: true,
+              body: Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
           }
 
           return Scaffold(
+            resizeToAvoidBottomInset: true,
             body: DefaultTabController(
               length: 4,
               child: NestedScrollView(

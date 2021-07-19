@@ -68,8 +68,8 @@ class Familia {
           endBairro: (json['endBairro'] ?? '') as String,
           endReferencia: (json['endReferencia'] ?? '') as String,
           extraInfo: (json['extraInfo'] ?? '') as String,
-          moradores:
-              (json['moradores'] ?? new List<Morador>.empty()) as List<Morador>,
+          moradores: (json['moradores'] ??
+              new List<Morador>.empty(growable: true)) as List<Morador>,
         );
 
   Map<String, Object?> toJson() {
@@ -114,5 +114,5 @@ class Familia {
             endBairro: '',
             endReferencia: '',
             extraInfo: '',
-            moradores: new List<Morador>.empty());
+            moradores: new List<Morador>.empty(growable: true));
 }

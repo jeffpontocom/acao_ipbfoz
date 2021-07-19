@@ -23,12 +23,11 @@ class _FamiliaDadosState extends State<FamiliaDados> {
         padding: EdgeInsets.all(24.0),
         children: [
           Text(
-            'CADASTRO ATIVO',
+            'CADASTRO EM EDIÇÃO',
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           Text(
-            'Realizado em ' +
-                DateFormat.yMMMMd('pt_BR').format(familia.cadData.toDate()),
+            '' + DateFormat.yMMMMd('pt_BR').format(familia.cadData.toDate()),
           ),
           SizedBox(
             height: 24.0,
@@ -42,11 +41,25 @@ class _FamiliaDadosState extends State<FamiliaDados> {
             height: 8.0,
           ),
           // Familiar responsável (combo box)
-          TextFormField(
-            enabled: editMode,
+          DropdownButtonFormField(
+            value: familia.famResponsavel,
             decoration: mTextFieldDecoration.copyWith(
-                labelText: 'Familiar responsável'),
+                labelText: 'Familiar responsável', isDense: true),
+            items: familia.moradores
+                .map(
+                  (morador) => new DropdownMenuItem(
+                    value: familia.moradores.indexOf(morador),
+                    child: new Text(morador.nome),
+                  ),
+                )
+                .toList(),
           ),
+
+          //TextFormField(
+          //  enabled: editMode,
+          //  decoration: mTextFieldDecoration.copyWith(
+          //      labelText: 'Familiar responsável'),
+          //),
           SizedBox(
             height: 8.0,
           ),

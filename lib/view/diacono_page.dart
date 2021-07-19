@@ -82,7 +82,8 @@ class _DiaconoPageState extends State<DiaconoPage> {
                         .merge(mOutlinedButtonStyle),
                     onPressed: () {
                       FirebaseAuth.instance.signOut();
-                      Navigator.of(context).pop();
+                      Navigator.pushNamedAndRemoveUntil(
+                          context, '/login', (route) => false);
                     },
                   ),
                 ),

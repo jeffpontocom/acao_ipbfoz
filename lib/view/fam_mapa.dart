@@ -12,7 +12,9 @@ class _FamiliaMapaState extends State<FamiliaMapa> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 4, top: 4),
-      child: Text('Mapa'),
+      child: Center(
+        child: Text('Em breve'),
+      ),
     );
   }
 }

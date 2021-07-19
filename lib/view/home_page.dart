@@ -50,9 +50,9 @@ class _HomePageState extends State<HomePage> {
 
   void _loadPerfil() {
     if (_auth.currentUser == null) {
-      Navigator.pushNamed(context, 'login').then(onGoBack);
+      Navigator.pushNamed(context, '/login').then(onGoBack);
     } else {
-      Navigator.pushNamed(context, 'diacono').then(onGoBack);
+      Navigator.pushNamed(context, '/diacono').then(onGoBack);
     }
   }
 
@@ -150,7 +150,7 @@ class _HomePageState extends State<HomePage> {
                           fromFirestore: (snapshot, _) =>
                               Familia.fromJson(snapshot.data()!),
                           toFirestore: (document, _) => document.toJson());
-                  Navigator.pushNamed(context, 'familia').then(onGoBack);
+                  Navigator.pushNamed(context, '/familia').then(onGoBack);
                 },
               ),
             ),

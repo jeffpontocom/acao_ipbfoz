@@ -6,6 +6,12 @@ if (localPropertiesFile.exists()) {
     }
 }
 
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 def flutterRoot = localProperties.getProperty('flutter.sdk')
 if (flutterRoot == null) {
     throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
@@ -26,7 +32,6 @@ apply plugin: 'kotlin-android'
 apply plugin: 'com.google.gms.google-services'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
-
 android {
     compileSdkVersion 30
 
@@ -43,6 +48,15 @@ android {
         versionName flutterVersionName
         multiDexEnabled true // Habilitar para rodar sem shrink
     }
+    
+    signingConfigs {
+       release {
+           keyAlias keystoreProperties['keyAlias']
+           keyPassword keystoreProperties['keyPassword']
+           storeFile file(keystoreProperties['storeFile'])
+           storePassword keystoreProperties['storePassword']
+       }
+   }
 
     buildTypes {
         release {
