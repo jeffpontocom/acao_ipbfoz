@@ -1,3 +1,5 @@
+import 'package:flutter/services.dart';
+
 import 'familia_page.dart';
 
 import '../ui/styles.dart';
@@ -41,7 +43,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
             height: 8.0,
           ),
           // Familiar responsável (combo box)
-          DropdownButtonFormField(
+          DropdownButtonFormField<int>(
             value: familia.famResponsavel,
             decoration: mTextFieldDecoration.copyWith(
                 labelText: 'Familiar responsável', isDense: true),
@@ -53,13 +55,12 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                   ),
                 )
                 .toList(),
+            onChanged: (value) {
+              setState(() {
+                familia.famResponsavel = value!;
+              });
+            },
           ),
-
-          //TextFormField(
-          //  enabled: editMode,
-          //  decoration: mTextFieldDecoration.copyWith(
-          //      labelText: 'Familiar responsável'),
-          //),
           SizedBox(
             height: 8.0,
           ),
@@ -70,16 +71,18 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                 flex: 1,
                 child: TextFormField(
                   enabled: editMode,
-                  initialValue:
-                      phoneMask.maskText(familia.famTelefone1.toString()),
-                  inputFormatters: [phoneMask],
+                  initialValue: familia.famTelefone1 == 0
+                      ? ''
+                      : cellMask.maskText(familia.famTelefone1.toString()),
+                  inputFormatters: [cellMask],
                   keyboardType: TextInputType.phone,
                   textInputAction: TextInputAction.next,
                   decoration:
                       mTextFieldDecoration.copyWith(labelText: 'Whatsapp'),
                   onChanged: (value) {
+                    //print('Caracteres: ' + value.length.toString());
                     familia.famTelefone1 =
-                        int.parse(phoneMask.getUnmaskedText());
+                        int.parse(cellMask.getUnmaskedText());
                   },
                 ),
               ),
@@ -94,16 +97,17 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                 flex: 1,
                 child: TextFormField(
                   enabled: editMode,
-                  initialValue:
-                      phoneMask.maskText(familia.famTelefone2.toString()),
-                  inputFormatters: [phoneMask],
+                  initialValue: familia.famTelefone2 == 0
+                      ? ''
+                      : cellMask.maskText(familia.famTelefone2.toString()),
+                  inputFormatters: [cellMask],
                   keyboardType: TextInputType.phone,
                   textInputAction: TextInputAction.next,
                   decoration: mTextFieldDecoration.copyWith(
                       labelText: 'Telefone (outro)'),
                   onChanged: (value) {
                     familia.famTelefone2 =
-                        int.parse(phoneMask.getUnmaskedText());
+                        int.parse(cellMask.getUnmaskedText());
                   },
                 ),
               ),
@@ -112,7 +116,6 @@ class _FamiliaDadosState extends State<FamiliaDados> {
           SizedBox(
             height: 24.0,
           ),
-
           Text(
             'ENDEREÇO',
             style: TextStyle(fontWeight: FontWeight.bold),
@@ -181,6 +184,9 @@ class _FamiliaDadosState extends State<FamiliaDados> {
           TextFormField(
             enabled: editMode,
             decoration: mTextFieldDecoration.copyWith(labelText: 'Bairro'),
+            onChanged: (value) {
+              familia.endBairro = value;
+            },
           ),
           SizedBox(
             height: 8.0,
@@ -189,6 +195,9 @@ class _FamiliaDadosState extends State<FamiliaDados> {
           TextFormField(
             enabled: editMode,
             decoration: mTextFieldDecoration.copyWith(labelText: 'Referência'),
+            onChanged: (value) {
+              familia.endReferencia = value;
+            },
           ),
           SizedBox(
             height: 24.0,
@@ -205,6 +214,9 @@ class _FamiliaDadosState extends State<FamiliaDados> {
           TextFormField(
             enabled: editMode,
             decoration: mTextFieldDecoration.copyWith(labelText: 'Renda Média'),
+            onChanged: (value) {
+              familia.famRendaMedia = int.parse(value);
+            },
           ),
           SizedBox(
             height: 8.0,
@@ -214,6 +226,9 @@ class _FamiliaDadosState extends State<FamiliaDados> {
             enabled: editMode,
             decoration: mTextFieldDecoration.copyWith(
                 labelText: 'Benefício do governo'),
+            onChanged: (value) {
+              familia.famBeneficioGov = int.parse(value);
+            },
           ),
           SizedBox(
             height: 24.0,
@@ -232,6 +247,9 @@ class _FamiliaDadosState extends State<FamiliaDados> {
             initialValue: familia.extraInfo,
             decoration:
                 mTextFieldDecoration.copyWith(labelText: 'Informação Extra'),
+            onChanged: (value) {
+              familia.extraInfo = value;
+            },
           ),
           SizedBox(
             height: 8.0,
@@ -241,6 +259,9 @@ class _FamiliaDadosState extends State<FamiliaDados> {
             enabled: editMode,
             initialValue: familia.cadSolicitante,
             decoration: mTextFieldDecoration.copyWith(labelText: 'Solicitante'),
+            onChanged: (value) {
+              familia.cadSolicitante = value;
+            },
           ),
           SizedBox(
             height: 8.0,
@@ -251,6 +272,9 @@ class _FamiliaDadosState extends State<FamiliaDados> {
             initialValue: familia.cadDiacono,
             decoration:
                 mTextFieldDecoration.copyWith(labelText: 'Diácono responsável'),
+            onChanged: (value) {
+              familia.cadDiacono = value;
+            },
           ),
           SizedBox(
             height: 8.0,

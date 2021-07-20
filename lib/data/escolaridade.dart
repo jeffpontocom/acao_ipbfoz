@@ -8,8 +8,8 @@ enum Escolaridade {
   posGraduado
 }
 
-String toString(int value) {
-  switch (value) {
+String getEscolaridadeString(Escolaridade value) {
+  switch (value.index) {
     case 1:
       return 'Analfabeto';
     case 2:

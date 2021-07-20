@@ -68,9 +68,17 @@ class Familia {
           endBairro: (json['endBairro'] ?? '') as String,
           endReferencia: (json['endReferencia'] ?? '') as String,
           extraInfo: (json['extraInfo'] ?? '') as String,
-          moradores: (json['moradores'] ??
-              new List<Morador>.empty(growable: true)) as List<Morador>,
+          moradores: List<Morador>.from(
+              ((json['moradores'] ?? null) as List<dynamic>)
+                  .map((e) => Morador.fromJson(e))),
         );
+
+  Map<String, Object?> extractMap(Map<String, Object?>? json) {
+    if (json == null) {
+      json = new Map<String, Object?>();
+    }
+    return json;
+  }
 
   Map<String, Object?> toJson() {
     return {
@@ -91,7 +99,8 @@ class Familia {
       'endBairro': endBairro,
       'endReferencia': endReferencia,
       'extraInfo': extraInfo,
-      'moradores': moradores,
+      'moradores':
+          List<dynamic>.from(moradores.map((morador) => morador.toJson())),
     };
   }
 

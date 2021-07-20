@@ -1,3 +1,5 @@
+import 'package:acao_ipbfoz/ui/dialogs.dart';
+
 import 'fam_dados.dart';
 import 'fam_entregas.dart';
 import 'fam_mapa.dart';
@@ -97,8 +99,20 @@ class _FamiliaPageState extends State<FamiliaPage> {
                                 fontWeight: FontWeight.bold),
                           ),
                           onPressed: () {
-                            editMode = !editMode;
-                            setState(() {});
+                            if (editMode) {
+                              showLoaderDialog(context);
+                              reference.set(familia).then((value) {
+                                Navigator.pop(context);
+                                editMode = !editMode;
+                                setState(() {});
+                              }).catchError((error) {
+                                print("Failed to add: $error");
+                                Navigator.pop(context);
+                              });
+                            } else {
+                              editMode = !editMode;
+                              setState(() {});
+                            }
                           },
                         ),
                         Icon(

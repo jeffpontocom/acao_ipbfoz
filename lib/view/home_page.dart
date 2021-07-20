@@ -161,6 +161,9 @@ class _HomePageState extends State<HomePage> {
               'FAMÍLIAS ATENDIDAS',
               style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
             ),
+            SizedBox(
+              height: 12.0,
+            ),
             StreamBuilder<QuerySnapshot<Familia>>(
                 stream: FirebaseFirestore.instance
                     .collection('familias')
@@ -199,15 +202,37 @@ class _HomePageState extends State<HomePage> {
                       }
                     });
                   });
-                  //TODO: Lista de famílias com cadastro ativo
                   return Center(
                     child: ListView.builder(
                         scrollDirection: Axis.vertical,
                         shrinkWrap: true,
                         itemCount: data!.size,
                         itemBuilder: (context, index) {
+                          int resp = data.docs[index].data().famResponsavel;
+                          int totalEntregas = 0;
+                          data.docs[index].reference
+                              .collection('entregas')
+                              .get()
+                              .then((value) => totalEntregas = value.size);
                           return ListTile(
-                            title: Text(data.docs[index].id),
+                            horizontalTitleGap: 2,
+                            isThreeLine: true, trailing: Text('Abrir'),
+                            leading: Icon(Icons.family_restroom_rounded),
+                            // Nome do morador
+                            title: Text(
+                              data.docs[index].data().moradores[resp].nome,
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            // Bairro
+                            subtitle: Text(data.docs[index].data().endBairro +
+                                '\n' +
+                                totalEntregas.toString() +
+                                ' entregas realizadas.'),
+                            onTap: () {
+                              refFamilia = data.docs[index].reference;
+                              Navigator.pushNamed(context, '/familia')
+                                  .then(onGoBack);
+                            },
                           );
                         }),
                   );

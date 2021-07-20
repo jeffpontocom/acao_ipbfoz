@@ -1,8 +1,10 @@
+import 'package:acao_ipbfoz/data/escolaridade.dart';
 import 'package:acao_ipbfoz/models/morador.dart';
 import 'package:acao_ipbfoz/ui/styles.dart';
 import 'package:acao_ipbfoz/view/familia_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class FamiliaMoradores extends StatefulWidget {
   FamiliaMoradores();
@@ -24,7 +26,13 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
               icon: Icon(Icons.person_add),
               style: mOutlinedButtonStyle,
               onPressed: () {
-                _dialogAddMorador();
+                Morador novo = new Morador(
+                    nome: '',
+                    nascimento: Timestamp.fromDate(DateTime(1800)),
+                    escolaridade: 0,
+                    profissao: '',
+                    especial: false);
+                _dialogAddMorador(novo, 9999);
               },
             ),
             ListView.builder(
@@ -39,7 +47,9 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                   return ListTile(
                     title: Text(familia.moradores[index].nome),
                     subtitle: Text('$idade • $profissao'),
-                    //title: Text(familia.moradores[index].nome),
+                    onTap: () {
+                      _dialogAddMorador(familia.moradores[index], index);
+                    },
                   );
                 }),
           ],
@@ -48,13 +58,7 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
     );
   }
 
-  void _dialogAddMorador() {
-    Morador morador = new Morador(
-        nome: '',
-        nascimento: Timestamp.now(),
-        escolaridade: 0,
-        profissao: '',
-        especial: false);
+  void _dialogAddMorador(Morador morador, int pos) {
     showModalBottomSheet(
       //isScrollControlled: true,
       context: context,
@@ -69,7 +73,8 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
               padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
               children: [
                 Text(
-                  'Novo morador',
+                  'Cadastro de morador',
+                  textAlign: TextAlign.center,
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
                 ),
                 SizedBox(
@@ -77,6 +82,7 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                 ),
                 // Nome
                 TextFormField(
+                  initialValue: morador.nome,
                   keyboardType: TextInputType.name,
                   textInputAction: TextInputAction.next,
                   decoration:
@@ -88,45 +94,60 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                 SizedBox(
                   height: 8.0,
                 ),
-                // Nascimento
-                InputDecorator(
-                  decoration: mTextFieldDecoration.copyWith(
-                      labelText: 'Data de nascimento'),
-                  child: InputDatePickerFormField(
-                    firstDate: DateTime(1900),
-                    lastDate: DateTime.now(),
-                    fieldHintText: null,
-                    fieldLabelText: '',
-                    errorFormatText: 'Formato inválido',
-                    errorInvalidText: 'Data inválida',
-                    onDateSubmitted: (value) {
-                      morador.nascimento = Timestamp.fromDate(value);
-                    },
-                  ),
-                ),
 
-                SizedBox(
-                  height: 8.0,
-                ),
-                TextFormField(
-                  keyboardType: TextInputType.datetime,
-                  textInputAction: TextInputAction.next,
-                  decoration: mTextFieldDecoration.copyWith(
-                      labelText: 'Data de nascimento'),
-                  onChanged: (value) {},
-                ),
-                SizedBox(
-                  height: 8.0,
-                ),
-                // Escolaridade
-                TextFormField(
-                  keyboardType: TextInputType.number,
-                  textInputAction: TextInputAction.next,
-                  decoration:
-                      mTextFieldDecoration.copyWith(labelText: 'Escolaridade'),
-                  onChanged: (value) {
-                    morador.escolaridade = int.parse(value);
-                  },
+                Row(
+                  children: [
+                    // Nascimento
+                    Expanded(
+                      flex: 1,
+                      child: TextFormField(
+                        initialValue: morador.nascimento.toDate().year == 1800
+                            ? ''
+                            : dateMask.maskText(DateFormat('dd/MM/yyyy')
+                                .format(morador.nascimento.toDate())),
+                        keyboardType: TextInputType.datetime,
+                        textInputAction: TextInputAction.next,
+                        inputFormatters: [dateMask],
+                        decoration: mTextFieldDecoration.copyWith(
+                            labelText: 'Data de nascimento'),
+                        onChanged: (value) {
+                          if (value.length == 10) {
+                            DateTime date =
+                                DateFormat('dd/MM/yyyy').parse(value);
+                            morador.nascimento = Timestamp.fromDate(date);
+                          }
+                        },
+                      ),
+                    ),
+                    Expanded(
+                      flex: 0,
+                      child: SizedBox(
+                        width: 8.0,
+                      ),
+                    ),
+                    // Escolaridade
+                    Expanded(
+                      flex: 2,
+                      child: DropdownButtonFormField<int>(
+                        value: morador.escolaridade,
+                        decoration: mTextFieldDecoration.copyWith(
+                            labelText: 'Escolaridade', isDense: true),
+                        items: Escolaridade.values
+                            .map(
+                              (value) => new DropdownMenuItem(
+                                value: value.index,
+                                child: new Text(getEscolaridadeString(value)),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            morador.escolaridade = value!;
+                          });
+                        },
+                      ),
+                    ),
+                  ],
                 ),
                 SizedBox(
                   height: 8.0,
@@ -165,7 +186,10 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                   onPressed: () {
                     Navigator.pop(context, true);
                     setState(() {
-                      familia.moradores.add(morador);
+                      if (pos == 9999)
+                        familia.moradores.add(morador);
+                      else
+                        familia.moradores[pos] = morador;
                     });
                   },
                 ),
@@ -180,18 +204,38 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
   }
 
   String _calcularIdade(Timestamp nascimento) {
-    int idade = DateTime.now().difference(nascimento.toDate()).inDays;
-    if (idade < 31)
-      return 'Recém-nascido';
-    else if (idade < 366) {
-      idade = idade ~/ 30;
-      return '$idade meses';
-    } else if (idade < (365 * 2)) {
-      idade = idade ~/ 365;
-      return '$idade ano';
-    } else {
-      idade = idade ~/ 365;
-      return '$idade anos';
+    DateTime dataAtual = DateTime.now();
+    DateTime dataNasc = nascimento.toDate();
+
+    //Subtai para saber quantos anos se passaram após nascimento
+    int idade = dataAtual.year - dataNasc.year;
+
+    //data de nascimento não pode ser maior que data atual
+    if (dataAtual.isBefore(dataNasc) || dataNasc.year == 1800) {
+      return "Data de nascimento indefinida!";
+    }
+    //Verifica se menor e 2 anos
+    else if (idade < 2) {
+      idade = (dataAtual.month - dataNasc.month) + (idade * 12);
+      if (idade == 0)
+        return 'Recém-nascido';
+      else
+        return "$idade mes(es)";
+    }
+    //Verifica se está fazendo aniversário hoje
+    else if (dataAtual.month == dataNasc.month &&
+        dataAtual.day == dataNasc.day) {
+      return "$idade ano(s) (Aniversário hoje!) ";
+    }
+    //Verifica se vai fazer aniversário este ano
+    else if (dataAtual.month < dataNasc.month ||
+        (dataAtual.month == dataNasc.month && dataAtual.day < dataNasc.day)) {
+      idade = idade - 1;
+      return "$idade ano(s)";
+    }
+    //Se nenhuma das opções anteriores, então já fez aniversário este ano
+    else {
+      return "$idade anos(s)";
     }
   }
 }
