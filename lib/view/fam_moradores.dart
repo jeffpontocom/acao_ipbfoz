@@ -33,10 +33,12 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                 //itemCount: 1,
                 itemCount: familia.moradores.length,
                 itemBuilder: (context, index) {
+                  String idade =
+                      _calcularIdade(familia.moradores[index].nascimento);
+                  String profissao = familia.moradores[index].profissao;
                   return ListTile(
                     title: Text(familia.moradores[index].nome),
-                    subtitle:
-                        Text('58 anos • ' + familia.moradores[index].profissao),
+                    subtitle: Text('$idade • $profissao'),
                     //title: Text(familia.moradores[index].nome),
                   );
                 }),
@@ -87,6 +89,25 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                   height: 8.0,
                 ),
                 // Nascimento
+                InputDecorator(
+                  decoration: mTextFieldDecoration.copyWith(
+                      labelText: 'Data de nascimento'),
+                  child: InputDatePickerFormField(
+                    firstDate: DateTime(1900),
+                    lastDate: DateTime.now(),
+                    fieldHintText: null,
+                    fieldLabelText: '',
+                    errorFormatText: 'Formato inválido',
+                    errorInvalidText: 'Data inválida',
+                    onDateSubmitted: (value) {
+                      morador.nascimento = Timestamp.fromDate(value);
+                    },
+                  ),
+                ),
+
+                SizedBox(
+                  height: 8.0,
+                ),
                 TextFormField(
                   keyboardType: TextInputType.datetime,
                   textInputAction: TextInputAction.next,
@@ -156,5 +177,21 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
     ).then((value) {
       if (value) setState(() {});
     });
+  }
+
+  String _calcularIdade(Timestamp nascimento) {
+    int idade = DateTime.now().difference(nascimento.toDate()).inDays;
+    if (idade < 31)
+      return 'Recém-nascido';
+    else if (idade < 366) {
+      idade = idade ~/ 30;
+      return '$idade meses';
+    } else if (idade < (365 * 2)) {
+      idade = idade ~/ 365;
+      return '$idade ano';
+    } else {
+      idade = idade ~/ 365;
+      return '$idade anos';
+    }
   }
 }
