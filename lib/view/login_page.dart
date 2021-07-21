@@ -1,5 +1,4 @@
-import 'package:acao_ipbfoz/main.dart';
-
+import '/main.dart';
 import '../models/diacono.dart';
 import '../ui/styles.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -159,8 +158,14 @@ class _LoginPageState extends State<LoginPage> {
           if (documentSnapshot.exists) {
             Navigator.pushReplacementNamed(context, '/home');
           } else {
-            Diacono.instance.email = credential.user!.email!;
-            Diacono.instance.uid = credential.user!.uid;
+            usuarioLogado = new Diacono(
+              nome: '',
+              email: credential.user!.email!,
+              telefone: 0,
+            );
+            usuarioLogado.uid = credential.user!.uid;
+            //Diacono.instance.email = credential.user!.email!;
+            //Diacono.instance.uid = credential.user!.uid;
             Navigator.pushReplacementNamed(context, '/diacono');
           }
         });

@@ -27,7 +27,7 @@ class Diacono {
   }
 
   // Instanciador Singleton
-  Diacono._constructor();
-  static late Diacono _instance = Diacono._constructor();
-  static Diacono get instance => _instance;
+  //Diacono._constructor();
+  //static late Diacono _instance = Diacono._constructor();
+  //static Diacono get instance => _instance;
 }

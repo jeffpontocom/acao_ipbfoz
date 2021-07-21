@@ -1,4 +1,4 @@
-import '/models/diacono.dart';
+import '/main.dart';
 import '/models/morador.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -107,7 +107,7 @@ class Familia {
   Familia.novaFamilia()
       : this(
             cadAtivo: true,
-            cadDiacono: Diacono.instance.uid,
+            cadDiacono: usuarioLogado.uid,
             cadData: Timestamp.now(),
             cadSolicitante: '',
             famResponsavel: 0,

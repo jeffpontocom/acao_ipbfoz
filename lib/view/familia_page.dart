@@ -1,10 +1,9 @@
-import 'package:acao_ipbfoz/ui/dialogs.dart';
-
 import 'fam_dados.dart';
 import 'fam_entregas.dart';
 import 'fam_mapa.dart';
 import 'fam_moradores.dart';
 import '/models/familia.dart';
+import '/ui/dialogs.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -12,14 +11,13 @@ import 'package:intl/date_symbol_data_local.dart';
 late DocumentReference<Familia> reference;
 late Familia familia;
 late bool editMode;
+late bool onFirestore;
 
 class FamiliaPage extends StatefulWidget {
   const FamiliaPage({Key? key, required this.reference, required this.editMode})
       : super(key: key);
   final DocumentReference<Familia> reference;
   final bool editMode;
-
-  //get editionMode => editMode;
 
   @override
   _FamiliaPageState createState() => _FamiliaPageState();
@@ -34,8 +32,10 @@ class _FamiliaPageState extends State<FamiliaPage> {
     reference.get().then((value) {
       if (value.exists) {
         familia = value.data()!;
+        onFirestore = true;
       } else {
         familia = new Familia.novaFamilia();
+        onFirestore = false;
       }
     });
     super.initState();
@@ -104,6 +104,7 @@ class _FamiliaPageState extends State<FamiliaPage> {
                               reference.set(familia).then((value) {
                                 Navigator.pop(context);
                                 editMode = !editMode;
+                                onFirestore = true;
                                 setState(() {});
                               }).catchError((error) {
                                 print("Failed to add: $error");

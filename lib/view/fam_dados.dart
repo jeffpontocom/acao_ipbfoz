@@ -1,10 +1,11 @@
-import 'package:flutter/services.dart';
-
 import 'familia_page.dart';
-
+import '../data/beneficiosGov.dart';
+import '../data/diaconos.dart';
 import '../ui/styles.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:brasil_fields/brasil_fields.dart';
 
 class FamiliaDados extends StatefulWidget {
   FamiliaDados();
@@ -16,6 +17,7 @@ class FamiliaDados extends StatefulWidget {
 class _FamiliaDadosState extends State<FamiliaDados> {
   @override
   Widget build(BuildContext context) {
+    //final _textController = TextEditingController();
     return InkWell(
       splashColor: Colors.transparent,
       onTap: () {
@@ -24,17 +26,24 @@ class _FamiliaDadosState extends State<FamiliaDados> {
       child: ListView(
         padding: EdgeInsets.all(24.0),
         children: [
+          // INFORMACAO GERAL
           Text(
-            'CADASTRO EM EDIÇÃO',
-            style: TextStyle(fontWeight: FontWeight.bold),
+            onFirestore
+                ? familia.cadAtivo
+                    ? 'Situação: ATIVO'
+                    : 'Situação: INATIVO'
+                : 'Situação: EM CRIAÇÃO',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
           ),
           Text(
-            '' + DateFormat.yMMMMd('pt_BR').format(familia.cadData.toDate()),
+            'Criado em ' +
+                DateFormat.yMMMMd('pt_BR').format(familia.cadData.toDate()),
+            style: TextStyle(color: Colors.grey),
           ),
           SizedBox(
             height: 24.0,
           ),
-
+          // DADOS EDITAVEIS
           Text(
             'CONTATO',
             style: TextStyle(fontWeight: FontWeight.bold),
@@ -45,8 +54,12 @@ class _FamiliaDadosState extends State<FamiliaDados> {
           // Familiar responsável (combo box)
           DropdownButtonFormField<int>(
             value: familia.famResponsavel,
+            iconDisabledColor: Colors.transparent,
             decoration: mTextFieldDecoration.copyWith(
-                labelText: 'Familiar responsável', isDense: true),
+              labelText: 'Familiar responsável',
+              isDense: true,
+              enabled: editMode,
+            ),
             items: familia.moradores
                 .map(
                   (morador) => new DropdownMenuItem(
@@ -55,32 +68,38 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                   ),
                 )
                 .toList(),
-            onChanged: (value) {
-              setState(() {
-                familia.famResponsavel = value!;
-              });
-            },
+            onChanged: editMode
+                ? (value) {
+                    setState(() {
+                      familia.famResponsavel = value!;
+                    });
+                  }
+                : null,
           ),
           SizedBox(
             height: 8.0,
           ),
+          // Formas de Contato
           Row(
             children: [
               // Whatsapp
               Expanded(
                 flex: 1,
                 child: TextFormField(
+                  //controller: _textController,
                   enabled: editMode,
                   initialValue: familia.famTelefone1 == 0
                       ? ''
                       : cellMask.maskText(familia.famTelefone1.toString()),
-                  inputFormatters: [cellMask],
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    TelefoneInputFormatter()
+                  ],
                   keyboardType: TextInputType.phone,
                   textInputAction: TextInputAction.next,
                   decoration:
                       mTextFieldDecoration.copyWith(labelText: 'Whatsapp'),
                   onChanged: (value) {
-                    //print('Caracteres: ' + value.length.toString());
                     familia.famTelefone1 =
                         int.parse(cellMask.getUnmaskedText());
                   },
@@ -100,7 +119,10 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                   initialValue: familia.famTelefone2 == 0
                       ? ''
                       : cellMask.maskText(familia.famTelefone2.toString()),
-                  inputFormatters: [cellMask],
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    TelefoneInputFormatter()
+                  ],
                   keyboardType: TextInputType.phone,
                   textInputAction: TextInputAction.next,
                   decoration: mTextFieldDecoration.copyWith(
@@ -170,6 +192,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
           TextFormField(
             enabled: editMode,
             initialValue: familia.endLogradouro,
+            textCapitalization: TextCapitalization.words,
             keyboardType: TextInputType.streetAddress,
             textInputAction: TextInputAction.next,
             decoration: mTextFieldDecoration.copyWith(labelText: 'Logradouro'),
@@ -183,6 +206,10 @@ class _FamiliaDadosState extends State<FamiliaDados> {
           // Bairro
           TextFormField(
             enabled: editMode,
+            initialValue: familia.endBairro,
+            textCapitalization: TextCapitalization.words,
+            keyboardType: TextInputType.streetAddress,
+            textInputAction: TextInputAction.next,
             decoration: mTextFieldDecoration.copyWith(labelText: 'Bairro'),
             onChanged: (value) {
               familia.endBairro = value;
@@ -194,6 +221,13 @@ class _FamiliaDadosState extends State<FamiliaDados> {
           // Referencia
           TextFormField(
             enabled: editMode,
+            initialValue: familia.endReferencia,
+            textCapitalization: TextCapitalization.sentences,
+            keyboardType: TextInputType.multiline,
+            minLines: 2,
+            maxLines: 4,
+            textAlignVertical: TextAlignVertical.top,
+            textInputAction: TextInputAction.next,
             decoration: mTextFieldDecoration.copyWith(labelText: 'Referência'),
             onChanged: (value) {
               familia.endReferencia = value;
@@ -202,7 +236,6 @@ class _FamiliaDadosState extends State<FamiliaDados> {
           SizedBox(
             height: 24.0,
           ),
-
           Text(
             'ANALISE SOCIAL',
             style: TextStyle(fontWeight: FontWeight.bold),
@@ -210,30 +243,62 @@ class _FamiliaDadosState extends State<FamiliaDados> {
           SizedBox(
             height: 8.0,
           ),
-          // Renda Media
-          TextFormField(
-            enabled: editMode,
-            decoration: mTextFieldDecoration.copyWith(labelText: 'Renda Média'),
-            onChanged: (value) {
-              familia.famRendaMedia = int.parse(value);
-            },
-          ),
-          SizedBox(
-            height: 8.0,
-          ),
-          // Beneficio Governo (combo box)
-          TextFormField(
-            enabled: editMode,
-            decoration: mTextFieldDecoration.copyWith(
-                labelText: 'Benefício do governo'),
-            onChanged: (value) {
-              familia.famBeneficioGov = int.parse(value);
-            },
+          Row(
+            children: [
+              // Renda Media
+              Expanded(
+                flex: 1,
+                child: TextFormField(
+                  enabled: editMode,
+                  initialValue: familia.famRendaMedia.toString(),
+                  keyboardType: TextInputType.numberWithOptions(decimal: true),
+                  textInputAction: TextInputAction.next,
+                  decoration: mTextFieldDecoration.copyWith(
+                      labelText: 'Renda Média', prefixText: 'R\$ '),
+                  onChanged: (value) {
+                    familia.famRendaMedia = int.parse(value);
+                  },
+                ),
+              ),
+              Expanded(
+                flex: 0,
+                child: SizedBox(
+                  width: 8.0,
+                ),
+              ),
+              // Beneficio Governo (combo box)
+              Expanded(
+                flex: 1,
+                child: DropdownButtonFormField<int>(
+                  value: familia.famBeneficioGov,
+                  iconDisabledColor: Colors.transparent,
+                  decoration: mTextFieldDecoration.copyWith(
+                    labelText: 'Benefício do governo',
+                    isDense: true,
+                    enabled: editMode,
+                  ),
+                  items: Beneficios.values
+                      .map(
+                        (value) => new DropdownMenuItem(
+                          value: value.index,
+                          child: new Text(getBeneficiosString(value)),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: editMode
+                      ? (value) {
+                          setState(() {
+                            familia.famBeneficioGov = value!;
+                          });
+                        }
+                      : null,
+                ),
+              ),
+            ],
           ),
           SizedBox(
             height: 24.0,
           ),
-
           Text(
             'CONTROLE IPBFoz',
             style: TextStyle(fontWeight: FontWeight.bold),
@@ -245,8 +310,13 @@ class _FamiliaDadosState extends State<FamiliaDados> {
           TextFormField(
             enabled: editMode,
             initialValue: familia.extraInfo,
+            textCapitalization: TextCapitalization.sentences,
+            keyboardType: TextInputType.multiline,
+            minLines: 5,
+            maxLines: 8,
+            textAlignVertical: TextAlignVertical.top,
             decoration:
-                mTextFieldDecoration.copyWith(labelText: 'Informação Extra'),
+                mTextFieldDecoration.copyWith(labelText: 'Informações extras'),
             onChanged: (value) {
               familia.extraInfo = value;
             },
@@ -258,6 +328,9 @@ class _FamiliaDadosState extends State<FamiliaDados> {
           TextFormField(
             enabled: editMode,
             initialValue: familia.cadSolicitante,
+            textCapitalization: TextCapitalization.words,
+            keyboardType: TextInputType.name,
+            textInputAction: TextInputAction.next,
             decoration: mTextFieldDecoration.copyWith(labelText: 'Solicitante'),
             onChanged: (value) {
               familia.cadSolicitante = value;
@@ -267,17 +340,61 @@ class _FamiliaDadosState extends State<FamiliaDados> {
             height: 8.0,
           ),
           // Diacono Responsavel (combo box)
-          TextFormField(
-            enabled: editMode,
-            initialValue: familia.cadDiacono,
-            decoration:
-                mTextFieldDecoration.copyWith(labelText: 'Diácono responsável'),
-            onChanged: (value) {
-              familia.cadDiacono = value;
-            },
+          DropdownButtonFormField<String>(
+            value: familia.cadDiacono,
+            iconDisabledColor: Colors.transparent,
+            decoration: mTextFieldDecoration.copyWith(
+              labelText: 'Diácono responsável',
+              isDense: true,
+              enabled: editMode,
+            ),
+            items: diaconos
+                .map((lista) => new DropdownMenuItem(
+                    value: lista.keys.first,
+                    child: Text(lista.values.first.nome)))
+                .toList(),
+            onChanged: editMode
+                ? (value) {
+                    setState(() {
+                      familia.cadDiacono = value!.toString();
+                    });
+                  }
+                : null,
           ),
           SizedBox(
-            height: 8.0,
+            height: 36.0,
+          ),
+          Row(
+            children: [
+              onFirestore
+                  ? Expanded(
+                      flex: 2,
+                      child: OutlinedButton.icon(
+                        label: Text(familia.cadAtivo
+                            ? 'Desativar cadastro'
+                            : 'Reativar cadastro'),
+                        icon: Icon(Icons.archive_rounded),
+                        style:
+                            mOutlinedButtonStyle.merge(OutlinedButton.styleFrom(
+                          primary: Colors.white,
+                          backgroundColor: Colors.red,
+                        )),
+                        onPressed: editMode
+                            ? () {
+                                if (familia.cadAtivo) {
+                                  reference.update({'cadAtivo': false});
+                                } else {
+                                  reference.update({'cadAtivo': true});
+                                }
+                                familia.cadAtivo = !familia.cadAtivo;
+                                setState(() {});
+                              }
+                            : null,
+                      ),
+                    )
+                  : SizedBox(),
+              Expanded(flex: 1, child: SizedBox()),
+            ],
           ),
         ],
       ),

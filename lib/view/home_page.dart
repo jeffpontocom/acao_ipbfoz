@@ -1,10 +1,10 @@
 import 'dart:async';
 
+import 'package:acao_ipbfoz/data/diaconos.dart';
 import 'package:flutter/scheduler.dart';
 
 import '/main.dart';
-import '/models/diacono.dart';
-import '/models/familia.dart';
+import '../models/familia.dart';
 import '../ui/styles.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -25,42 +25,15 @@ class _HomePageState extends State<HomePage> {
     setState(() {});
   }
 
-  void _loadUserAsDiacono(String uid) async {
-    await FirebaseFirestore.instance
-        .collection('diaconos')
-        .doc(uid)
-        .withConverter<Diacono>(
-            fromFirestore: (snapshot, _) => Diacono.fromJson(snapshot.data()!),
-            toFirestore: (pacote, _) => pacote.toJson())
-        .get()
-        .then((DocumentSnapshot<Diacono> documentSnapshot) {
-      if (documentSnapshot.exists) {
-        Diacono.instance.uid = documentSnapshot.id;
-        Diacono.instance.email = documentSnapshot.data()!.email;
-        Diacono.instance.nome = documentSnapshot.data()!.nome;
-        Diacono.instance.telefone = documentSnapshot.data()!.telefone;
-      } else {
-        if (Diacono.instance.email.isEmpty) {
-          Diacono.instance.uid = uid;
-          Diacono.instance.email = _auth.currentUser!.email!;
-        }
-      }
-    });
-  }
-
-  void _loadPerfil() {
-    if (_auth.currentUser == null) {
-      Navigator.pushNamed(context, '/login').then(onGoBack);
-    } else {
-      Navigator.pushNamed(context, '/diacono').then(onGoBack);
-    }
+  @override
+  void initState() {
+    if (auth.currentUser == null) Navigator.pop(context);
+    loadDiaconos();
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_auth.currentUser != null) {
-      _loadUserAsDiacono(_auth.currentUser!.uid);
-    }
     return Scaffold(
       appBar: AppBar(
         title: Text('AÇÃO SOCIAL IPBFoz'),
@@ -72,7 +45,7 @@ class _HomePageState extends State<HomePage> {
                   TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
             onPressed: () {
-              _loadPerfil();
+              Navigator.pushNamed(context, '/diacono').then(onGoBack);
             },
           ),
           Icon(_auth.currentUser == null
@@ -184,13 +157,13 @@ class _HomePageState extends State<HomePage> {
                   if (!snapshots.hasData) {
                     return const Center(child: CircularProgressIndicator());
                   }
+                  _refreshTotalFamilia(snapshots.data!.size);
                   if (snapshots.data!.size == 0) {
                     return Center(
                       heightFactor: 5,
                       child: Text('Nenhum cadastro localizado!'),
                     );
                   }
-                  _refreshTotalFamilia(snapshots.data!.size);
                   final data = snapshots.data;
                   data?.docs.forEach((element) {
                     element.reference

@@ -1,5 +1,6 @@
 import 'package:acao_ipbfoz/data/escolaridade.dart';
 import 'package:acao_ipbfoz/models/morador.dart';
+import 'package:acao_ipbfoz/ui/dialogs.dart';
 import 'package:acao_ipbfoz/ui/styles.dart';
 import 'package:acao_ipbfoz/view/familia_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -25,20 +26,24 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
               label: Text('Adicionar morador'),
               icon: Icon(Icons.person_add),
               style: mOutlinedButtonStyle,
-              onPressed: () {
-                Morador novo = new Morador(
-                    nome: '',
-                    nascimento: Timestamp.fromDate(DateTime(1800)),
-                    escolaridade: 0,
-                    profissao: '',
-                    especial: false);
-                _dialogAddMorador(novo, 9999);
-              },
+              onPressed: editMode
+                  ? () {
+                      Morador novo = new Morador(
+                          nome: '',
+                          nascimento: Timestamp.fromDate(DateTime(1800)),
+                          escolaridade: 0,
+                          profissao: '',
+                          especial: false);
+                      _dialogAddMorador(novo, 9999);
+                    }
+                  : null,
+            ),
+            SizedBox(
+              height: 16.0,
             ),
             ListView.builder(
                 scrollDirection: Axis.vertical,
                 shrinkWrap: true,
-                //itemCount: 1,
                 itemCount: familia.moradores.length,
                 itemBuilder: (context, index) {
                   String idade =
@@ -47,9 +52,11 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                   return ListTile(
                     title: Text(familia.moradores[index].nome),
                     subtitle: Text('$idade • $profissao'),
-                    onTap: () {
-                      _dialogAddMorador(familia.moradores[index], index);
-                    },
+                    onTap: editMode
+                        ? () {
+                            _dialogAddMorador(familia.moradores[index], index);
+                          }
+                        : null,
                   );
                 }),
           ],
@@ -60,12 +67,10 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
 
   void _dialogAddMorador(Morador morador, int pos) {
     showModalBottomSheet(
-      //isScrollControlled: true,
       context: context,
       builder: (context) {
         return StatefulBuilder(builder: (context, setState) {
           return Padding(
-            //padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 56.0),
             padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom,
                 top: MediaQuery.of(context).padding.top),
@@ -78,11 +83,12 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
                 ),
                 SizedBox(
-                  height: 16.0,
+                  height: 24.0,
                 ),
                 // Nome
                 TextFormField(
                   initialValue: morador.nome,
+                  textCapitalization: TextCapitalization.words,
                   keyboardType: TextInputType.name,
                   textInputAction: TextInputAction.next,
                   decoration:
@@ -154,6 +160,8 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                 ),
                 // Profissao
                 TextFormField(
+                  initialValue: morador.profissao,
+                  textCapitalization: TextCapitalization.words,
                   keyboardType: TextInputType.name,
                   textInputAction: TextInputAction.next,
                   decoration:
@@ -179,19 +187,63 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                 SizedBox(
                   height: 8.0,
                 ),
-                OutlinedButton.icon(
-                  label: Text('Salvar'),
-                  icon: Icon(Icons.save_rounded),
-                  style: mOutlinedButtonStyle,
-                  onPressed: () {
-                    Navigator.pop(context, true);
-                    setState(() {
-                      if (pos == 9999)
-                        familia.moradores.add(morador);
-                      else
-                        familia.moradores[pos] = morador;
-                    });
-                  },
+                Row(
+                  children: [
+                    pos == 9999
+                        ? Expanded(
+                            flex: 1,
+                            child: SizedBox(
+                              width: 24.0,
+                            ))
+                        : Expanded(
+                            flex: 1,
+                            child: OutlinedButton.icon(
+                              label: Text('Excluir'),
+                              icon: Icon(Icons.archive_rounded),
+                              style: mOutlinedButtonStyle
+                                  .merge(OutlinedButton.styleFrom(
+                                primary: Colors.white,
+                                backgroundColor: Colors.red,
+                              )),
+                              onPressed: () {
+                                showDialog(
+                                        context: context,
+                                        builder: (context) =>
+                                            dialogConfirmaAcao(context))
+                                    .then((value) {
+                                  if (value != null && value == true) {
+                                    Navigator.pop(context, true);
+                                    setState(() {
+                                      familia.moradores.remove(morador);
+                                    });
+                                  }
+                                });
+                              },
+                            ),
+                          ),
+                    Expanded(
+                        flex: 0,
+                        child: SizedBox(
+                          width: 24.0,
+                        )),
+                    Expanded(
+                      flex: 2,
+                      child: OutlinedButton.icon(
+                        label: Text('Salvar'),
+                        icon: Icon(Icons.save_rounded),
+                        style: mOutlinedButtonStyle,
+                        onPressed: () {
+                          Navigator.pop(context, true);
+                          setState(() {
+                            if (pos == 9999)
+                              familia.moradores.add(morador);
+                            else
+                              familia.moradores[pos] = morador;
+                          });
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -199,7 +251,7 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
         });
       },
     ).then((value) {
-      if (value) setState(() {});
+      setState(() {});
     });
   }
 

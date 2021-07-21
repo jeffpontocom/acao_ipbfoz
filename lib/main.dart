@@ -11,6 +11,7 @@ import 'view/home_page.dart';
 import 'view/login_page.dart';
 
 final auth = FirebaseAuth.instance;
+late Diacono usuarioLogado;
 late DocumentReference<Familia> refFamilia;
 
 void main() async {
@@ -29,7 +30,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/home': (context) => HomePage(),
         '/login': (context) => LoginPage(),
-        '/diacono': (context) => DiaconoPage(diacono: Diacono.instance),
+        '/diacono': (context) => DiaconoPage(diacono: usuarioLogado),
         '/familia': (context) => FamiliaPage(
               reference: refFamilia,
               editMode: true,

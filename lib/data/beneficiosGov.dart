@@ -6,8 +6,8 @@ enum Beneficios {
   auxilio_emergencial,
 }
 
-String toString(int value) {
-  switch (value) {
+String getBeneficiosString(Beneficios value) {
+  switch (value.index) {
     case 0:
       return 'Nenhum';
     case 1:

@@ -18,3 +18,23 @@ showLoaderDialog(BuildContext context) {
     },
   );
 }
+
+AlertDialog dialogConfirmaAcao(context) {
+  return AlertDialog(
+    content: new Row(
+      children: [
+        Container(
+            margin: EdgeInsets.only(left: 7),
+            child: Text("Deseja excluir esse item?")),
+      ],
+    ),
+    actions: <Widget>[
+      TextButton(
+        child: Text('OK'),
+        onPressed: () {
+          Navigator.pop(context, true);
+        },
+      ),
+    ],
+  );
+}
