@@ -1,4 +1,3 @@
-import '/main.dart';
 import '/models/morador.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -12,7 +11,7 @@ class Familia {
   late String famFoto;
   late int famTelefone1; // OBRIGATORIO
   late int famTelefone2;
-  late int famRendaMedia;
+  late num famRendaMedia;
   late int famBeneficioGov;
 
   late GeoPoint endGeopoint;
@@ -56,9 +55,9 @@ class Familia {
           cadSolicitante: (json['cadSolicitante'] ?? '') as String,
           famResponsavel: (json['famResponsavel'] ?? 0) as int,
           famFoto: (json['famFoto'] ?? '') as String,
-          famTelefone1: (json['famTelefone1'] ?? 0) as int,
-          famTelefone2: (json['famTelefone2'] ?? 0) as int,
-          famRendaMedia: (json['famRendaMedia'] ?? 0) as int,
+          famTelefone1: (json['famTelefone1'] ?? 450) as int,
+          famTelefone2: (json['famTelefone2'] ?? 450) as int,
+          famRendaMedia: (json['famRendaMedia'] ?? 0) as num,
           famBeneficioGov: (json['famBeneficioGov'] ?? 0) as int,
           endGeopoint: (json['endGeopoint'] ??
               new GeoPoint(-25.5322523, -54.5864979)) as GeoPoint,
@@ -103,25 +102,4 @@ class Familia {
           List<dynamic>.from(moradores.map((morador) => morador.toJson())),
     };
   }
-
-  Familia.novaFamilia()
-      : this(
-            cadAtivo: true,
-            cadDiacono: usuarioLogado.uid,
-            cadData: Timestamp.now(),
-            cadSolicitante: '',
-            famResponsavel: 0,
-            famFoto: '',
-            famTelefone1: 0,
-            famTelefone2: 0,
-            famRendaMedia: 0,
-            famBeneficioGov: 0,
-            endGeopoint: new GeoPoint(-25.5322523, -54.5864979),
-            endCEP: 85852000,
-            endLogradouro: '',
-            endNumero: '',
-            endBairro: '',
-            endReferencia: '',
-            extraInfo: '',
-            moradores: new List<Morador>.empty(growable: true));
 }

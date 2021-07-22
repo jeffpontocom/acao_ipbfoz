@@ -1,3 +1,6 @@
+import 'package:acao_ipbfoz/main.dart';
+import 'package:acao_ipbfoz/models/morador.dart';
+
 import 'fam_dados.dart';
 import 'fam_entregas.dart';
 import 'fam_mapa.dart';
@@ -34,7 +37,25 @@ class _FamiliaPageState extends State<FamiliaPage> {
         familia = value.data()!;
         onFirestore = true;
       } else {
-        familia = new Familia.novaFamilia();
+        familia = new Familia(
+            cadAtivo: true,
+            cadDiacono: auth.currentUser!.uid,
+            cadData: Timestamp.now(),
+            cadSolicitante: '',
+            famResponsavel: 0,
+            famFoto: '',
+            famTelefone1: 450,
+            famTelefone2: 450,
+            famRendaMedia: 0,
+            famBeneficioGov: 0,
+            endGeopoint: new GeoPoint(-25.5322523, -54.5864979),
+            endCEP: 85852000,
+            endLogradouro: '',
+            endNumero: '',
+            endBairro: '',
+            endReferencia: '',
+            extraInfo: '',
+            moradores: new List<Morador>.empty(growable: true));
         onFirestore = false;
       }
     });
@@ -100,16 +121,7 @@ class _FamiliaPageState extends State<FamiliaPage> {
                           ),
                           onPressed: () {
                             if (editMode) {
-                              showLoaderDialog(context);
-                              reference.set(familia).then((value) {
-                                Navigator.pop(context);
-                                editMode = !editMode;
-                                onFirestore = true;
-                                setState(() {});
-                              }).catchError((error) {
-                                print("Failed to add: $error");
-                                Navigator.pop(context);
-                              });
+                              _salvarDados();
                             } else {
                               editMode = !editMode;
                               setState(() {});
@@ -149,6 +161,31 @@ class _FamiliaPageState extends State<FamiliaPage> {
             ),
           );
         });
+  }
+
+  void _salvarDados() {
+    if (familia.moradores.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Atenção'),
+          content: Text('Ao menos um morador deve ser cadastrado.'),
+        ),
+      ).then((value) {
+        return;
+      });
+    } else {
+      showLoaderDialog(context);
+      reference.set(familia).then((value) {
+        Navigator.pop(context);
+        editMode = !editMode;
+        onFirestore = true;
+        setState(() {});
+      }).catchError((error) {
+        print("Failed to add: $error");
+        Navigator.pop(context);
+      });
+    }
   }
 }
 

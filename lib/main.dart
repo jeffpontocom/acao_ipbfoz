@@ -26,6 +26,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'IPBFoz Ação Social',
+      theme: ThemeData(
+        primarySwatch: Colors.green,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
       home: auth.currentUser != null ? HomePage() : LoginPage(),
       routes: {
         '/home': (context) => HomePage(),

@@ -5,7 +5,6 @@ import 'package:acao_ipbfoz/ui/styles.dart';
 import 'package:acao_ipbfoz/view/familia_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 class FamiliaMoradores extends StatefulWidget {
   FamiliaMoradores();
@@ -39,19 +38,25 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                   : null,
             ),
             SizedBox(
-              height: 16.0,
+              height: 8.0,
             ),
             ListView.builder(
                 scrollDirection: Axis.vertical,
                 shrinkWrap: true,
+                padding: EdgeInsets.all(0),
                 itemCount: familia.moradores.length,
                 itemBuilder: (context, index) {
-                  String idade =
+                  var mIdade =
                       _calcularIdade(familia.moradores[index].nascimento);
+                  String sIdade =
+                      _mostrarIdade(mIdade.keys.first, mIdade.values.first);
                   String profissao = familia.moradores[index].profissao;
                   return ListTile(
+                    horizontalTitleGap: 2,
+                    visualDensity: VisualDensity.compact,
+                    leading: Icon(Icons.person),
                     title: Text(familia.moradores[index].nome),
-                    subtitle: Text('$idade • $profissao'),
+                    subtitle: Text('$sIdade • $profissao'),
                     onTap: editMode
                         ? () {
                             _dialogAddMorador(familia.moradores[index], index);
@@ -92,7 +97,7 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                   keyboardType: TextInputType.name,
                   textInputAction: TextInputAction.next,
                   decoration:
-                      mTextFieldDecoration.copyWith(labelText: 'Nome Completo'),
+                      mTextFieldDecoration.copyWith(labelText: 'Nome completo'),
                   onChanged: (value) {
                     morador.nome = value;
                   },
@@ -109,17 +114,20 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                       child: TextFormField(
                         initialValue: morador.nascimento.toDate().year == 1800
                             ? ''
-                            : dateMask.maskText(DateFormat('dd/MM/yyyy')
-                                .format(morador.nascimento.toDate())),
+                            : maskDate.format(morador.nascimento.toDate()),
                         keyboardType: TextInputType.datetime,
                         textInputAction: TextInputAction.next,
-                        inputFormatters: [dateMask],
+                        inputFormatters: [inputDate],
                         decoration: mTextFieldDecoration.copyWith(
-                            labelText: 'Data de nascimento'),
+                            labelText: 'Data de nasc.'),
                         onChanged: (value) {
-                          if (value.length == 10) {
-                            DateTime date =
-                                DateFormat('dd/MM/yyyy').parse(value);
+                          if (value.isEmpty) {
+                            morador.nascimento =
+                                Timestamp.fromDate(DateTime(1800));
+                          }
+                          print(value.length.toString());
+                          if (value.length >= 10) {
+                            DateTime date = maskDate.parse(value);
                             morador.nascimento = Timestamp.fromDate(date);
                           }
                         },
@@ -138,6 +146,9 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                         value: morador.escolaridade,
                         decoration: mTextFieldDecoration.copyWith(
                             labelText: 'Escolaridade', isDense: true),
+                        focusNode: FocusNode(
+                          skipTraversal: true,
+                        ),
                         items: Escolaridade.values
                             .map(
                               (value) => new DropdownMenuItem(
@@ -255,7 +266,7 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
     });
   }
 
-  String _calcularIdade(Timestamp nascimento) {
+  Map<bool, int> _calcularIdade(Timestamp nascimento) {
     DateTime dataAtual = DateTime.now();
     DateTime dataNasc = nascimento.toDate();
 
@@ -264,30 +275,37 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
 
     //data de nascimento não pode ser maior que data atual
     if (dataAtual.isBefore(dataNasc) || dataNasc.year == 1800) {
-      return "Data de nascimento indefinida!";
-    }
-    //Verifica se menor e 2 anos
-    else if (idade < 2) {
-      idade = (dataAtual.month - dataNasc.month) + (idade * 12);
-      if (idade == 0)
-        return 'Recém-nascido';
-      else
-        return "$idade mes(es)";
+      return {false: -1};
     }
     //Verifica se está fazendo aniversário hoje
     else if (dataAtual.month == dataNasc.month &&
         dataAtual.day == dataNasc.day) {
-      return "$idade ano(s) (Aniversário hoje!) ";
+      return {true: idade};
     }
     //Verifica se vai fazer aniversário este ano
     else if (dataAtual.month < dataNasc.month ||
         (dataAtual.month == dataNasc.month && dataAtual.day < dataNasc.day)) {
       idade = idade - 1;
-      return "$idade ano(s)";
+      return {false: idade};
     }
     //Se nenhuma das opções anteriores, então já fez aniversário este ano
     else {
-      return "$idade anos(s)";
+      return {false: idade};
     }
+  }
+}
+
+String _mostrarIdade(bool isBirthday, int idade) {
+  //data de nascimento não pode ser maior que data atual
+  if (idade == -1) {
+    return "Sem idade definida!";
+  }
+  //Verifica se está fazendo aniversário hoje
+  else if (isBirthday) {
+    return "$idade ano(s) - Aniversariante!";
+  }
+  //Se nenhuma das opções anteriores, então já fez aniversário este ano
+  else {
+    return "$idade anos(s)";
   }
 }

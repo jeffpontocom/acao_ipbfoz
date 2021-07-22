@@ -57,12 +57,12 @@ class _DiaconoPageState extends State<DiaconoPage> {
             ),
             TextFormField(
               initialValue:
-                  cellMask.maskText(widget.diacono.telefone.toString()),
-              inputFormatters: [cellMask],
+                  maskPhone.getMaskedString(widget.diacono.telefone.toString()),
+              inputFormatters: [inputPhone],
               keyboardType: TextInputType.phone,
               textInputAction: TextInputAction.next,
               onChanged: (value) {
-                widget.diacono.telefone = int.parse(cellMask.getUnmaskedText());
+                widget.diacono.telefone = int.parse(maskPhone.clearMask(value));
               },
               decoration: mTextFieldDecoration.copyWith(labelText: 'Whatsapp'),
             ),

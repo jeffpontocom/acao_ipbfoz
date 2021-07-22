@@ -5,7 +5,6 @@ import '../ui/styles.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:brasil_fields/brasil_fields.dart';
 
 class FamiliaDados extends StatefulWidget {
   FamiliaDados();
@@ -17,7 +16,6 @@ class FamiliaDados extends StatefulWidget {
 class _FamiliaDadosState extends State<FamiliaDados> {
   @override
   Widget build(BuildContext context) {
-    //final _textController = TextEditingController();
     return InkWell(
       splashColor: Colors.transparent,
       onTap: () {
@@ -86,22 +84,23 @@ class _FamiliaDadosState extends State<FamiliaDados> {
               Expanded(
                 flex: 1,
                 child: TextFormField(
-                  //controller: _textController,
                   enabled: editMode,
                   initialValue: familia.famTelefone1 == 0
                       ? ''
-                      : cellMask.maskText(familia.famTelefone1.toString()),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                    TelefoneInputFormatter()
-                  ],
-                  keyboardType: TextInputType.phone,
+                      : maskPhone
+                          .getMaskedString(familia.famTelefone1.toString()),
+                  inputFormatters: [inputPhone],
+                  keyboardType: TextInputType.number,
                   textInputAction: TextInputAction.next,
                   decoration:
                       mTextFieldDecoration.copyWith(labelText: 'Whatsapp'),
                   onChanged: (value) {
-                    familia.famTelefone1 =
-                        int.parse(cellMask.getUnmaskedText());
+                    if (value.isEmpty) {
+                      familia.famTelefone1 = 0;
+                    } else {
+                      familia.famTelefone1 =
+                          int.parse(maskPhone.clearMask(value));
+                    }
                   },
                 ),
               ),
@@ -118,18 +117,20 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                   enabled: editMode,
                   initialValue: familia.famTelefone2 == 0
                       ? ''
-                      : cellMask.maskText(familia.famTelefone2.toString()),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                    TelefoneInputFormatter()
-                  ],
-                  keyboardType: TextInputType.phone,
+                      : maskPhone
+                          .getMaskedString(familia.famTelefone2.toString()),
+                  inputFormatters: [inputPhone],
+                  keyboardType: TextInputType.number,
                   textInputAction: TextInputAction.next,
                   decoration: mTextFieldDecoration.copyWith(
                       labelText: 'Telefone (outro)'),
                   onChanged: (value) {
-                    familia.famTelefone2 =
-                        int.parse(cellMask.getUnmaskedText());
+                    if (value.isEmpty) {
+                      familia.famTelefone2 = 0;
+                    } else {
+                      familia.famTelefone2 =
+                          int.parse(maskPhone.clearMask(value));
+                    }
                   },
                 ),
               ),
@@ -152,13 +153,18 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                 flex: 1,
                 child: TextFormField(
                   enabled: editMode,
-                  initialValue: cepMask.maskText(familia.endCEP.toString()),
-                  inputFormatters: [cepMask],
+                  initialValue:
+                      maskCEP.getMaskedString(familia.endCEP.toString()),
+                  inputFormatters: [inputCEP],
                   keyboardType: TextInputType.number,
                   textInputAction: TextInputAction.next,
                   decoration: mTextFieldDecoration.copyWith(labelText: 'CEP'),
                   onChanged: (value) {
-                    familia.endCEP = int.parse(cepMask.getUnmaskedText());
+                    if (value.isEmpty) {
+                      familia.endCEP = 0;
+                    } else {
+                      familia.endCEP = int.parse(maskCEP.clearMask(value));
+                    }
                   },
                 ),
               ),
@@ -174,7 +180,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                 child: TextFormField(
                   enabled: editMode,
                   initialValue: familia.endNumero,
-                  keyboardType: TextInputType.datetime,
+                  keyboardType: TextInputType.text,
                   textInputAction: TextInputAction.next,
                   decoration:
                       mTextFieldDecoration.copyWith(labelText: 'Número'),
@@ -250,13 +256,21 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                 flex: 1,
                 child: TextFormField(
                   enabled: editMode,
-                  initialValue: familia.famRendaMedia.toString(),
-                  keyboardType: TextInputType.numberWithOptions(decimal: true),
+                  initialValue: maskCurrency.format(familia.famRendaMedia),
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    CurrencyInputFormatter()
+                  ],
                   textInputAction: TextInputAction.next,
                   decoration: mTextFieldDecoration.copyWith(
                       labelText: 'Renda Média', prefixText: 'R\$ '),
                   onChanged: (value) {
-                    familia.famRendaMedia = int.parse(value);
+                    if (value.isEmpty) {
+                      familia.famRendaMedia = 0;
+                    } else {
+                      familia.famRendaMedia = maskCurrency.parse(value);
+                    }
                   },
                 ),
               ),
@@ -276,6 +290,9 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                     labelText: 'Benefício do governo',
                     isDense: true,
                     enabled: editMode,
+                  ),
+                  focusNode: FocusNode(
+                    skipTraversal: true,
                   ),
                   items: Beneficios.values
                       .map(
@@ -312,6 +329,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
             initialValue: familia.extraInfo,
             textCapitalization: TextCapitalization.sentences,
             keyboardType: TextInputType.multiline,
+            textInputAction: TextInputAction.next,
             minLines: 5,
             maxLines: 8,
             textAlignVertical: TextAlignVertical.top,
@@ -347,6 +365,9 @@ class _FamiliaDadosState extends State<FamiliaDados> {
               labelText: 'Diácono responsável',
               isDense: true,
               enabled: editMode,
+            ),
+            focusNode: FocusNode(
+              skipTraversal: true,
             ),
             items: diaconos
                 .map((lista) => new DropdownMenuItem(
