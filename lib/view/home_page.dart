@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:acao_ipbfoz/data/diaconos.dart';
-import 'package:flutter/scheduler.dart';
+import 'package:flutter/foundation.dart';
 
 import '/main.dart';
 import '../models/familia.dart';
@@ -10,8 +10,32 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-int _totalFamilias = 0;
-int _totalEntregas = 0;
+var _totalFamilias = new ValueNotifier(0);
+var _totalEntregas = new ValueNotifier(0);
+
+class TotalFamilias extends StatelessWidget {
+  final ValueListenable<int> total;
+  TotalFamilias(this.total);
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      total.value.toString(),
+      style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
+    );
+  }
+}
+
+class TotalEntregas extends StatelessWidget {
+  final ValueListenable<int> total;
+  TotalEntregas(this.total);
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      total.value.toString(),
+      style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
+    );
+  }
+}
 
 class HomePage extends StatefulWidget {
   @override
@@ -36,21 +60,32 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('AÇÃO SOCIAL IPBFoz'),
-        actions: <Widget>[
-          TextButton(
-            child: Text(
-              _auth.currentUser == null ? 'ENTRAR' : 'MEU PERFIL',
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        centerTitle: true,
+        title: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'AÇÃO SOCIAL',
             ),
+            Visibility(
+              visible: true,
+              child: Text(
+                'Igreja Presbiteriana de Foz do Iguaçu',
+                style: TextStyle(
+                  fontSize: 12.0,
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.account_circle_rounded),
             onPressed: () {
               Navigator.pushNamed(context, '/diacono').then(onGoBack);
             },
           ),
-          Icon(_auth.currentUser == null
-              ? Icons.account_circle_outlined
-              : Icons.account_circle),
         ],
       ),
       body: Center(
@@ -68,11 +103,7 @@ class _HomePageState extends State<HomePage> {
                       child: Column(
                         children: [
                           Text('Cadastros Ativos\n'),
-                          Text(
-                            '$_totalFamilias',
-                            style: TextStyle(
-                                fontSize: 24.0, fontWeight: FontWeight.bold),
-                          )
+                          TotalFamilias(_totalFamilias),
                         ],
                       ),
                     ),
@@ -94,11 +125,7 @@ class _HomePageState extends State<HomePage> {
                         mainAxisSize: MainAxisSize.max,
                         children: [
                           Text('Entregas Realizadas\n'),
-                          Text(
-                            '$_totalEntregas',
-                            style: TextStyle(
-                                fontSize: 24.0, fontWeight: FontWeight.bold),
-                          )
+                          TotalEntregas(_totalEntregas),
                         ],
                       ),
                     ),
@@ -157,7 +184,7 @@ class _HomePageState extends State<HomePage> {
                   if (!snapshots.hasData) {
                     return const Center(child: CircularProgressIndicator());
                   }
-                  _refreshTotalFamilia(snapshots.data!.size);
+                  _totalFamilias.value = snapshots.data!.size;
                   if (snapshots.data!.size == 0) {
                     return Center(
                       heightFactor: 5,
@@ -165,13 +192,14 @@ class _HomePageState extends State<HomePage> {
                     );
                   }
                   final data = snapshots.data;
+                  _totalEntregas.value = 0;
                   data?.docs.forEach((element) {
                     element.reference
                         .collection('entregas')
                         .get()
                         .then((value) {
                       if (value.size > 0) {
-                        _refreshTotalEntregas(value.size);
+                        _totalEntregas.value += value.size;
                       }
                     });
                   });
@@ -181,26 +209,28 @@ class _HomePageState extends State<HomePage> {
                         shrinkWrap: true,
                         itemCount: data!.size,
                         itemBuilder: (context, index) {
-                          int resp = data.docs[index].data().famResponsavel;
+                          Familia mFamilia = data.docs[index].data();
+                          //int resp = data.docs[index].data().famResponsavel;
                           int totalEntregas = 0;
-                          data.docs[index].reference
-                              .collection('entregas')
-                              .get()
-                              .then((value) => totalEntregas = value.size);
+                          //data.docs[index].reference
+                          //    .collection('entregas')
+                          //    .get()
+                          //   .then((value) => totalEntregas = value.size);
                           return ListTile(
                             horizontalTitleGap: 2,
-                            isThreeLine: true, trailing: Text('Abrir'),
+                            isThreeLine: true,
                             leading: Icon(Icons.family_restroom_rounded),
                             // Nome do morador
                             title: Text(
-                              data.docs[index].data().moradores[resp].nome,
+                              mFamilia.moradores[mFamilia.famResponsavel].nome,
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                             // Bairro
-                            subtitle: Text(data.docs[index].data().endBairro +
+                            subtitle: Text(mFamilia.endBairro +
                                 '\n' +
                                 totalEntregas.toString() +
                                 ' entregas realizadas.'),
+                            //trailing: Icon(),
                             onTap: () {
                               refFamilia = data.docs[index].reference;
                               Navigator.pushNamed(context, '/familia')
@@ -214,17 +244,5 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
-  }
-
-  Future<void> _refreshTotalFamilia(int total) async {
-    SchedulerBinding.instance!.addPostFrameCallback((_) => setState(() {
-          _totalFamilias = total;
-        }));
-  }
-
-  Future<void> _refreshTotalEntregas(int valor) async {
-    SchedulerBinding.instance!.addPostFrameCallback((_) => setState(() {
-          _totalEntregas = _totalEntregas + valor;
-        }));
   }
 }

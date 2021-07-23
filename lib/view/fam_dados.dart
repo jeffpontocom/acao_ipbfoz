@@ -369,10 +369,11 @@ class _FamiliaDadosState extends State<FamiliaDados> {
             focusNode: FocusNode(
               skipTraversal: true,
             ),
-            items: diaconos
-                .map((lista) => new DropdownMenuItem(
-                    value: lista.keys.first,
-                    child: Text(lista.values.first.nome)))
+            items: diaconos.entries
+                .map((mDiacono) => new DropdownMenuItem(
+                      value: mDiacono.key,
+                      child: Text(mDiacono.value.nome),
+                    ))
                 .toList(),
             onChanged: editMode
                 ? (value) {

@@ -149,13 +149,15 @@ class _FamiliaPageState extends State<FamiliaPage> {
                     ),
                   ];
                 },
-                body: TabBarView(
-                  children: [
-                    FamiliaDados(),
-                    FamiliaMoradores(),
-                    FamiliaEntregas(),
-                    FamiliaMapa(),
-                  ],
+                body: SafeArea(
+                  child: TabBarView(
+                    children: [
+                      FamiliaDados(),
+                      FamiliaMoradores(),
+                      FamiliaEntregas(),
+                      FamiliaMapa(),
+                    ],
+                  ),
                 ),
               ),
             ),

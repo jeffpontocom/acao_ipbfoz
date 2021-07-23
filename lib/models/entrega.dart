@@ -28,7 +28,7 @@ class Entrega {
     return {
       'data': data,
       'diacono': diacono,
-      'itens': List<dynamic>.from(itens.map((e) => e.toJson())),
+      'itens': List<dynamic>.from(itens.map((item) => item.toJson())),
       'entregue': entregue
     };
   }

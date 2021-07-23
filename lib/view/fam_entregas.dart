@@ -1,3 +1,4 @@
+import 'package:acao_ipbfoz/data/diaconos.dart';
 import 'package:acao_ipbfoz/main.dart';
 import 'package:acao_ipbfoz/models/entrega_itens.dart';
 import 'package:acao_ipbfoz/ui/dialogs.dart';
@@ -30,13 +31,21 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
               style: mOutlinedButtonStyle,
               onPressed: onFirestore
                   ? () {
+                      DocumentReference<Entrega> ref = reference
+                          .collection('entregas')
+                          .withConverter<Entrega>(
+                            fromFirestore: (snapshots, _) =>
+                                Entrega.fromJson(snapshots.data()!),
+                            toFirestore: (documento, _) => documento.toJson(),
+                          )
+                          .doc();
                       Entrega nova = new Entrega(
                         data: Timestamp.now(),
                         diacono: auth.currentUser!.uid,
                         itens: new List<ItensEntrega>.empty(growable: true),
                         entregue: false,
                       );
-                      _dialogAddEntrega(nova, 9999);
+                      _dialogAddEntrega(ref, nova, true);
                     }
                   : null,
             ),
@@ -77,8 +86,38 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
                         padding: EdgeInsets.all(0),
                         itemCount: data!.size,
                         itemBuilder: (context, index) {
+                          Entrega iEntrega = data.docs[index].data();
+                          int totalItens = 0;
+                          iEntrega.itens.forEach((element) {
+                            totalItens += element.quantidade;
+                          });
                           return ListTile(
-                            title: Text(data.docs[index].id),
+                            contentPadding:
+                                EdgeInsets.symmetric(horizontal: 8.0),
+                            title: Text(
+                              totalItens.toString() + ' itens',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 16.0),
+                            ),
+                            subtitle: Text('Responsável: ' +
+                                diaconos[iEntrega.diacono]!.nome),
+                            trailing: iEntrega.entregue
+                                ? IconButton(
+                                    onPressed: null,
+                                    icon: Icon(
+                                      Icons.check_circle_rounded,
+                                      color: Colors.primaries.first,
+                                    ))
+                                : IconButton(
+                                    onPressed: null,
+                                    icon: Icon(
+                                      Icons.check_circle_outline_rounded,
+                                      color: Colors.grey,
+                                    )),
+                            onTap: () {
+                              _dialogAddEntrega(
+                                  data.docs[index].reference, iEntrega, false);
+                            },
                           );
                         }),
                   );
@@ -89,8 +128,20 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
     );
   }
 
-  void _dialogAddEntrega(Entrega entrega, int pos) {
+  void _dialogAddEntrega(
+      DocumentReference<Entrega> ref, Entrega entrega, bool isNew) {
+    ItensEntrega novoItem = new ItensEntrega(
+        quantidade: 1, descricao: '', validade: Timestamp.now());
+
+    _addItem() {
+      entrega.itens.add(novoItem);
+      novoItem = new ItensEntrega(
+          quantidade: 1, descricao: '', validade: Timestamp.now());
+    }
+
     showModalBottomSheet(
+      isScrollControlled: true,
+      isDismissible: false,
       context: context,
       builder: (context) {
         return StatefulBuilder(builder: (context, setState) {
@@ -98,99 +149,157 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
             padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom,
                 top: MediaQuery.of(context).padding.top),
-            child: ListView(
-              padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
-              children: [
-                Text(
-                  'Cadastro de entrega',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
-                ),
-                SizedBox(
-                  height: 24.0,
-                ),
-                // Nome
-                TextFormField(
-                  initialValue: entrega.diacono,
-                  textCapitalization: TextCapitalization.words,
-                  keyboardType: TextInputType.name,
-                  textInputAction: TextInputAction.next,
-                ),
-
-                // Foi entregue
-                ListTile(
-                    title: Text("Foi entregue"),
-                    leading: Checkbox(
-                      value: entrega.entregue,
-                      onChanged: (value) {
-                        setState(() {
-                          entrega.entregue = value!;
-                        });
-                      },
-                    )),
-                SizedBox(
-                  height: 8.0,
-                ),
-                Row(
+            child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 32.0),
+                child: Column(
                   children: [
-                    pos == 9999
-                        ? Expanded(
-                            flex: 1,
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 1,
+                          child: Text(
+                            'Cadastro de entrega',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 18.0),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: Icon(Icons.close_rounded),
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 24.0,
+                    ),
+                    Expanded(
+                      flex: 1,
+                      child: ListView.builder(
+                          scrollDirection: Axis.vertical,
+                          shrinkWrap: true,
+                          padding: EdgeInsets.all(0),
+                          itemCount: entrega.itens.length,
+                          itemBuilder: (context, index) {
+                            return ListTile(
+                              horizontalTitleGap: 2,
+                              visualDensity: VisualDensity.compact,
+                              leading: Text(
+                                  entrega.itens[index].quantidade.toString()),
+                              title: Text(entrega.itens[index].descricao),
+                              trailing: IconButton(
+                                icon: Icon(Icons.remove_circle_outline_rounded),
+                                onPressed: () {
+                                  setState.call(
+                                      () => entrega.itens.removeAt(index));
+                                },
+                              ),
+                            );
+                          }),
+                    ),
+                    Row(
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            setState.call(() => novoItem.quantidade -= 1);
+                          },
+                          icon: Icon(Icons.remove_circle_rounded),
+                        ),
+                        Text(
+                          novoItem.quantidade.toString(),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 18.0),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            setState.call(() => novoItem.quantidade += 1);
+                          },
+                          icon: Icon(Icons.add_circle_rounded),
+                        ),
+                        // Nome
+                        Expanded(
+                          flex: 1,
+                          child: TextFormField(
+                            textCapitalization: TextCapitalization.sentences,
+                            keyboardType: TextInputType.name,
+                            textInputAction: TextInputAction.send,
+                            onChanged: (value) {
+                              novoItem.descricao = value;
+                            },
+                            onFieldSubmitted: (value) {
+                              setState.call(() => _addItem());
+                            },
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.send_rounded),
+                          onPressed: () {
+                            setState.call(() => _addItem());
+                          },
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 24.0,
+                    ),
+                    Row(
+                      children: [
+                        isNew
+                            ? Expanded(
+                                flex: 1,
+                                child: SizedBox(
+                                  width: 24.0,
+                                ))
+                            : Expanded(
+                                flex: 1,
+                                child: OutlinedButton.icon(
+                                  label: Text('Excluir'),
+                                  icon: Icon(Icons.archive_rounded),
+                                  style: mOutlinedButtonStyle
+                                      .merge(OutlinedButton.styleFrom(
+                                    primary: Colors.white,
+                                    backgroundColor: Colors.red,
+                                  )),
+                                  onPressed: () {
+                                    showDialog(
+                                            context: context,
+                                            builder: (context) =>
+                                                dialogConfirmaAcao(context))
+                                        .then((value) {
+                                      if (value != null && value == true) {
+                                        Navigator.pop(context, true);
+                                        setState(() {
+                                          ref.delete();
+                                        });
+                                      }
+                                    });
+                                  },
+                                ),
+                              ),
+                        Expanded(
+                            flex: 0,
                             child: SizedBox(
                               width: 24.0,
-                            ))
-                        : Expanded(
-                            flex: 1,
-                            child: OutlinedButton.icon(
-                              label: Text('Excluir'),
-                              icon: Icon(Icons.archive_rounded),
-                              style: mOutlinedButtonStyle
-                                  .merge(OutlinedButton.styleFrom(
-                                primary: Colors.white,
-                                backgroundColor: Colors.red,
-                              )),
-                              onPressed: () {
-                                showDialog(
-                                        context: context,
-                                        builder: (context) =>
-                                            dialogConfirmaAcao(context))
-                                    .then((value) {
-                                  if (value != null && value == true) {
-                                    Navigator.pop(context, true);
-                                    setState(() {
-                                      //entrega.delete();
-                                    });
-                                  }
-                                });
-                              },
-                            ),
+                            )),
+                        Expanded(
+                          flex: 2,
+                          child: OutlinedButton.icon(
+                            label: Text('Salvar'),
+                            icon: Icon(Icons.save_rounded),
+                            style: mOutlinedButtonStyle,
+                            onPressed: () {
+                              Navigator.pop(context, true);
+                              setState(() {
+                                ref.set(entrega);
+                              });
+                            },
                           ),
-                    Expanded(
-                        flex: 0,
-                        child: SizedBox(
-                          width: 24.0,
-                        )),
-                    Expanded(
-                      flex: 2,
-                      child: OutlinedButton.icon(
-                        label: Text('Salvar'),
-                        icon: Icon(Icons.save_rounded),
-                        style: mOutlinedButtonStyle,
-                        onPressed: () {
-                          Navigator.pop(context, true);
-                          setState(() {
-                            //if (pos == 9999)
-                            //  familia.moradores.add(entrega);
-                            //else
-                            //  familia.moradores[pos] = entrega;
-                          });
-                        },
-                      ),
+                        ),
+                      ],
                     ),
                   ],
-                ),
-              ],
-            ),
+                )),
           );
         });
       },

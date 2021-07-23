@@ -2,7 +2,7 @@ import 'package:acao_ipbfoz/main.dart';
 import 'package:acao_ipbfoz/models/diacono.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-List<Map<String, Diacono>> diaconos = new List.empty(growable: true);
+Map<String, Diacono> diaconos = new Map();
 
 void loadDiaconos() async {
   await FirebaseFirestore.instance
@@ -15,7 +15,7 @@ void loadDiaconos() async {
     (QuerySnapshot<Diacono> querySnapshots) {
       if (querySnapshots.size > 0) {
         querySnapshots.docs.forEach((element) {
-          diaconos.add({element.id: element.data()});
+          diaconos.addAll({element.id: element.data()});
           if (auth.currentUser != null && auth.currentUser!.uid == element.id) {
             usuarioLogado = element.data();
             usuarioLogado.uid = element.id;
