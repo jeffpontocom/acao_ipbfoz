@@ -42,6 +42,7 @@ class _FamiliaPageState extends State<FamiliaPage> {
             cadDiacono: auth.currentUser!.uid,
             cadData: Timestamp.now(),
             cadSolicitante: '',
+            cadEntregas: 0,
             famResponsavel: 0,
             famFoto: '',
             famTelefone1: 450,
@@ -53,6 +54,9 @@ class _FamiliaPageState extends State<FamiliaPage> {
             endLogradouro: '',
             endNumero: '',
             endBairro: '',
+            endCidade: 'Foz do Iguaçu',
+            endEstado: 'PR',
+            endPais: 'Brasil',
             endReferencia: '',
             extraInfo: '',
             moradores: new List<Morador>.empty(growable: true));
@@ -105,6 +109,8 @@ class _FamiliaPageState extends State<FamiliaPage> {
                       title: Text('Cadastro da família'),
                       expandedHeight: 220.0,
                       pinned: true,
+                      snap: false,
+                      floating: true,
                       flexibleSpace: FlexibleSpaceBar(
                         background: Image(
                           image: AssetImage('assets/images/sample_casa.jpg'),

@@ -22,6 +22,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
         FocusScope.of(context).requestFocus(FocusNode());
       },
       child: ListView(
+        key: PageStorageKey('dados'),
         padding: EdgeInsets.all(24.0),
         children: [
           // INFORMACAO GERAL

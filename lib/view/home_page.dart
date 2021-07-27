@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:acao_ipbfoz/data/diaconos.dart';
+import 'package:acao_ipbfoz/models/morador.dart';
 import 'package:flutter/foundation.dart';
 
 import '/main.dart';
@@ -184,7 +185,6 @@ class _HomePageState extends State<HomePage> {
                   if (!snapshots.hasData) {
                     return const Center(child: CircularProgressIndicator());
                   }
-                  _totalFamilias.value = snapshots.data!.size;
                   if (snapshots.data!.size == 0) {
                     return Center(
                       heightFactor: 5,
@@ -192,14 +192,18 @@ class _HomePageState extends State<HomePage> {
                     );
                   }
                   final data = snapshots.data;
+                  _totalFamilias.value = snapshots.data!.size;
                   _totalEntregas.value = 0;
                   data?.docs.forEach((element) {
+                    _totalEntregas.value += element.data().cadEntregas;
                     element.reference
                         .collection('entregas')
                         .get()
                         .then((value) {
                       if (value.size > 0) {
-                        _totalEntregas.value += value.size;
+                        element.reference.update({'cadEntregas': value.size});
+                      } else {
+                        element.reference.update({'cadEntregas': 0});
                       }
                     });
                   });
@@ -210,12 +214,6 @@ class _HomePageState extends State<HomePage> {
                         itemCount: data!.size,
                         itemBuilder: (context, index) {
                           Familia mFamilia = data.docs[index].data();
-                          //int resp = data.docs[index].data().famResponsavel;
-                          int totalEntregas = 0;
-                          //data.docs[index].reference
-                          //    .collection('entregas')
-                          //    .get()
-                          //   .then((value) => totalEntregas = value.size);
                           return ListTile(
                             horizontalTitleGap: 2,
                             isThreeLine: true,
@@ -226,11 +224,12 @@ class _HomePageState extends State<HomePage> {
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                             // Bairro
-                            subtitle: Text(mFamilia.endBairro +
+                            subtitle: Text(_integrantes(mFamilia) +
                                 '\n' +
-                                totalEntregas.toString() +
+                                mFamilia.endBairro +
+                                ' • ' +
+                                mFamilia.cadEntregas.toString() +
                                 ' entregas realizadas.'),
-                            //trailing: Icon(),
                             onTap: () {
                               refFamilia = data.docs[index].reference;
                               Navigator.pushNamed(context, '/familia')
@@ -245,4 +244,35 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+}
+
+String _integrantes(Familia mFamilia) {
+  int criancas = 0;
+  int adultos = 0;
+  int idosos = 0;
+  mFamilia.moradores.forEach((element) {
+    int idade = getIdade(element.nascimento);
+    if (idade == -1)
+      adultos += 1;
+    else if (idade < 15)
+      criancas += 1;
+    else if (idade < 60)
+      adultos += 1;
+    else
+      idosos += 1;
+  });
+  if (criancas == 0 && adultos == 0 && idosos == 0)
+    return 'sem moradores cadastrados';
+  if (criancas != 0 && adultos == 0 && idosos == 0) return '$criancas crianças';
+  if (criancas != 0 && adultos != 0 && idosos == 0)
+    return '$criancas crianças e $adultos adultos';
+  if (criancas != 0 && adultos == 0 && idosos != 0)
+    return '$criancas crianças e $idosos idosos';
+  if (criancas != 0 && adultos != 0 && idosos != 0)
+    return '$criancas crianças, $adultos adultos e $idosos idosos';
+  if (criancas == 0 && adultos != 0 && idosos == 0) return '$adultos adultos';
+  if (criancas == 0 && adultos != 0 && idosos != 0)
+    return '$adultos adultos e $idosos idosos';
+  if (criancas == 0 && adultos == 0 && idosos != 0) return '$idosos idosos';
+  return 'analisar moradores cadastrados';
 }

@@ -21,6 +21,7 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
+      key: PageStorageKey('entregas'),
       child: Padding(
         padding: EdgeInsets.all(24.0),
         child: Column(

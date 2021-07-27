@@ -17,6 +17,7 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
+      key: PageStorageKey('moradores'),
       child: Padding(
         padding: EdgeInsets.all(24.0),
         child: Column(

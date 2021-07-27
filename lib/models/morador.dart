@@ -35,3 +35,30 @@ class Morador {
     };
   }
 }
+
+int getIdade(Timestamp nascimento) {
+  DateTime dataAtual = DateTime.now();
+  DateTime dataNasc = nascimento.toDate();
+
+  //Subtai para saber quantos anos se passaram após nascimento
+  int idade = dataAtual.year - dataNasc.year;
+
+  //data de nascimento não pode ser maior que data atual
+  if (dataAtual.isBefore(dataNasc) || dataNasc.year == 1800) {
+    return -1;
+  }
+  //Verifica se está fazendo aniversário hoje
+  else if (dataAtual.month == dataNasc.month && dataAtual.day == dataNasc.day) {
+    return idade;
+  }
+  //Verifica se vai fazer aniversário este ano
+  else if (dataAtual.month < dataNasc.month ||
+      (dataAtual.month == dataNasc.month && dataAtual.day < dataNasc.day)) {
+    idade = idade - 1;
+    return idade;
+  }
+  //Se nenhuma das opções anteriores, então já fez aniversário este ano
+  else {
+    return idade;
+  }
+}
