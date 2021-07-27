@@ -11,11 +11,11 @@
     For more details:
     * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
   -->
-  <base href="/">
+  <base href="/acao_ipbfoz/"> <!-- importante indicar nome da pasta raiz -->
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="Ação Social IPBFoz" content="Controle das ações sociais da igreja.">
 
   <!-- iOS meta tags & icons -->
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -97,14 +97,14 @@
 
   <!-- FIREBASE CODE -->
   <!-- The core Firebase JS SDK is always required and must be listed first -->
-  <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
 
   <!-- TODO: Add SDKs for Firebase products that you want to use
       https://firebase.google.com/docs/web/setup#available-libraries -->
-  <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-analytics.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-firestore.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-storage.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-analytics.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-storage.js"></script>
 
   <script>
     // Your web app's Firebase configuration
@@ -112,6 +112,7 @@
     var firebaseConfig = {
       apiKey: "AIzaSyBpGNe-kKSpQIjM8qxsDs2ykhddmj3SRUg",
       authDomain: "acaosocial-ipbfoz.firebaseapp.com",
+      databaseURL: "https://acaosocial-ipbfoz-default-rtdb.firebaseio.com",
       projectId: "acaosocial-ipbfoz",
       storageBucket: "acaosocial-ipbfoz.appspot.com",
       messagingSenderId: "206698086287",

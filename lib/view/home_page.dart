@@ -213,6 +213,7 @@ class _HomePageState extends State<HomePage> {
                         shrinkWrap: true,
                         itemCount: data!.size,
                         itemBuilder: (context, index) {
+                          _totalFamilias.value = data.size;
                           Familia mFamilia = data.docs[index].data();
                           return ListTile(
                             horizontalTitleGap: 2,
