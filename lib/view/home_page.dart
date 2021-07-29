@@ -11,32 +11,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-var _totalFamilias = new ValueNotifier(0);
-var _totalEntregas = new ValueNotifier(0);
-
-class TotalFamilias extends StatelessWidget {
-  final ValueListenable<int> total;
-  TotalFamilias(this.total);
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      total.value.toString(),
-      style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
-    );
-  }
-}
-
-class TotalEntregas extends StatelessWidget {
-  final ValueListenable<int> total;
-  TotalEntregas(this.total);
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      total.value.toString(),
-      style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
-    );
-  }
-}
+var _totalFamilias = new ValueNotifier<int>(0);
+var _totalEntregas = new ValueNotifier<int>(0);
 
 class HomePage extends StatefulWidget {
   @override
@@ -104,7 +80,17 @@ class _HomePageState extends State<HomePage> {
                       child: Column(
                         children: [
                           Text('Cadastros Ativos\n'),
-                          TotalFamilias(_totalFamilias),
+                          ValueListenableBuilder(
+                              valueListenable: _totalFamilias,
+                              builder: (BuildContext context, int value,
+                                  Widget? child) {
+                                return Text(
+                                  '$value',
+                                  style: TextStyle(
+                                      fontSize: 24.0,
+                                      fontWeight: FontWeight.bold),
+                                );
+                              }),
                         ],
                       ),
                     ),
@@ -126,7 +112,17 @@ class _HomePageState extends State<HomePage> {
                         mainAxisSize: MainAxisSize.max,
                         children: [
                           Text('Entregas Realizadas\n'),
-                          TotalEntregas(_totalEntregas),
+                          ValueListenableBuilder(
+                              valueListenable: _totalEntregas,
+                              builder: (BuildContext context, int value,
+                                  Widget? child) {
+                                return Text(
+                                  '$value',
+                                  style: TextStyle(
+                                      fontSize: 24.0,
+                                      fontWeight: FontWeight.bold),
+                                );
+                              }),
                         ],
                       ),
                     ),
@@ -183,7 +179,8 @@ class _HomePageState extends State<HomePage> {
                     );
                   }
                   if (!snapshots.hasData) {
-                    return const Center(child: CircularProgressIndicator());
+                    return const Center(
+                        heightFactor: 5, child: CircularProgressIndicator());
                   }
                   if (snapshots.data!.size == 0) {
                     return Center(
@@ -192,29 +189,18 @@ class _HomePageState extends State<HomePage> {
                     );
                   }
                   final data = snapshots.data;
-                  _totalFamilias.value = snapshots.data!.size;
-                  _totalEntregas.value = 0;
-                  data?.docs.forEach((element) {
-                    _totalEntregas.value += element.data().cadEntregas;
-                    element.reference
-                        .collection('entregas')
-                        .get()
-                        .then((value) {
-                      if (value.size > 0) {
-                        element.reference.update({'cadEntregas': value.size});
-                      } else {
-                        element.reference.update({'cadEntregas': 0});
-                      }
-                    });
-                  });
+                  // Realizar contagens
+                  WidgetsBinding.instance
+                      ?.addPostFrameCallback((_) => _contagens(data));
+                  // Widget
                   return Center(
                     child: ListView.builder(
                         scrollDirection: Axis.vertical,
                         shrinkWrap: true,
                         itemCount: data!.size,
                         itemBuilder: (context, index) {
-                          _totalFamilias.value = data.size;
                           Familia mFamilia = data.docs[index].data();
+                          // Lista
                           return ListTile(
                             horizontalTitleGap: 2,
                             isThreeLine: true,
@@ -245,6 +231,21 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+}
+
+_contagens(QuerySnapshot<Familia>? data) {
+  _totalFamilias.value = data!.size;
+  _totalEntregas.value = 0;
+  data.docs.forEach((element) {
+    _totalEntregas.value += element.data().cadEntregas;
+    element.reference.collection('entregas').get().then((value) {
+      if (value.size > 0) {
+        element.reference.update({'cadEntregas': value.size});
+      } else {
+        element.reference.update({'cadEntregas': 0});
+      }
+    });
+  });
 }
 
 String _integrantes(Familia mFamilia) {

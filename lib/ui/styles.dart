@@ -14,7 +14,8 @@ var inputCurrency = new TextInputMask(mask: '9+.999,99', reverse: true);
 var maskCurrency =
     new NumberFormat.currency(locale: 'pt_BR', customPattern: '###,###.##');
 
-var inputDate = new TextInputMask(mask: '99/99/9999');
+var inputDate = new TextInputMask(
+    mask: '99/99/9999', placeholder: 'x', maxPlaceHolders: 10);
 var maskDate = new DateFormat('dd/MM/yyyy');
 
 // INTERFACE PADRÃO para caixas de texto

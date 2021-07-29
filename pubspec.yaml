@@ -1,6 +1,8 @@
 name: acao_ipbfoz
 description: Cadastro de famílias atendidas pelo projeto de Ação Social da Igreja Presbiteriana de Foz do Iguaçu.
 
+# Para criar app para Android executar:
+#  
 # Para publicar no github pages executar:
 # flutter pub global run peanut:peanut
 

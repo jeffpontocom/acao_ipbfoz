@@ -50,34 +50,42 @@ class _FamiliaDadosState extends State<FamiliaDados> {
           SizedBox(
             height: 8.0,
           ),
-          // Familiar responsável (combo box)
-          DropdownButtonFormField<int>(
-            value: familia.famResponsavel,
-            iconDisabledColor: Colors.transparent,
-            decoration: mTextFieldDecoration.copyWith(
-              labelText: 'Familiar responsável',
-              isDense: true,
-              enabled: editMode,
-            ),
-            items: familia.moradores
-                .map(
-                  (morador) => new DropdownMenuItem(
-                    value: familia.moradores.indexOf(morador),
-                    child: new Text(morador.nome),
+          Visibility(
+            visible: familia.moradores.isNotEmpty,
+            child: Column(
+              children: [
+                // Familiar responsável (combo box)
+                DropdownButtonFormField<int>(
+                  value: familia.famResponsavel,
+                  iconDisabledColor: Colors.transparent,
+                  decoration: mTextFieldDecoration.copyWith(
+                    labelText: 'Familiar responsável',
+                    isDense: true,
+                    enabled: editMode,
                   ),
-                )
-                .toList(),
-            onChanged: editMode
-                ? (value) {
-                    setState(() {
-                      familia.famResponsavel = value!;
-                    });
-                  }
-                : null,
+                  items: familia.moradores
+                      .map(
+                        (morador) => new DropdownMenuItem(
+                          value: familia.moradores.indexOf(morador),
+                          child: new Text(morador.nome),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: editMode
+                      ? (value) {
+                          setState(() {
+                            familia.famResponsavel = value!;
+                          });
+                        }
+                      : null,
+                ),
+                SizedBox(
+                  height: 8.0,
+                ),
+              ],
+            ),
           ),
-          SizedBox(
-            height: 8.0,
-          ),
+
           // Formas de Contato
           Row(
             children: [

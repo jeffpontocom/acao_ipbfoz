@@ -28,13 +28,7 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
               style: mOutlinedButtonStyle,
               onPressed: editMode
                   ? () {
-                      Morador novo = new Morador(
-                          nome: '',
-                          nascimento: Timestamp.fromDate(DateTime(1800)),
-                          escolaridade: 0,
-                          profissao: '',
-                          especial: false);
-                      _dialogAddMorador(novo, 9999);
+                      _dialogAddMorador(null, 9999);
                     }
                   : null,
             ),
@@ -71,7 +65,16 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
     );
   }
 
-  void _dialogAddMorador(Morador morador, int pos) {
+  void _dialogAddMorador(Morador? valor, int pos) {
+    Morador morador = new Morador(
+        nome: '',
+        nascimento: Timestamp.fromDate(DateTime(1800)),
+        escolaridade: 0,
+        profissao: '',
+        especial: false);
+    if (valor != null) {
+      morador = Morador.fromJson(valor.toJson());
+    }
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -120,9 +123,9 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                         textInputAction: TextInputAction.next,
                         inputFormatters: [inputDate],
                         decoration: mTextFieldDecoration.copyWith(
-                            labelText: 'Data de nasc.'),
+                            labelText: 'Nascimento', hintText: 'xx/xx/xxxx'),
                         onChanged: (value) {
-                          if (value.isEmpty) {
+                          if (value.isEmpty || value.contains('x')) {
                             morador.nascimento =
                                 Timestamp.fromDate(DateTime(1800));
                           }
