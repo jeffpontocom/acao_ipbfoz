@@ -2,9 +2,11 @@ name: acao_ipbfoz
 description: Cadastro de famílias atendidas pelo projeto de Ação Social da Igreja Presbiteriana de Foz do Iguaçu.
 
 # Para criar app para Android executar:
+# 1) flutter build appbundle --split-debug-info
 #  
 # Para publicar no github pages executar:
-# flutter pub global run peanut:peanut
+# 1) flutter pub global run peanut:peanut
+# 2) git push origin --set-upstream gh-pages
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `pub publish`. This is preferred for private packages.
@@ -21,7 +23,7 @@ description: Cadastro de famílias atendidas pelo projeto de Ação Social da Ig
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.0+2
+version: 1.0.1+4
 
 environment:
   sdk: ">=2.12.0 <3.0.0"

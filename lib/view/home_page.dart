@@ -65,7 +65,8 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: Center(
+      body: Scrollbar(
+        isAlwaysShown: true,
         child: ListView(
           padding: EdgeInsets.all(24.0),
           children: <Widget>[
@@ -193,38 +194,37 @@ class _HomePageState extends State<HomePage> {
                   WidgetsBinding.instance
                       ?.addPostFrameCallback((_) => _contagens(data));
                   // Widget
-                  return Center(
-                    child: ListView.builder(
-                        scrollDirection: Axis.vertical,
-                        shrinkWrap: true,
-                        itemCount: data!.size,
-                        itemBuilder: (context, index) {
-                          Familia mFamilia = data.docs[index].data();
-                          // Lista
-                          return ListTile(
-                            horizontalTitleGap: 2,
-                            isThreeLine: true,
-                            leading: Icon(Icons.family_restroom_rounded),
-                            // Nome do morador
-                            title: Text(
-                              mFamilia.moradores[mFamilia.famResponsavel].nome,
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            // Bairro
-                            subtitle: Text(_integrantes(mFamilia) +
-                                '\n' +
-                                mFamilia.endBairro +
-                                ' • ' +
-                                mFamilia.cadEntregas.toString() +
-                                ' entregas realizadas.'),
-                            onTap: () {
-                              refFamilia = data.docs[index].reference;
-                              Navigator.pushNamed(context, '/familia')
-                                  .then(onGoBack);
-                            },
-                          );
-                        }),
-                  );
+                  return ListView.builder(
+                      scrollDirection: Axis.vertical,
+                      shrinkWrap: true,
+                      physics: ScrollPhysics(),
+                      itemCount: data!.size,
+                      itemBuilder: (context, index) {
+                        Familia mFamilia = data.docs[index].data();
+                        // Lista
+                        return ListTile(
+                          horizontalTitleGap: 2,
+                          isThreeLine: true,
+                          leading: Icon(Icons.family_restroom_rounded),
+                          // Nome do morador
+                          title: Text(
+                            mFamilia.moradores[mFamilia.famResponsavel].nome,
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          // Bairro
+                          subtitle: Text(_integrantes(mFamilia) +
+                              '\n' +
+                              mFamilia.endBairro +
+                              ' • ' +
+                              mFamilia.cadEntregas.toString() +
+                              ' entregas realizadas.'),
+                          onTap: () {
+                            refFamilia = data.docs[index].reference;
+                            Navigator.pushNamed(context, '/familia')
+                                .then(onGoBack);
+                          },
+                        );
+                      });
                 }),
           ],
         ),
