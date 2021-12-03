@@ -17,21 +17,31 @@ late bool editMode;
 late bool onFirestore;
 
 class FamiliaPage extends StatefulWidget {
-  const FamiliaPage({Key? key, required this.reference, required this.editMode})
+  const FamiliaPage({Key? key, this.reference, this.editMode, this.referenceId})
       : super(key: key);
-  final DocumentReference<Familia> reference;
-  final bool editMode;
+  final DocumentReference<Familia>? reference;
+  final bool? editMode;
+  final String? referenceId;
 
   @override
   _FamiliaPageState createState() => _FamiliaPageState();
 }
 
 class _FamiliaPageState extends State<FamiliaPage> {
+  DocumentReference<Familia> novaFamilia() {
+    return FirebaseFirestore.instance
+        .collection('familias')
+        .doc(widget.referenceId)
+        .withConverter(
+            fromFirestore: (snapshot, _) => Familia.fromJson(snapshot.data()!),
+            toFirestore: (document, _) => document.toJson());
+  }
+
   @override
   void initState() {
     initializeDateFormatting('pt_BR');
-    reference = widget.reference;
-    editMode = widget.editMode;
+    reference = widget.reference ?? novaFamilia();
+    editMode = widget.editMode ?? false;
     reference.get().then((value) {
       if (value.exists) {
         familia = value.data()!;

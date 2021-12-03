@@ -4,6 +4,7 @@ import 'package:acao_ipbfoz/models/entrega_itens.dart';
 import 'package:acao_ipbfoz/ui/dialogs.dart';
 import 'package:acao_ipbfoz/ui/styles.dart';
 
+import '../app_data.dart';
 import 'familia_page.dart';
 
 import '../models/entrega.dart';
@@ -101,7 +102,7 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
                                   fontWeight: FontWeight.bold, fontSize: 16.0),
                             ),
                             subtitle: Text('Responsável: ' +
-                                diaconos[iEntrega.diacono]!.nome),
+                                AppData.diaconos[iEntrega.diacono]!.nome),
                             trailing: iEntrega.entregue
                                 ? IconButton(
                                     onPressed: null,

@@ -1,4 +1,4 @@
-import 'package:acao_ipbfoz/main.dart';
+/* import 'package:acao_ipbfoz/main.dart';
 import 'package:acao_ipbfoz/models/diacono.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -17,8 +17,8 @@ void loadDiaconos() async {
         querySnapshots.docs.forEach((element) {
           diaconos.addAll({element.id: element.data()});
           if (auth.currentUser != null && auth.currentUser!.uid == element.id) {
-            usuarioLogado = element.data();
-            usuarioLogado.uid = element.id;
+            usuario = element.data();
+            usuario!.uid = element.id;
             print('Dados do usuário logado carregado com sucesso!');
           }
         });
@@ -26,4 +26,4 @@ void loadDiaconos() async {
       }
     },
   );
-}
+} */

@@ -1,11 +1,11 @@
-import '/main.dart';
-import '../models/diacono.dart';
-import '../ui/styles.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 
-final _auth = FirebaseAuth.instance;
+import '/main.dart';
+import '../app_data.dart';
+import '../models/diacono.dart';
+import '../utils/util.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -13,102 +13,125 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  late String email;
-  late String password;
-
+  /* VARIAVEIS */
+  final _controleUsuario = TextEditingController();
+  final _controleSenha = TextEditingController();
   final _formKey = new GlobalKey<FormState>();
+
+  /* METODOS DO SISTEMA */
+  @override
+  void dispose() {
+    _controleUsuario.dispose();
+    _controleSenha.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    double margemV = Util.margemV(context);
+    double margemH = Util.margemH(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text('AÇÃO SOCIAL | Login'),
+        title: Text('Login'),
       ),
-      body: InkWell(
-        splashColor: Colors.transparent,
-        onTap: () {
-          FocusScope.of(context).requestFocus(FocusNode());
-        },
-        child: Center(
+      body: Center(
+        child: Scrollbar(
+          isAlwaysShown: true,
+          showTrackOnHover: true,
           child: SingleChildScrollView(
             child: Padding(
-              padding: EdgeInsets.all(24.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Image(
-                      image: AssetImage('assets/icons/ic_launcher.png'),
-                      height: 128,
-                      width: 128,
-                    ),
-                    SizedBox(
-                      height: 24.0,
-                    ),
-                    // USUARIO
-                    TextFormField(
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                      decoration: mTextFieldDecoration.copyWith(
-                          labelText: 'E-mail',
-                          prefixIcon: Icon(Icons.email_rounded)),
-                      keyboardType: TextInputType.emailAddress,
-                      textInputAction: TextInputAction.next,
-                      validator: (value) => !_isEmail(value!)
-                          ? "Informe um endereço de e-mail valido"
-                          : null,
-                      onChanged: (value) {
-                        email = value;
-                      },
-                    ),
-                    SizedBox(
-                      height: 8.0,
-                    ),
-                    // SENHA
-                    TextFormField(
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                      decoration: mTextFieldDecoration.copyWith(
-                          labelText: 'Senha',
-                          prefixIcon: Icon(Icons.password_rounded)),
-                      obscureText: true,
-                      keyboardType: TextInputType.visiblePassword,
-                      textInputAction: TextInputAction.done,
-                      validator: (value) => value!.length < 6
-                          ? "Senha deve conter no mínimo 6 caracteres"
-                          : null,
-                      onChanged: (value) {
-                        password = value;
-                      },
-                      onFieldSubmitted: (value) {
-                        _logar();
-                      },
-                    ),
-                    SizedBox(
-                      height: 24.0,
-                    ),
-                    OutlinedButton.icon(
-                      icon: Icon(Icons.login_rounded),
-                      label: Text('ENTRAR'),
-                      style:
-                          mOutlinedButtonStyle.merge(OutlinedButton.styleFrom(
-                        primary: Colors.white,
-                        backgroundColor: Colors.blue,
-                      )),
-                      onPressed: () {
-                        _logar();
-                      },
-                    ),
-                    SizedBox(
-                      height: 36.0,
-                    ),
-                    TextButton(
-                      child: Text(
-                        'Esqueci minha senha',
-                        style: TextStyle(color: Colors.red),
+              padding:
+                  EdgeInsets.symmetric(vertical: margemV, horizontal: margemH),
+              child: Container(
+                alignment: Alignment.center,
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  runAlignment: WrapAlignment.center,
+                  runSpacing: 32,
+                  spacing: 32,
+                  children: [
+                    logotipo,
+                    ConstrainedBox(
+                      constraints:
+                          const BoxConstraints(minWidth: 200, maxWidth: 450),
+                      child: Form(
+                        key: _formKey,
+                        autovalidateMode: AutovalidateMode.disabled,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // USUARIO
+                            TextFormField(
+                              controller: _controleUsuario,
+                              validator: Util.validarEmail,
+                              keyboardType: TextInputType.emailAddress,
+                              textInputAction: TextInputAction.next,
+                              autofillHints: const [
+                                AutofillHints.username,
+                                AutofillHints.email
+                              ],
+                              decoration: const InputDecoration(
+                                labelText: 'E-mail',
+                                prefixIcon: Icon(Icons.email_rounded),
+                              ),
+                            ),
+                            SizedBox(
+                              height: 8.0,
+                            ),
+                            // SENHA
+                            TextFormField(
+                              controller: _controleSenha,
+                              validator: Util.validarSenha,
+                              obscureText: true,
+                              keyboardType: TextInputType.visiblePassword,
+                              textInputAction: TextInputAction.done,
+                              autofillHints: const [AutofillHints.password],
+                              enableSuggestions: false,
+                              decoration: InputDecoration(
+                                labelText: 'Senha',
+                                prefixIcon: Icon(Icons.password_rounded),
+                              ),
+                              onFieldSubmitted: (_) {
+                                _logar();
+                              },
+                            ),
+                            SizedBox(
+                              height: 24.0,
+                            ),
+                            // Botão Logar
+                            ElevatedButton.icon(
+                              icon: Icon(Icons.login_rounded),
+                              label: Text('ENTRAR'),
+                              onPressed: () {
+                                _logar();
+                              },
+                            ),
+                            SizedBox(
+                              height: 36.0,
+                            ),
+                            // Botão esqueci minha senha
+                            TextButton(
+                              child: Text(
+                                'Esqueci minha senha',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                              onPressed: () {
+                                _reenviarSenha();
+                              },
+                            ),
+                          ],
+                        ),
                       ),
-                      onPressed: () {
-                        _reenviarSenha();
-                      },
+                    ),
+                    // Texto Informativo
+                    SizedBox(
+                      width: double.maxFinite,
+                      child: const Text(
+                        'Apenas usuários cadastrados pelo administrador tem acesso ao sistema.',
+                        style: TextStyle(color: Colors.grey),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   ],
                 ),
@@ -120,6 +143,44 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  /* WIDGETS */
+  Widget get logotipo {
+    return Column(
+      children: [
+        const Hero(
+          tag: 'logo',
+          child: Image(
+            image: AssetImage('assets/icons/ic_launcher.png'),
+            height: 128,
+            width: 128,
+          ),
+        ),
+        Text(
+          AppData.appName,
+          style: const TextStyle(
+            fontSize: 40,
+            fontFamily: 'Pacifico',
+          ),
+          overflow: TextOverflow.ellipsis,
+          softWrap: false,
+        ),
+        Text(
+          'Igreja Presbiteriana de Foz do Iguaçu',
+          overflow: TextOverflow.ellipsis,
+          softWrap: false,
+        ),
+        SizedBox(height: 16),
+        Text(
+          AppData.version,
+          style: const TextStyle(color: Colors.grey),
+          overflow: TextOverflow.ellipsis,
+          softWrap: false,
+        ),
+      ],
+    );
+  }
+
+  /* METODOS */
   bool _isEmail(String value) {
     String regex =
         r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
@@ -143,8 +204,8 @@ class _LoginPageState extends State<LoginPage> {
     );
     // Tenta acessar a conta
     try {
-      final credential = await _auth.signInWithEmailAndPassword(
-          email: email, password: password);
+      final credential = await auth.signInWithEmailAndPassword(
+          email: _controleUsuario.text, password: _controleSenha.text);
       if (credential.user != null) {
         FirebaseFirestore.instance
             .collection('diaconos')
@@ -157,15 +218,15 @@ class _LoginPageState extends State<LoginPage> {
             .then((DocumentSnapshot<Diacono> documentSnapshot) {
           Navigator.pop(context); // Fecha progresso
           if (documentSnapshot.exists) {
-            Navigator.pushReplacementNamed(context, '/home');
+            Modular.to.navigate('/');
           } else {
-            usuarioLogado = new Diacono(
+            AppData.usuario = new Diacono(
               nome: '',
               email: credential.user!.email!,
               telefone: 0,
             );
-            usuarioLogado.uid = credential.user!.uid;
-            Navigator.pushReplacementNamed(context, '/diacono');
+            AppData.usuario!.uid = credential.user!.uid;
+            Modular.to.navigate('/diacono');
           }
         });
         return;
@@ -196,9 +257,9 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _reenviarSenha() async {
-    if (!_isEmail(email)) return;
+    if (!_isEmail(_controleUsuario.text)) return;
     try {
-      await auth.sendPasswordResetEmail(email: email);
+      await auth.sendPasswordResetEmail(email: _controleUsuario.text);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -209,7 +270,7 @@ class _LoginPageState extends State<LoginPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-              'Não foi possível localizar o email $email em nosso cadastro!'),
+              'Não foi possível localizar o email ${_controleUsuario.text} em nosso cadastro!'),
         ),
       );
     }

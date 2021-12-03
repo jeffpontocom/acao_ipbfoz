@@ -1,3 +1,5 @@
+import 'package:acao_ipbfoz/app_data.dart';
+
 import '../models/diacono.dart';
 import '../ui/styles.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -5,15 +7,28 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class DiaconoPage extends StatefulWidget {
-  final Diacono diacono;
+  final String? diaconoId;
 
-  DiaconoPage({required this.diacono});
+  DiaconoPage({this.diaconoId});
 
   @override
   _DiaconoPageState createState() => _DiaconoPageState();
 }
 
 class _DiaconoPageState extends State<DiaconoPage> {
+  late Diacono diacono;
+
+  @override
+  void initState() {
+    diacono = AppData.diaconos[widget.diaconoId] ??
+        new Diacono(
+          nome: '',
+          email: '',
+          telefone: 0,
+        );
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,7 +49,7 @@ class _DiaconoPageState extends State<DiaconoPage> {
               color: Colors.grey,
             ),
             Text(
-              widget.diacono.email,
+              diacono.email,
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 16.0),
             ),
@@ -42,12 +57,12 @@ class _DiaconoPageState extends State<DiaconoPage> {
               height: 24.0,
             ),
             TextFormField(
-              initialValue: widget.diacono.nome,
+              initialValue: diacono.nome,
               textCapitalization: TextCapitalization.words,
               keyboardType: TextInputType.name,
               textInputAction: TextInputAction.next,
               onChanged: (value) {
-                widget.diacono.nome = value;
+                diacono.nome = value;
               },
               decoration:
                   mTextFieldDecoration.copyWith(labelText: 'Nome completo'),
@@ -57,12 +72,12 @@ class _DiaconoPageState extends State<DiaconoPage> {
             ),
             TextFormField(
               initialValue:
-                  maskPhone.getMaskedString(widget.diacono.telefone.toString()),
+                  maskPhone.getMaskedString(diacono.telefone.toString()),
               inputFormatters: [inputPhone],
               keyboardType: TextInputType.phone,
               textInputAction: TextInputAction.next,
               onChanged: (value) {
-                widget.diacono.telefone = int.parse(maskPhone.clearMask(value));
+                diacono.telefone = int.parse(maskPhone.clearMask(value));
               },
               decoration: mTextFieldDecoration.copyWith(labelText: 'Whatsapp'),
             ),
@@ -121,8 +136,8 @@ class _DiaconoPageState extends State<DiaconoPage> {
     try {
       FirebaseFirestore.instance
           .collection('diaconos')
-          .doc(widget.diacono.uid)
-          .set(widget.diacono.toJson())
+          .doc(diacono.uid)
+          .set(diacono.toJson())
           .then((value) => Navigator.pop(context))
           .catchError((error) => print("Falha ao adicinar diacono: $error"));
     } catch (e) {

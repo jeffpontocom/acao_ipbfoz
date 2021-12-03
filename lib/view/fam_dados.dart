@@ -1,3 +1,4 @@
+import '../app_data.dart';
 import 'familia_page.dart';
 import '../data/beneficiosGov.dart';
 import '../data/diaconos.dart';
@@ -378,7 +379,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
             focusNode: FocusNode(
               skipTraversal: true,
             ),
-            items: diaconos.entries
+            items: AppData.diaconos.entries
                 .map((mDiacono) => new DropdownMenuItem(
                       value: mDiacono.key,
                       child: Text(mDiacono.value.nome),

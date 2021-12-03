@@ -1,45 +1,59 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_modular/flutter_modular.dart';
+import 'package:url_strategy/url_strategy.dart';
 
-import 'models/diacono.dart';
-import 'models/familia.dart';
-import 'view/diacono_page.dart';
-import 'view/familia_page.dart';
-import 'view/home_page.dart';
-import 'view/login_page.dart';
+import 'app_data.dart';
+import 'app_module.dart';
 
 final auth = FirebaseAuth.instance;
-late Diacono usuarioLogado;
-late DocumentReference<Familia> refFamilia;
 
 void main() async {
+  setPathUrlStrategy();
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  runApp(MyApp());
+  await AppData().loadPackageInfo();
+  await AppData().loadDiaconos();
+  runApp(
+    ModularApp(
+      module: AppModule(),
+      child: MyApp(),
+      debugMode: !kReleaseMode,
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'IPBFoz Ação Social',
+      // Título
+      title: 'Ação Social IPBFoz',
+      // Tema
       theme: ThemeData(
-        primarySwatch: Colors.green,
+        primarySwatch: Colors.teal,
         visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: auth.currentUser != null ? HomePage() : LoginPage(),
-      routes: {
-        '/home': (context) => HomePage(),
-        '/login': (context) => LoginPage(),
-        '/diacono': (context) => DiaconoPage(diacono: usuarioLogado),
-        '/familia': (context) => FamiliaPage(
-              reference: refFamilia,
-              editMode: true,
+        fontFamily: 'Quicksand',
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            minimumSize: const Size(150, 48),
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16)),
             ),
-      },
-    );
+          ),
+        ),
+        inputDecorationTheme: const InputDecorationTheme(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(16)),
+          ),
+        ),
+      ),
+      // Debug banner
+      debugShowCheckedModeBanner: !kReleaseMode,
+    ).modular();
   }
 }
