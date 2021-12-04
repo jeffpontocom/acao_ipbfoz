@@ -210,7 +210,7 @@ class _LoginPageState extends State<LoginPage> {
           Navigator.pop(context); // Fecha progresso
           if (documentSnapshot.exists) {
             AppData.usuario = documentSnapshot.data();
-            AppData.usuario!.uid = documentSnapshot.data()!.uid;
+            AppData.usuario!.uid = credential.user!.uid;
             Modular.to.navigate('/');
           } else {
             AppData.usuario = new Diacono(

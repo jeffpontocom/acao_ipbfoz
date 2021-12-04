@@ -218,17 +218,35 @@ class _HomePageState extends State<HomePage> {
               ],
               flexibleSpace: FlexibleSpaceBar(
                 stretchModes: [StretchMode.blurBackground],
-                background: Container(
-                  padding: EdgeInsets.only(left: 12, top: 24),
-                  color: Colors.white,
-                  child: Hero(
-                    tag: 'logo',
-                    child: Image(
-                      alignment: Alignment.topLeft,
-                      fit: BoxFit.scaleDown,
-                      image: AssetImage('assets/icons/ic_launcher.png'),
+                background: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image(
+                      fit: BoxFit.cover,
+                      image: AssetImage('assets/images/home-background.jpg'),
                     ),
-                  ),
+                    Row(
+                      children: [
+                        SizedBox(width: 24),
+                        SizedBox(
+                          width: 96,
+                          height: 96,
+                          child: Hero(
+                            tag: 'logo',
+                            child: Transform.rotate(
+                              angle: 4800,
+                              child: Image(
+                                alignment: Alignment.topLeft,
+                                fit: BoxFit.scaleDown,
+                                image:
+                                    AssetImage('assets/icons/ic_launcher.png'),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
                 title: _appBarTitulo,
                 titlePadding: EdgeInsets.only(left: 56, bottom: 16),
