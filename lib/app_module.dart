@@ -1,6 +1,5 @@
 import 'package:flutter_modular/flutter_modular.dart';
 
-import 'app_data.dart';
 import 'main.dart';
 import 'view/diacono_page.dart';
 import 'view/familia_page.dart';

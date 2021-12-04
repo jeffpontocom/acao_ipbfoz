@@ -48,7 +48,7 @@ class Util {
 
   /// Validar senha com no mínimo 5 caracteres
   static String? validarSenha(String? value) {
-    if (value != null) {
+    if (value != null && value.isNotEmpty) {
       if (value.length >= 5) {
         return null;
       }

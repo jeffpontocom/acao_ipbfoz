@@ -51,6 +51,7 @@ class _LoginPageState extends State<LoginPage> {
                   runSpacing: 32,
                   spacing: 32,
                   children: [
+                    // LOGOTIPO
                     logotipo,
                     ConstrainedBox(
                       constraints:
@@ -67,10 +68,7 @@ class _LoginPageState extends State<LoginPage> {
                               validator: Util.validarEmail,
                               keyboardType: TextInputType.emailAddress,
                               textInputAction: TextInputAction.next,
-                              autofillHints: const [
-                                AutofillHints.username,
-                                AutofillHints.email
-                              ],
+                              autofillHints: const [AutofillHints.username],
                               decoration: const InputDecoration(
                                 labelText: 'E-mail',
                                 prefixIcon: Icon(Icons.email_rounded),
@@ -92,33 +90,27 @@ class _LoginPageState extends State<LoginPage> {
                                 labelText: 'Senha',
                                 prefixIcon: Icon(Icons.password_rounded),
                               ),
-                              onFieldSubmitted: (_) {
-                                _logar();
-                              },
+                              onFieldSubmitted: (_) => _logar(),
                             ),
                             SizedBox(
                               height: 24.0,
                             ),
-                            // Botão Logar
+                            // BOTAO ENTRAR
                             ElevatedButton.icon(
                               icon: Icon(Icons.login_rounded),
                               label: Text('ENTRAR'),
-                              onPressed: () {
-                                _logar();
-                              },
+                              onPressed: _logar,
                             ),
                             SizedBox(
                               height: 36.0,
                             ),
-                            // Botão esqueci minha senha
+                            // BOTAO ESQUECI SENHA
                             TextButton(
                               child: Text(
                                 'Esqueci minha senha',
                                 style: TextStyle(color: Colors.red),
                               ),
-                              onPressed: () {
-                                _reenviarSenha();
-                              },
+                              onPressed: _esqueciSenha,
                             ),
                           ],
                         ),
@@ -155,14 +147,17 @@ class _LoginPageState extends State<LoginPage> {
             width: 128,
           ),
         ),
-        Text(
-          AppData.appName,
-          style: const TextStyle(
-            fontSize: 40,
-            fontFamily: 'Pacifico',
+        Hero(
+          tag: 'appname',
+          child: Text(
+            AppData.appName,
+            style: const TextStyle(
+              fontSize: 40,
+              fontFamily: 'Pacifico',
+            ),
+            overflow: TextOverflow.ellipsis,
+            softWrap: false,
           ),
-          overflow: TextOverflow.ellipsis,
-          softWrap: false,
         ),
         Text(
           'Igreja Presbiteriana de Foz do Iguaçu',
@@ -181,20 +176,16 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   /* METODOS */
-  bool _isEmail(String value) {
-    String regex =
-        r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
-    RegExp regExp = new RegExp(regex);
-    return value.isNotEmpty && regExp.hasMatch(value);
-  }
 
-  bool _validar() {
+  /// Validar Formulário
+  bool _validarFormulario() {
     if (_formKey.currentState == null) return false;
     return _formKey.currentState!.validate();
   }
 
+  /// Logar no sistema
   void _logar() async {
-    if (!_validar()) return;
+    if (!_validarFormulario()) return;
     // Abre circulo de progresso
     showDialog(
       context: context,
@@ -218,6 +209,8 @@ class _LoginPageState extends State<LoginPage> {
             .then((DocumentSnapshot<Diacono> documentSnapshot) {
           Navigator.pop(context); // Fecha progresso
           if (documentSnapshot.exists) {
+            AppData.usuario = documentSnapshot.data();
+            AppData.usuario!.uid = documentSnapshot.data()!.uid;
             Modular.to.navigate('/');
           } else {
             AppData.usuario = new Diacono(
@@ -256,8 +249,20 @@ class _LoginPageState extends State<LoginPage> {
         });
   }
 
-  Future<void> _reenviarSenha() async {
-    if (!_isEmail(_controleUsuario.text)) return;
+  /// Esqueci minha senha
+  Future<void> _esqueciSenha() async {
+    //if (!_isEmail(_controleUsuario.text)) return;
+    if (Util.validarEmail(_controleUsuario.text) != null) {
+      _validarFormulario();
+      return;
+    }
+    // Abre circulo de progresso
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Center(child: CircularProgressIndicator());
+      },
+    );
     try {
       await auth.sendPasswordResetEmail(email: _controleUsuario.text);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -274,5 +279,6 @@ class _LoginPageState extends State<LoginPage> {
         ),
       );
     }
+    Navigator.pop(context);
   }
 }

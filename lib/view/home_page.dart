@@ -34,22 +34,28 @@ class _HomePageState extends State<HomePage> {
           child: Text(
             _isShrink ? 'IPBFoz' : 'Igreja Presbiteriana de Foz do Iguaçu',
             style: TextStyle(
-              fontSize: 13,
+              fontSize: 12,
               color: Colors.grey,
             ),
             overflow: TextOverflow.ellipsis,
             softWrap: false,
+            strutStyle: StrutStyle(fontSize: 18, forceStrutHeight: true),
           ),
         ),
-        Text(
-          AppData.appName,
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 25,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Pacifico',
+        Hero(
+          tag: 'appname',
+          child: Text(
+            AppData.appName,
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 25,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Pacifico',
+            ),
+            overflow: TextOverflow.ellipsis,
+            softWrap: false,
+            strutStyle: StrutStyle(fontSize: 25, forceStrutHeight: true),
           ),
-          strutStyle: StrutStyle(fontSize: 25, forceStrutHeight: true),
         ),
       ],
     );
@@ -101,6 +107,7 @@ class _HomePageState extends State<HomePage> {
         }
       });
     });
+    print('Totais contabilizados e atualizados!');
   }
 
   String _contarIntegrantes(Familia familia) {
@@ -170,12 +177,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
-  void didChangeDependencies() {
-    //_contagens(data);
-    super.didChangeDependencies();
-  }
-
-  @override
   void dispose() {
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
@@ -186,53 +187,10 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      /* appBar: AppBar(
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        //shadowColor: Colors.transparent,
-        leading: IconButton(
-            onPressed: () {},
-            icon: Image.asset('assets/icons/ic_launcher.png')),
-        leadingWidth: 48,
-        title: _appBarTitulo,
-        titleSpacing: 0,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.account_circle_rounded),
-            onPressed: () {
-              Modular.to
-                  .pushNamed('/diacono?id=' + AppData.usuario!.uid)
-                  .then(onGoBack);
-            },
-          ),
-        ],
-      ), */
-      /* appBar: AppBar(
-        centerTitle: true,
-        title: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'AÇÃO SOCIAL',
-            ),
-            Visibility(
-              visible: true,
-              child: Text(
-                'Igreja Presbiteriana de Foz do Iguaçu',
-                style: TextStyle(
-                  fontSize: 12.0,
-                ),
-              ),
-            ),
-          ],
-        ),
-        
-      ), */
       body: NestedScrollView(
         controller: _scrollController,
         headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-          return <Widget>[
+          return [
             SliverAppBar(
               expandedHeight: height,
               floating: false,
@@ -240,10 +198,13 @@ class _HomePageState extends State<HomePage> {
               backgroundColor: Colors.white,
               foregroundColor: Colors.black,
               centerTitle: false,
-              leading: IconButton(
-                icon: Image.asset('assets/icons/ic_launcher.png'),
-                onPressed: null,
-              ),
+              leading: _isShrink
+                  ? IconButton(
+                      icon: Image.asset('assets/icons/ic_launcher.png'),
+                      onPressed: null,
+                    )
+                  : null,
+              leadingWidth: 48,
               actions: [
                 TextButton.icon(
                   icon: Icon(Icons.account_circle_rounded),
@@ -256,45 +217,21 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
               flexibleSpace: FlexibleSpaceBar(
-                background: Container(color: Colors.white),
-                //centerTitle: true,
+                stretchModes: [StretchMode.blurBackground],
+                background: Container(
+                  padding: EdgeInsets.only(left: 12, top: 24),
+                  color: Colors.white,
+                  child: Hero(
+                    tag: 'logo',
+                    child: Image(
+                      alignment: Alignment.topLeft,
+                      fit: BoxFit.scaleDown,
+                      image: AssetImage('assets/icons/ic_launcher.png'),
+                    ),
+                  ),
+                ),
                 title: _appBarTitulo,
-                titlePadding: EdgeInsets.only(left: 56, bottom: 12),
-                /* _isShrink
-                    ? Row(
-                        children: [
-                          //Replace container with your chart
-                          // Here you can also use SizedBox in order to define a chart size
-                          Container(
-                              margin: EdgeInsets.all(10.0),
-                              width: 30,
-                              height: 30,
-                              color: Colors.yellow),
-                          Text('A little long title'),
-                        ],
-                      )
-                    : SingleChildScrollView(
-                        child: Column(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: <Widget>[
-                              Text(
-                                'A little long title',
-                                textAlign: TextAlign.center,
-                              ),
-                              //Replace container with your chart
-                              Container(
-                                height: 80,
-                                color: Colors.yellow,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: <Widget>[
-                                    Text('Your chart here'),
-                                  ],
-                                ),
-                              ),
-                            ]),
-                      ), */
+                titlePadding: EdgeInsets.only(left: 56, bottom: 16),
               ),
             ),
           ];
@@ -405,8 +342,12 @@ class _HomePageState extends State<HomePage> {
                     }
                     final data = snapshots.data;
                     // Realizar contagens
-                    WidgetsBinding.instance
-                        ?.addPostFrameCallback((_) => _contarTotais(data));
+                    if (snapshots.connectionState == ConnectionState.active) {
+                      if (data!.size != _totalFamilias.value) {
+                        WidgetsBinding.instance
+                            ?.addPostFrameCallback((_) => _contarTotais(data));
+                      }
+                    }
                     // Widget
                     return ListView.builder(
                         scrollDirection: Axis.vertical,

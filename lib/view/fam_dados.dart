@@ -1,7 +1,6 @@
 import '../app_data.dart';
 import 'familia_page.dart';
 import '../data/beneficiosGov.dart';
-import '../data/diaconos.dart';
 import '../ui/styles.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';

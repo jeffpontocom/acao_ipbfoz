@@ -1,15 +1,13 @@
-import 'package:acao_ipbfoz/data/diaconos.dart';
-import 'package:acao_ipbfoz/main.dart';
-import 'package:acao_ipbfoz/models/entrega_itens.dart';
-import 'package:acao_ipbfoz/ui/dialogs.dart';
-import 'package:acao_ipbfoz/ui/styles.dart';
-
-import '../app_data.dart';
-import 'familia_page.dart';
-
-import '../models/entrega.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+
+import 'familia_page.dart';
+import '../app_data.dart';
+import '../main.dart';
+import '../models/entrega.dart';
+import '../models/entrega_itens.dart';
+import '../ui/dialogs.dart';
+import '../ui/styles.dart';
 
 class FamiliaEntregas extends StatefulWidget {
   FamiliaEntregas();
