@@ -7,7 +7,7 @@ import '../main.dart';
 import '../models/entrega.dart';
 import '../models/entrega_itens.dart';
 import '../ui/dialogs.dart';
-import '../ui/styles.dart';
+import '../ui/estilos.dart';
 
 class FamiliaEntregas extends StatefulWidget {
   FamiliaEntregas();

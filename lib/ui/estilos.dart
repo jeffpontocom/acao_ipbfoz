@@ -1,7 +1,27 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:easy_mask/easy_mask.dart';
+
+class Estilos {
+  /// Para titulos
+  static TextStyle titulo = TextStyle(
+      color: Colors.grey.shade800, fontSize: 19, fontWeight: FontWeight.bold);
+
+  /// Para destaques
+  static TextStyle destaque =
+      const TextStyle(color: Colors.red, fontWeight: FontWeight.bold);
+
+  /// Para legendas
+  static TextStyle legenda = const TextStyle(color: Colors.grey, fontSize: 11);
+
+  static InputDecoration mInputDecoration = const InputDecoration(
+      floatingLabelBehavior: FloatingLabelBehavior.always,
+      contentPadding:
+          EdgeInsets.symmetric(vertical: kIsWeb ? 12 : 8, horizontal: 12),
+      disabledBorder: OutlineInputBorder(borderSide: BorderSide.none));
+}
 
 var inputPhone = new TextInputMask(
     mask: ['(99) 9999-9999', '(99) 99999-9999'], reverse: false);

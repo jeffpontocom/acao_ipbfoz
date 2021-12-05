@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:acao_ipbfoz/utils/util.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -29,33 +30,27 @@ class _HomePageState extends State<HomePage> {
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        Hero(
-          tag: 'username',
-          child: Text(
-            _isShrink ? 'IPBFoz' : 'Igreja Presbiteriana de Foz do Iguaçu',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey,
-            ),
-            overflow: TextOverflow.ellipsis,
-            softWrap: false,
-            strutStyle: StrutStyle(fontSize: 18, forceStrutHeight: true),
+        Text(
+          AppData.appName,
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 25,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Pacifico',
           ),
+          overflow: TextOverflow.ellipsis,
+          softWrap: false,
+          //strutStyle: StrutStyle(fontSize: 25, forceStrutHeight: false),
         ),
-        Hero(
-          tag: 'appname',
-          child: Text(
-            AppData.appName,
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 25,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Pacifico',
-            ),
-            overflow: TextOverflow.ellipsis,
-            softWrap: false,
-            strutStyle: StrutStyle(fontSize: 25, forceStrutHeight: true),
+        Text(
+          _isShrink ? 'IPBFOZ' : 'Igreja Presbiteriana de Foz do Iguaçu',
+          style: TextStyle(
+            fontSize: 11,
+            color: Colors.grey,
           ),
+          overflow: TextOverflow.ellipsis,
+          softWrap: false,
+          strutStyle: StrutStyle(fontSize: 5, forceStrutHeight: true),
         ),
       ],
     );
@@ -234,7 +229,7 @@ class _HomePageState extends State<HomePage> {
                           child: Hero(
                             tag: 'logo',
                             child: Transform.rotate(
-                              angle: 4800,
+                              angle: 5.75,
                               child: Image(
                                 alignment: Alignment.topLeft,
                                 fit: BoxFit.scaleDown,
@@ -258,7 +253,9 @@ class _HomePageState extends State<HomePage> {
           isAlwaysShown: true,
           showTrackOnHover: true,
           child: ListView(
-            padding: EdgeInsets.all(24.0),
+            padding: EdgeInsets.symmetric(
+                horizontal: Util.margemH(context),
+                vertical: Util.margemV(context)),
             children: [
               Row(
                 children: [

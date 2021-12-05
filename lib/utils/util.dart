@@ -22,14 +22,14 @@ class Util {
     return MediaQuery.of(context).viewInsets.bottom != 0;
   }
 
-  /// Margem ou Padding vertical padrão
+  /// Margem ou Padding vertical padrão (min 12)
   static double margemV(context) {
     double minPad = 12;
     var mesure = ((MediaQuery.of(context).size.height - 860) / 2) + minPad;
     return mesure > minPad ? mesure : minPad;
   }
 
-  /// Margem ou Padding horizontal padrão
+  /// Margem ou Padding horizontal padrão (min 32)
   static double margemH(context) {
     double minPad = 32;
     var mesure = ((MediaQuery.of(context).size.width - 860) / 2) + minPad;

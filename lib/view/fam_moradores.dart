@@ -1,7 +1,7 @@
 import 'package:acao_ipbfoz/data/escolaridade.dart';
 import 'package:acao_ipbfoz/models/morador.dart';
 import 'package:acao_ipbfoz/ui/dialogs.dart';
-import 'package:acao_ipbfoz/ui/styles.dart';
+import 'package:acao_ipbfoz/ui/estilos.dart';
 import 'package:acao_ipbfoz/view/familia_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';

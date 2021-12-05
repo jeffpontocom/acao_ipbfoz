@@ -79,37 +79,91 @@ class _FamiliaPageState extends State<FamiliaPage> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<DocumentSnapshot<Familia>>(
-        future: reference.get(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Scaffold(
-              resizeToAvoidBottomInset: true,
-              appBar: AppBar(
-                title: Text('Erro!'),
-              ),
-              body: Center(
-                child: Padding(
-                  padding: EdgeInsets.all(24.0),
-                  child: Text(
-                    "Algo errado!\nAparentemente você está sem conexão com a Internet.",
-                  ),
+      future: reference.get(),
+      builder: (context, snapshot) {
+        // Enquanto carrega
+        if (!snapshot.hasData) {
+          return Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+        // Se erro
+        if (snapshot.hasError) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text('Erro!'),
+            ),
+            body: Center(
+              child: Padding(
+                padding: EdgeInsets.all(24.0),
+                child: Text(
+                  "Algo errado!\nAparentemente você está sem conexão com a Internet.",
                 ),
               ),
-            );
-          }
-
-          if (!snapshot.hasData) {
-            return Scaffold(
-              resizeToAvoidBottomInset: true,
-              body: Center(
-                child: CircularProgressIndicator(),
-              ),
-            );
-          }
-
-          return Scaffold(
+            ),
+          );
+        }
+        // Se OK
+        return DefaultTabController(
+          length: 4,
+          child: Scaffold(
             resizeToAvoidBottomInset: true,
-            body: DefaultTabController(
+            appBar: AppBar(
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Família', textScaleFactor: 0.6),
+                  Text(
+                    '${familia.moradores[0].nome}',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  child: Text(
+                    editMode ? 'SALVAR' : 'EDITAR',
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                  onPressed: () {
+                    if (editMode) {
+                      _salvarDados();
+                    } else {
+                      editMode = !editMode;
+                      setState(() {});
+                    }
+                  },
+                ),
+                Icon(editMode ? Icons.save_rounded : Icons.edit_rounded),
+              ],
+              bottom: TabBar(
+                labelStyle: TextStyle(overflow: TextOverflow.ellipsis),
+                //labelColor: Colors.black87,
+                //unselectedLabelColor: Colors.grey,
+                tabs: [
+                  Tab(text: "Cadastro"),
+                  Tab(text: "Moradores"),
+                  Tab(text: "Entregas"),
+                  Tab(text: "Mapa"),
+                ],
+              ),
+            ),
+            body: TabBarView(
+              children: [
+                FamiliaDados(),
+                FamiliaMoradores(),
+                FamiliaEntregas(),
+                FamiliaMapa(),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    /*  body: DefaultTabController(
               length: 4,
               child: NestedScrollView(
                 headerSliverBuilder:
@@ -178,7 +232,7 @@ class _FamiliaPageState extends State<FamiliaPage> {
               ),
             ),
           );
-        });
+        }); */
   }
 
   void _salvarDados() {
@@ -207,7 +261,7 @@ class _FamiliaPageState extends State<FamiliaPage> {
   }
 }
 
-class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+/* class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   _SliverAppBarDelegate(this._tabBar);
 
   final TabBar _tabBar;
@@ -230,4 +284,4 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
     return false;
   }
-}
+} */

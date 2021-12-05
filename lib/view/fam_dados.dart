@@ -1,7 +1,7 @@
 import '../app_data.dart';
 import 'familia_page.dart';
 import '../data/beneficiosGov.dart';
-import '../ui/styles.dart';
+import '../ui/estilos.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -225,7 +225,8 @@ class _FamiliaDadosState extends State<FamiliaDados> {
             textCapitalization: TextCapitalization.words,
             keyboardType: TextInputType.streetAddress,
             textInputAction: TextInputAction.next,
-            decoration: mTextFieldDecoration.copyWith(labelText: 'Bairro'),
+            selectionControls: materialTextSelectionControls,
+            decoration: Estilos.mInputDecoration.copyWith(labelText: 'Bairro'),
             onChanged: (value) {
               familia.endBairro = value;
             },
