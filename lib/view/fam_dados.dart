@@ -1,3 +1,5 @@
+import 'package:acao_ipbfoz/utils/util.dart';
+
 import '../app_data.dart';
 import 'familia_page.dart';
 import '../data/beneficiosGov.dart';
@@ -23,7 +25,8 @@ class _FamiliaDadosState extends State<FamiliaDados> {
       },
       child: ListView(
         key: PageStorageKey('dados'),
-        padding: EdgeInsets.all(24.0),
+        padding: EdgeInsets.symmetric(
+            horizontal: Util.margemH(context), vertical: Util.margemV(context)),
         children: [
           // INFORMACAO GERAL
           Text(

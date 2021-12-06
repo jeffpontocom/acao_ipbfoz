@@ -1,5 +1,6 @@
 import 'package:acao_ipbfoz/main.dart';
 import 'package:acao_ipbfoz/models/morador.dart';
+import 'package:flutter/foundation.dart';
 
 import 'fam_dados.dart';
 import 'fam_entregas.dart';
@@ -111,38 +112,38 @@ class _FamiliaPageState extends State<FamiliaPage> {
           child: Scaffold(
             resizeToAvoidBottomInset: true,
             appBar: AppBar(
+              titleSpacing: 0,
               title: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Família', textScaleFactor: 0.6),
                   Text(
-                    '${familia.moradores[0].nome}',
+                    familia.moradores.isEmpty
+                        ? 'Novo Cadastro'
+                        : '${familia.moradores[0].nome}',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
               actions: [
-                TextButton(
-                  child: Text(
-                    editMode ? 'SALVAR' : 'EDITAR',
-                    style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
+                TextButton.icon(
+                  label: Text(editMode ? 'SALVAR' : 'EDITAR'),
+                  icon: Icon(
+                      editMode ? Icons.save_rounded : Icons.mode_edit_rounded),
+                  style: TextButton.styleFrom(primary: Colors.white),
                   onPressed: () {
                     if (editMode) {
                       _salvarDados();
                     } else {
-                      editMode = !editMode;
-                      setState(() {});
+                      setState(() {
+                        editMode = !editMode;
+                      });
                     }
                   },
                 ),
-                Icon(editMode ? Icons.save_rounded : Icons.edit_rounded),
               ],
               bottom: TabBar(
                 labelStyle: TextStyle(overflow: TextOverflow.ellipsis),
-                //labelColor: Colors.black87,
-                //unselectedLabelColor: Colors.grey,
                 tabs: [
                   Tab(text: "Cadastro"),
                   Tab(text: "Moradores"),
