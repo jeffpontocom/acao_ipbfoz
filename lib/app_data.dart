@@ -1,9 +1,9 @@
 import 'dart:developer' as dev;
-import 'package:acao_ipbfoz/main.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import 'main.dart';
 import 'models/diacono.dart';
 
 class AppData {
@@ -13,7 +13,7 @@ class AppData {
   static late final String version;
   static late final String buildNumber;
   static Diacono? usuario;
-  static Map<String, Diacono> diaconos = new Map();
+  static Map<String, Diacono> diaconos = {};
 
   /// Principais informações sobre o app
   AppData();
@@ -37,7 +37,7 @@ class AppData {
         .then(
       (QuerySnapshot<Diacono> querySnapshots) {
         if (querySnapshots.size > 0) {
-          querySnapshots.docs.forEach((element) {
+          for (var element in querySnapshots.docs) {
             diaconos.addAll({element.id: element.data()});
             if (auth.currentUser != null &&
                 auth.currentUser!.uid == element.id) {
@@ -46,7 +46,7 @@ class AppData {
               dev.log('Dados do usuário logado carregado com sucesso!',
                   name: mLogClass);
             }
-          });
+          }
           dev.log('Lista de diaconos carregada com sucesso!', name: mLogClass);
         }
       },

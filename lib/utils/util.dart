@@ -5,21 +5,40 @@ class Util {
   Util();
 
   /// Formato de data e hora no padrão brasileiro "1 de janeiro de 2020 23:59:59."
-  static final DateFormat mDateTimeFormat =
-      DateFormat.yMMMMd('pt_BR').add_Hms();
+  static final DateFormat fmtDataHora = DateFormat.yMMMMd('pt_BR').add_Hms();
 
   /// Formato de data no padrão brasileiro "1 de janeiro de 2020."
-  static final DateFormat mDateFormat = DateFormat.yMMMMd('pt_BR');
+  static final DateFormat fmtDataLonga = DateFormat.yMMMMd('pt_BR');
 
   /// Formato de data no padrão brasileiro "01/01/2020."
-  static final DateFormat mDateFormatShort = DateFormat.yMd('pt_BR');
+  static final DateFormat fmtDataCurta = DateFormat.yMd('pt_BR');
 
   /// Formato de numeros com separador de milhar
-  static final NumberFormat mNumFormat = NumberFormat.decimalPattern('pt_BR');
+  static final NumberFormat fmtMilhar = NumberFormat.decimalPattern('pt_BR');
+
+  static final List<String> listaMesCurto = [
+    'Jan',
+    'Fev',
+    'Mar',
+    'Abr',
+    'Maio',
+    'Jun',
+    'Jul',
+    'Ago',
+    'Set',
+    'Out',
+    'Nov',
+    'Dez'
+  ];
 
   /// Verifica se o teclado virtual está presente na tela
   static bool isKeyboardOpen(context) {
     return MediaQuery.of(context).viewInsets.bottom != 0;
+  }
+
+  /// Verifica o valor para retornar o caracter 's' em elementos plurais
+  static String isPlural(int valor) {
+    return valor > 1 ? 's' : '';
   }
 
   /// Margem ou Padding vertical padrão (min 12)

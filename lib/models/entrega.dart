@@ -1,5 +1,5 @@
-import 'package:acao_ipbfoz/models/entrega_itens.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '/models/entrega_itens.dart';
 
 class Entrega {
   late Timestamp data; // OBRIGATORIO
@@ -18,9 +18,8 @@ class Entrega {
           data:
               (json['data'] ?? Timestamp.fromDate(DateTime.now())) as Timestamp,
           diacono: (json['diacono'] ?? '') as String,
-          itens: List<ItensEntrega>.from(
-              ((json['itens'] ?? null) as List<dynamic>)
-                  .map((e) => ItensEntrega.fromJson(e))),
+          itens: List<ItensEntrega>.from(((json['itens']) as List<dynamic>)
+              .map((e) => ItensEntrega.fromJson(e))),
           entregue: (json['entregue'] ?? false) as bool,
         );
 

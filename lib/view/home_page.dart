@@ -1,44 +1,65 @@
+import 'dart:developer' as dev;
 import 'dart:async';
 
-import 'package:acao_ipbfoz/models/entrega.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
-import '../app_data.dart';
-import '../models/familia.dart';
-import '../models/morador.dart';
-import '../ui/estilos.dart';
-import '../utils/util.dart';
+import '/app_data.dart';
+import '/models/entrega.dart';
+import '/models/familia.dart';
+import '/models/morador.dart';
+import '/ui/estilos.dart';
+import '/utils/util.dart';
 
 class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
+
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
   /* VARIAVEIS */
-  var _totalFamilias = new ValueNotifier<int>(0);
-  var _totalEntregas = new ValueNotifier<int>(0);
+  final _totalFamilias = ValueNotifier<int>(0);
+  final _totalEntregas = ValueNotifier<int>(0);
+  final _contagemConcluida = ValueNotifier(false);
+  final List<EntregaMensal> _entregasMensais = [
+    EntregaMensal(0, 0),
+    EntregaMensal(1, 0),
+    EntregaMensal(2, 0),
+    EntregaMensal(3, 0),
+    EntregaMensal(4, 0),
+    EntregaMensal(5, 0),
+    EntregaMensal(6, 0),
+    EntregaMensal(7, 0),
+    EntregaMensal(8, 0),
+    EntregaMensal(9, 0),
+    EntregaMensal(10, 0),
+    EntregaMensal(11, 0),
+  ];
+
+  final ScrollController _scrollController = ScrollController();
 
   /* WIDGETS */
 
   /// Botão Administrar
   Widget get _btnAdmin {
     return IconButton(
-      onPressed: null,
       icon: const Icon(Icons.admin_panel_settings_rounded),
+      onPressed: () => Modular.to.pushNamed('/admin').then(onGoBack),
     );
   }
 
   /// Botão Relatórios
   Widget get _btnRelatorios {
-    return IconButton(
+    return const IconButton(
       onPressed: null,
-      icon: const Icon(Icons.insert_chart_rounded),
+      icon: Icon(Icons.insert_chart_rounded),
     );
   }
 
@@ -49,26 +70,28 @@ class _HomePageState extends State<HomePage> {
         tag: 'novo',
         child: Icon(Icons.add_business_sharp),
       ),
-      label: Text(
+      label: const Text(
         'Novo cadastro',
         overflow: TextOverflow.ellipsis,
         softWrap: false,
       ),
-      onPressed: _novoCadastro,
+      onPressed: () => Modular.to.pushNamed('/familia').then(onGoBack),
     );
   }
 
   /* METODOS */
-  ValueNotifier<bool> tudoContado = ValueNotifier(false);
 
   /// Conta o total de famílias cadastradas e o total global de entregas
   /// realizadas
   void _contarTotais(QuerySnapshot<Familia>? data) {
+    // Total de famílias
     _totalFamilias.value = data!.size;
+    // Zerando entregas
     _totalEntregas.value = 0;
-    //mEntregas.clear();
-    int elementos = 0;
-    data.docs.forEach((element) {
+    _contagemConcluida.value = false;
+    int analisadas = 0;
+    // Analizando cada familia
+    for (var element in data.docs) {
       // Atualiza o total de entregas pelo valor pre-carregado
       _totalEntregas.value += element.data().cadEntregas;
       // Atualizar o total de entregas verificando cada item da coleção
@@ -81,24 +104,27 @@ class _HomePageState extends State<HomePage> {
           )
           .get()
           .then((entregas) {
-        elementos++;
+        // Registra a analise
+        analisadas++;
         if (entregas.size > 0) {
           // Atualiza o total de entregas
           element.reference.update({'cadEntregas': entregas.size});
-          // Preenche o grafico
-          entregas.docs.forEach((element) {
-            mEntregas[element.data().data.toDate().month - 1].add(1);
-          });
+          // Preenche a variavel do gráfico
+          for (var element in entregas.docs) {
+            _entregasMensais[element.data().data.toDate().month - 1]
+                .increment();
+          }
         } else {
           // Atualizar o total de entregas
           element.reference.update({'cadEntregas': 0});
         }
-        if (elementos == _totalFamilias.value) {
-          tudoContado.value = true;
+        // Finaliza no último elemento
+        if (analisadas == _totalFamilias.value) {
+          _contagemConcluida.value = true;
         }
       });
-    });
-    print('Totais contabilizados e atualizados!');
+    }
+    dev.log('Totais contabilizados e atualizados!', name: 'HOME');
   }
 
   /// Conta o total de integrantes de uma familia
@@ -106,43 +132,58 @@ class _HomePageState extends State<HomePage> {
     int criancas = 0;
     int adultos = 0;
     int idosos = 0;
-    familia.moradores.forEach((element) {
+    for (var element in familia.moradores) {
       int idade = getIdade(element.nascimento);
-      if (idade == -1)
+      if (idade == -1) {
         adultos += 1;
-      else if (idade < 15)
+      } else if (idade < 15) {
         criancas += 1;
-      else if (idade < 60)
+      } else if (idade < 60) {
         adultos += 1;
-      else
+      } else {
         idosos += 1;
-    });
-    if (criancas == 0 && adultos == 0 && idosos == 0)
+      }
+    }
+    if (criancas == 0 && adultos == 0 && idosos == 0) {
       return 'sem moradores cadastrados';
-    if (criancas != 0 && adultos == 0 && idosos == 0)
-      return '$criancas criança${_ePlural(criancas)}';
-    if (criancas != 0 && adultos != 0 && idosos == 0)
-      return '$criancas criança${_ePlural(criancas)} e $adultos adulto${_ePlural(adultos)}';
-    if (criancas != 0 && adultos == 0 && idosos != 0)
-      return '$criancas criança${_ePlural(criancas)} e $idosos idoso${_ePlural(idosos)}';
-    if (criancas != 0 && adultos != 0 && idosos != 0)
-      return '$criancas criança${_ePlural(criancas)}, $adultos adulto${_ePlural(adultos)} e $idosos idoso${_ePlural(idosos)}';
-    if (criancas == 0 && adultos != 0 && idosos == 0)
-      return '$adultos adulto${_ePlural(adultos)}';
-    if (criancas == 0 && adultos != 0 && idosos != 0)
-      return '$adultos adulto${_ePlural(adultos)} e $idosos idoso${_ePlural(idosos)}';
-    if (criancas == 0 && adultos == 0 && idosos != 0)
-      return '$idosos idoso${_ePlural(idosos)}';
-    return 'analisar moradores cadastrados';
+    }
+    if (criancas != 0 && adultos == 0 && idosos == 0) {
+      return '$criancas criança${Util.isPlural(criancas)}';
+    }
+    if (criancas != 0 && adultos != 0 && idosos == 0) {
+      return '$criancas criança${Util.isPlural(criancas)} e $adultos adulto${Util.isPlural(adultos)}';
+    }
+    if (criancas != 0 && adultos == 0 && idosos != 0) {
+      return '$criancas criança${Util.isPlural(criancas)} e $idosos idoso${Util.isPlural(idosos)}';
+    }
+    if (criancas != 0 && adultos != 0 && idosos != 0) {
+      return '$criancas criança${Util.isPlural(criancas)}, $adultos adulto${Util.isPlural(adultos)} e $idosos idoso${Util.isPlural(idosos)}';
+    }
+    if (criancas == 0 && adultos != 0 && idosos == 0) {
+      return '$adultos adulto${Util.isPlural(adultos)}';
+    }
+    if (criancas == 0 && adultos != 0 && idosos != 0) {
+      return '$adultos adulto${Util.isPlural(adultos)} e $idosos idoso${Util.isPlural(idosos)}';
+    }
+    if (criancas == 0 && adultos == 0 && idosos != 0) {
+      return '$idosos idoso${Util.isPlural(idosos)}';
+    }
+    return 'Analisar moradores cadastrados!';
   }
 
-  String _ePlural(int qtd) {
-    return qtd > 1 ? 's' : '';
-  }
-
-  /// Abre a tela para um novo cadastro
-  _novoCadastro() {
-    Modular.to.pushNamed('/familia').then(onGoBack);
+  /// Cria uma serie para gráficos com dados das entregas mensais
+  List<charts.Series<EntregaMensal, String>> _graficoEntregasMensais() {
+    return [
+      charts.Series<EntregaMensal, String>(
+        id: 'Entregas',
+        colorFn: (_, __) => charts.MaterialPalette.teal.shadeDefault,
+        domainFn: (EntregaMensal sales, _) => Util.listaMesCurto[sales.mes],
+        measureFn: (EntregaMensal sales, a) => sales.total,
+        data: _entregasMensais,
+        labelAccessorFn: (EntregaMensal sales, a) =>
+            sales.total > 0 ? '${sales.total}' : '',
+      )
+    ];
   }
 
   /// Atualiza interface ao voltar para essa pagina
@@ -162,8 +203,6 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  ScrollController _scrollController = ScrollController();
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -176,8 +215,13 @@ class _HomePageState extends State<HomePage> {
               // Definições
               expandedHeight: 200,
               pinned: true,
+              //stretch: true,
               backgroundColor: Colors.white,
               foregroundColor: Colors.black,
+              systemOverlayStyle: const SystemUiOverlayStyle(
+                statusBarColor: Colors.transparent,
+                statusBarIconBrightness: Brightness.dark,
+              ),
               // Leading
               leading: innerBoxIsScrolled
                   ? IconButton(
@@ -189,8 +233,11 @@ class _HomePageState extends State<HomePage> {
               // Actions
               actions: [
                 TextButton.icon(
-                  icon: Icon(Icons.account_circle_rounded),
-                  label: Text(AppData.usuario?.nome.split(' ')[0] ?? 'Logar'),
+                  icon: Hero(
+                    tag: AppData.usuario?.uid ?? '',
+                    child: const Icon(Icons.account_circle_rounded),
+                  ),
+                  label: Text(AppData.usuario?.nome?.split(' ')[0] ?? 'ERRO'),
                   onPressed: () {
                     Modular.to
                         .pushNamed('/diacono?id=' + AppData.usuario!.uid)
@@ -200,12 +247,12 @@ class _HomePageState extends State<HomePage> {
               ],
               // FlexibleSpace
               flexibleSpace: FlexibleSpaceBar(
-                stretchModes: [
+                stretchModes: const [
                   StretchMode.blurBackground,
                   StretchMode.zoomBackground
                 ],
                 // Titulo
-                titlePadding: EdgeInsets.only(left: 48, bottom: 16),
+                titlePadding: const EdgeInsets.only(left: 48, bottom: 16),
                 title: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
@@ -213,7 +260,7 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     Text(
                       AppData.appName,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.black,
                         fontSize: 25,
                         fontWeight: FontWeight.bold,
@@ -221,12 +268,12 @@ class _HomePageState extends State<HomePage> {
                       ),
                       overflow: TextOverflow.ellipsis,
                       softWrap: false,
-                      strutStyle:
-                          StrutStyle(forceStrutHeight: true, height: 0.75),
+                      strutStyle: const StrutStyle(
+                          forceStrutHeight: true, height: 0.75),
                     ),
                     Visibility(
                       visible: !innerBoxIsScrolled,
-                      child: Text(
+                      child: const Text(
                         'Igreja Presbiteriana de Foz do Iguaçu',
                         style: TextStyle(
                           fontSize: 11,
@@ -242,21 +289,24 @@ class _HomePageState extends State<HomePage> {
                 background: Stack(
                   fit: StackFit.expand,
                   children: [
-                    Image(
+                    // Imagem de fundo
+                    const Image(
                       fit: BoxFit.cover,
                       image: AssetImage('assets/images/home-background.jpg'),
                     ),
+                    // Logotipo de fundo
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        SizedBox(width: 24),
+                        const SizedBox(width: 24), // espaço a esquerda
                         SizedBox(
-                          width: 96,
-                          height: 96,
+                          width: 72,
+                          height: 112,
                           child: Hero(
                             tag: 'logo',
                             child: Transform.rotate(
-                              angle: 5.75,
-                              child: Image(
+                              angle: 5.9,
+                              child: const Image(
                                 alignment: Alignment.topLeft,
                                 fit: BoxFit.scaleDown,
                                 image:
@@ -271,10 +321,11 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
+            // Informação em destaque
             SliverToBoxAdapter(
               child: Container(
                 color: Colors.grey.shade200,
-                padding: EdgeInsets.all(12),
+                padding: const EdgeInsets.all(12),
                 child: ValueListenableBuilder(
                   valueListenable: _totalFamilias,
                   builder: (BuildContext context, int value, Widget? child) {
@@ -288,6 +339,7 @@ class _HomePageState extends State<HomePage> {
             )
           ];
         },
+        // Corpo
         body: Scrollbar(
           isAlwaysShown: true,
           showTrackOnHover: true,
@@ -300,13 +352,13 @@ class _HomePageState extends State<HomePage> {
                   height: 150,
                   color: Colors.grey.shade100,
                   child: ValueListenableBuilder(
-                    valueListenable: tudoContado,
+                    valueListenable: _contagemConcluida,
                     builder: (BuildContext context, bool value, Widget? child) {
                       return charts.BarChart(
-                        _analisarEntregas(),
+                        _graficoEntregasMensais(),
                         barRendererDecorator:
                             charts.BarLabelDecorator<String>(),
-                        domainAxis: charts.OrdinalAxisSpec(),
+                        domainAxis: const charts.OrdinalAxisSpec(),
                         behaviors: [
                           charts.ChartTitle('Entregas',
                               behaviorPosition: charts.BehaviorPosition.start),
@@ -315,7 +367,7 @@ class _HomePageState extends State<HomePage> {
                     },
                   ),
                 ),
-                SizedBox(height: 12.0),
+                const SizedBox(height: 12.0),
                 // Lista
                 Text(
                   'FAMÍLIAS',
@@ -333,28 +385,33 @@ class _HomePageState extends State<HomePage> {
                       )
                       .snapshots(),
                   builder: (context, snapshots) {
+                    // Tela de carregamento
+                    if (!snapshots.hasData) {
+                      return const Center(
+                          heightFactor: 5, child: CircularProgressIndicator());
+                    }
+                    // Tela de erro
                     if (snapshots.hasError) {
                       return Center(
                         heightFactor: 5,
                         child: Text(snapshots.error.toString()),
                       );
                     }
-                    if (!snapshots.hasData) {
-                      return const Center(
-                          heightFactor: 5, child: CircularProgressIndicator());
-                    }
+                    // Tela de cadastros vazio
                     if (snapshots.data!.size == 0) {
-                      return Center(
+                      return const Center(
                         heightFactor: 5,
                         child: Text('Nenhum cadastro localizado!'),
                       );
                     }
-                    final data = snapshots.data;
-                    // Realizar contagens
+                    // Realizar contagens ao estabilizar conexão
                     if (snapshots.connectionState == ConnectionState.active) {
-                      if (data!.size != _totalFamilias.value) {
-                        WidgetsBinding.instance
-                            ?.addPostFrameCallback((_) => _contarTotais(data));
+                      // Contar apenas se total de famílias for alterado
+                      if ((snapshots.data?.size ?? _totalFamilias.value) !=
+                          _totalFamilias.value) {
+                        // Executar função apenas o após carregamento da interface
+                        WidgetsBinding.instance?.addPostFrameCallback(
+                            (_) => _contarTotais(snapshots.data));
                       }
                     }
                     // Widget
@@ -362,35 +419,35 @@ class _HomePageState extends State<HomePage> {
                       scrollDirection: Axis.vertical,
                       shrinkWrap: true, // Obrigatorio (gera erro se falso)
                       physics:
-                          ScrollPhysics(), // Obrigatorio (nao move se nulo)
+                          const ScrollPhysics(), // Obrigatorio (nao move se nulo)
                       padding: EdgeInsets.symmetric(
                         horizontal: Util.paddingListH(context),
                       ),
-                      itemCount: data!.size,
+                      itemCount: snapshots.data?.size ?? 0,
                       itemBuilder: (context, index) {
-                        Familia familia = data.docs[index].data();
-                        // Lista
+                        Familia familia = snapshots.data!.docs[index].data();
+                        // Elementos
                         return ListTile(
                           horizontalTitleGap: 2,
                           visualDensity: VisualDensity.compact,
                           isThreeLine: true,
-                          leading: Icon(Icons.family_restroom_rounded),
+                          leading: const Icon(Icons.family_restroom_rounded),
                           // Nome do morador
                           title: Text(
                             familia.moradores[familia.famResponsavel].nome,
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           // Bairro
                           subtitle: Text(_contarIntegrantes(familia) +
                               '\n' +
-                              familia.endBairro +
-                              ' • ' +
-                              familia.cadEntregas.toString() +
-                              ' entregas realizadas.'),
+                              familia.endBairro),
+                          //+ ' • ' +
+                          //familia.cadEntregas.toString() +
+                          //' entregas realizadas.'),
                           onTap: () {
                             Modular.to
                                 .pushNamed('/familia?id=' +
-                                    data.docs[index].reference.id)
+                                    snapshots.data!.docs[index].reference.id)
                                 .then(onGoBack);
                           },
                         );
@@ -406,61 +463,14 @@ class _HomePageState extends State<HomePage> {
       persistentFooterButtons: [_btnAdmin, _btnRelatorios, _btnNovoCadastro],
     );
   }
-
-  static List<Entregas> mEntregas = [
-    new Entregas(0, 0),
-    new Entregas(1, 0),
-    new Entregas(2, 0),
-    new Entregas(3, 0),
-    new Entregas(4, 0),
-    new Entregas(5, 0),
-    new Entregas(6, 0),
-    new Entregas(7, 0),
-    new Entregas(8, 0),
-    new Entregas(9, 0),
-    new Entregas(10, 0),
-    new Entregas(11, 0),
-  ];
-
-  /// Create one series with sample hard coded data.
-  static List<charts.Series<Entregas, String>> _analisarEntregas() {
-    return [
-      new charts.Series<Entregas, String>(
-        id: 'Entregas',
-        colorFn: (_, __) => charts.MaterialPalette.teal.shadeDefault,
-        domainFn: (Entregas sales, _) => months[sales.mes],
-        measureFn: (Entregas sales, a) => sales.total,
-        data: mEntregas,
-        labelAccessorFn: (Entregas sales, a) =>
-            sales.total > 0 ? '${sales.total}' : '',
-      )
-    ];
-  }
 }
 
 /// Sample ordinal data type.
-class Entregas {
+class EntregaMensal {
   final int mes;
   int total = 0;
 
-  Entregas(this.mes, this.total);
+  EntregaMensal(this.mes, this.total);
 
-  void add(int valor) {
-    total += valor;
-  }
+  void increment() => total++;
 }
-
-List<String> months = [
-  'Jan',
-  'Fev',
-  'Mar',
-  'Abr',
-  'Maio',
-  'Jun',
-  'Jul',
-  'Ago',
-  'Set',
-  'Out',
-  'Nov',
-  'Dez'
-];

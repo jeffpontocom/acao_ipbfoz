@@ -1,16 +1,18 @@
-import 'package:acao_ipbfoz/main.dart';
-import 'package:acao_ipbfoz/models/morador.dart';
+import 'dart:developer' as dev;
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 import 'fam_dados.dart';
 import 'fam_entregas.dart';
 import 'fam_mapa.dart';
 import 'fam_moradores.dart';
+import '/main.dart';
 import '/models/familia.dart';
+import '/models/morador.dart';
 import '/ui/dialogs.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
-import 'package:intl/date_symbol_data_local.dart';
 
 late DocumentReference<Familia> reference;
 late Familia familia;
@@ -48,7 +50,7 @@ class _FamiliaPageState extends State<FamiliaPage> {
         familia = value.data()!;
         onFirestore = true;
       } else {
-        familia = new Familia(
+        familia = Familia(
             cadAtivo: true,
             cadDiacono: auth.currentUser!.uid,
             cadData: Timestamp.now(),
@@ -60,7 +62,7 @@ class _FamiliaPageState extends State<FamiliaPage> {
             famTelefone2: 450,
             famRendaMedia: 0,
             famBeneficioGov: 0,
-            endGeopoint: new GeoPoint(-25.5322523, -54.5864979),
+            endGeopoint: const GeoPoint(-25.5322523, -54.5864979),
             endCEP: 85852000,
             endLogradouro: '',
             endNumero: '',
@@ -70,7 +72,7 @@ class _FamiliaPageState extends State<FamiliaPage> {
             endPais: 'Brasil',
             endReferencia: '',
             extraInfo: '',
-            moradores: new List<Morador>.empty(growable: true));
+            moradores: List<Morador>.empty(growable: true));
         onFirestore = false;
       }
     });
@@ -84,7 +86,7 @@ class _FamiliaPageState extends State<FamiliaPage> {
       builder: (context, snapshot) {
         // Enquanto carrega
         if (!snapshot.hasData) {
-          return Scaffold(
+          return const Scaffold(
             body: Center(
               child: CircularProgressIndicator(),
             ),
@@ -94,9 +96,9 @@ class _FamiliaPageState extends State<FamiliaPage> {
         if (snapshot.hasError) {
           return Scaffold(
             appBar: AppBar(
-              title: Text('Erro!'),
+              title: const Text('Erro!'),
             ),
-            body: Center(
+            body: const Center(
               child: Padding(
                 padding: EdgeInsets.all(24.0),
                 child: Text(
@@ -116,12 +118,12 @@ class _FamiliaPageState extends State<FamiliaPage> {
               title: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Família', textScaleFactor: 0.6),
+                  const Text('Família', textScaleFactor: 0.6),
                   Text(
                     familia.moradores.isEmpty
                         ? 'Novo Cadastro'
-                        : '${familia.moradores[0].nome}',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                        : familia.moradores[0].nome,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
@@ -142,7 +144,7 @@ class _FamiliaPageState extends State<FamiliaPage> {
                   },
                 ),
               ],
-              bottom: TabBar(
+              bottom: const TabBar(
                 labelStyle: TextStyle(overflow: TextOverflow.ellipsis),
                 tabs: [
                   Tab(text: "Cadastro"),
@@ -152,7 +154,7 @@ class _FamiliaPageState extends State<FamiliaPage> {
                 ],
               ),
             ),
-            body: TabBarView(
+            body: const TabBarView(
               children: [
                 FamiliaDados(),
                 FamiliaMoradores(),
@@ -164,83 +166,13 @@ class _FamiliaPageState extends State<FamiliaPage> {
         );
       },
     );
-    /*  body: DefaultTabController(
-              length: 4,
-              child: NestedScrollView(
-                headerSliverBuilder:
-                    (BuildContext context, bool innerBoxIsScrolled) {
-                  return <Widget>[
-                    SliverAppBar(
-                      title: Text('Cadastro da família'),
-                      expandedHeight: 220.0,
-                      pinned: true,
-                      snap: false,
-                      floating: true,
-                      flexibleSpace: FlexibleSpaceBar(
-                        background: Image(
-                          image: AssetImage('assets/images/sample_casa.jpg'),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      actions: [
-                        TextButton(
-                          child: Text(
-                            editMode ? 'SALVAR' : 'EDITAR',
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
-                          ),
-                          onPressed: () {
-                            if (editMode) {
-                              _salvarDados();
-                            } else {
-                              editMode = !editMode;
-                              setState(() {});
-                            }
-                          },
-                        ),
-                        Icon(
-                            editMode ? Icons.save_rounded : Icons.edit_rounded),
-                      ],
-                    ),
-                    SliverPersistentHeader(
-                      pinned: true,
-                      delegate: _SliverAppBarDelegate(
-                        TabBar(
-                          labelColor: Colors.black87,
-                          unselectedLabelColor: Colors.grey,
-                          tabs: [
-                            Tab(text: "Cadastro"),
-                            Tab(text: "Moradores"),
-                            Tab(text: "Entregas"),
-                            Tab(text: "Mapa"),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ];
-                },
-                body: SafeArea(
-                  child: TabBarView(
-                    children: [
-                      FamiliaDados(),
-                      FamiliaMoradores(),
-                      FamiliaEntregas(),
-                      FamiliaMapa(),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          );
-        }); */
   }
 
   void _salvarDados() {
     if (familia.moradores.isEmpty) {
       showDialog(
         context: context,
-        builder: (context) => AlertDialog(
+        builder: (context) => const AlertDialog(
           title: Text('Atenção'),
           content: Text('Ao menos um morador deve ser cadastrado.'),
         ),
@@ -255,34 +187,9 @@ class _FamiliaPageState extends State<FamiliaPage> {
         onFirestore = true;
         setState(() {});
       }).catchError((error) {
-        print("Failed to add: $error");
+        dev.log('Falha ao adicionar: $error', name: 'FamiliaPage');
         Navigator.pop(context);
       });
     }
   }
 }
-
-/* class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
-  _SliverAppBarDelegate(this._tabBar);
-
-  final TabBar _tabBar;
-
-  @override
-  double get minExtent => _tabBar.preferredSize.height;
-  @override
-  double get maxExtent => _tabBar.preferredSize.height;
-
-  @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return new Container(
-      color: Colors.white,
-      child: _tabBar,
-    );
-  }
-
-  @override
-  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
-    return false;
-  }
-} */

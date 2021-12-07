@@ -1,14 +1,14 @@
 class Diacono {
-  late String uid;
+  late final String uid;
 
-  late String nome; // OBRIGATORIO
-  late String email; // OBRIGATORIO
-  late int telefone; // OBRIGATORIO
+  String? nome; // OBRIGATORIO
+  String? email; // OBRIGATORIO
+  int? telefone; // OBRIGATORIO
 
   Diacono({
-    required this.nome,
-    required this.email,
-    required this.telefone,
+    this.nome,
+    this.email,
+    this.telefone,
   });
 
   Diacono.fromJson(Map<String, Object?> json)

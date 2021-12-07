@@ -1,15 +1,15 @@
-import 'package:acao_ipbfoz/utils/util.dart';
-
-import '../app_data.dart';
-import 'familia_page.dart';
-import '../data/beneficiosGov.dart';
-import '../ui/estilos.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import 'familia_page.dart';
+import '../app_data.dart';
+import '../data/beneficios_gov.dart';
+import '../ui/estilos.dart';
+import '../utils/util.dart';
+
 class FamiliaDados extends StatefulWidget {
-  FamiliaDados();
+  const FamiliaDados({Key? key}) : super(key: key);
 
   @override
   _FamiliaDadosState createState() => _FamiliaDadosState();
@@ -24,7 +24,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
         FocusScope.of(context).requestFocus(FocusNode());
       },
       child: ListView(
-        key: PageStorageKey('dados'),
+        key: const PageStorageKey('dados'),
         padding: EdgeInsets.symmetric(
             horizontal: Util.margemH(context), vertical: Util.margemV(context)),
         children: [
@@ -35,24 +35,20 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                     ? 'Situação: ATIVO'
                     : 'Situação: INATIVO'
                 : 'Situação: EM CRIAÇÃO',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
           ),
           Text(
             'Criado em ' +
                 DateFormat.yMMMMd('pt_BR').format(familia.cadData.toDate()),
-            style: TextStyle(color: Colors.grey),
+            style: const TextStyle(color: Colors.grey),
           ),
-          SizedBox(
-            height: 24.0,
-          ),
+          const SizedBox(height: 24.0),
           // DADOS EDITAVEIS
-          Text(
+          const Text(
             'CONTATO',
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
-          SizedBox(
-            height: 8.0,
-          ),
+          const SizedBox(height: 8.0),
           Visibility(
             visible: familia.moradores.isNotEmpty,
             child: Column(
@@ -68,9 +64,9 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                   ),
                   items: familia.moradores
                       .map(
-                        (morador) => new DropdownMenuItem(
+                        (morador) => DropdownMenuItem(
                           value: familia.moradores.indexOf(morador),
-                          child: new Text(morador.nome),
+                          child: Text(morador.nome),
                         ),
                       )
                       .toList(),
@@ -82,9 +78,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                         }
                       : null,
                 ),
-                SizedBox(
-                  height: 8.0,
-                ),
+                const SizedBox(height: 8.0),
               ],
             ),
           ),
@@ -116,7 +110,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                   },
                 ),
               ),
-              Expanded(
+              const Expanded(
                 flex: 0,
                 child: SizedBox(
                   width: 8.0,
@@ -148,16 +142,12 @@ class _FamiliaDadosState extends State<FamiliaDados> {
               ),
             ],
           ),
-          SizedBox(
-            height: 24.0,
-          ),
-          Text(
+          const SizedBox(height: 24.0),
+          const Text(
             'ENDEREÇO',
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
-          SizedBox(
-            height: 8.0,
-          ),
+          const SizedBox(height: 8.0),
           Row(
             children: [
               // CEP
@@ -180,7 +170,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                   },
                 ),
               ),
-              Expanded(
+              const Expanded(
                 flex: 0,
                 child: SizedBox(
                   width: 8.0,
@@ -203,9 +193,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
               ),
             ],
           ),
-          SizedBox(
-            height: 8.0,
-          ),
+          const SizedBox(height: 8.0),
           // Logradouro
           TextFormField(
             enabled: editMode,
@@ -218,9 +206,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
               familia.endLogradouro = value;
             },
           ),
-          SizedBox(
-            height: 8.0,
-          ),
+          const SizedBox(height: 8.0),
           // Bairro
           TextFormField(
             enabled: editMode,
@@ -234,9 +220,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
               familia.endBairro = value;
             },
           ),
-          SizedBox(
-            height: 8.0,
-          ),
+          const SizedBox(height: 8.0),
           // Referencia
           TextFormField(
             enabled: editMode,
@@ -252,16 +236,12 @@ class _FamiliaDadosState extends State<FamiliaDados> {
               familia.endReferencia = value;
             },
           ),
-          SizedBox(
-            height: 24.0,
-          ),
-          Text(
+          const SizedBox(height: 24.0),
+          const Text(
             'ANALISE SOCIAL',
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
-          SizedBox(
-            height: 8.0,
-          ),
+          const SizedBox(height: 8.0),
           Row(
             children: [
               // Renda Media
@@ -287,11 +267,9 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                   },
                 ),
               ),
-              Expanded(
+              const Expanded(
                 flex: 0,
-                child: SizedBox(
-                  width: 8.0,
-                ),
+                child: SizedBox(width: 8.0),
               ),
               // Beneficio Governo (combo box)
               Expanded(
@@ -309,9 +287,9 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                   ),
                   items: Beneficios.values
                       .map(
-                        (value) => new DropdownMenuItem(
+                        (value) => DropdownMenuItem(
                           value: value.index,
-                          child: new Text(getBeneficiosString(value)),
+                          child: Text(getBeneficiosString(value)),
                         ),
                       )
                       .toList(),
@@ -326,16 +304,12 @@ class _FamiliaDadosState extends State<FamiliaDados> {
               ),
             ],
           ),
-          SizedBox(
-            height: 24.0,
-          ),
-          Text(
+          const SizedBox(height: 24.0),
+          const Text(
             'CONTROLE IPBFoz',
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
-          SizedBox(
-            height: 8.0,
-          ),
+          const SizedBox(height: 8.0),
           // Informacao Extra
           TextFormField(
             enabled: editMode,
@@ -352,9 +326,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
               familia.extraInfo = value;
             },
           ),
-          SizedBox(
-            height: 8.0,
-          ),
+          const SizedBox(height: 8.0),
           // Solicitante
           TextFormField(
             enabled: editMode,
@@ -367,9 +339,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
               familia.cadSolicitante = value;
             },
           ),
-          SizedBox(
-            height: 8.0,
-          ),
+          const SizedBox(height: 8.0),
           // Diacono Responsavel (combo box)
           DropdownButtonFormField<String>(
             value: familia.cadDiacono,
@@ -383,9 +353,9 @@ class _FamiliaDadosState extends State<FamiliaDados> {
               skipTraversal: true,
             ),
             items: AppData.diaconos.entries
-                .map((mDiacono) => new DropdownMenuItem(
+                .map((mDiacono) => DropdownMenuItem(
                       value: mDiacono.key,
-                      child: Text(mDiacono.value.nome),
+                      child: Text(mDiacono.value.nome ?? '[verificar]]'),
                     ))
                 .toList(),
             onChanged: editMode
@@ -396,9 +366,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                   }
                 : null,
           ),
-          SizedBox(
-            height: 36.0,
-          ),
+          const SizedBox(height: 36.0),
           Row(
             children: [
               onFirestore
@@ -408,7 +376,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                         label: Text(familia.cadAtivo
                             ? 'Desativar cadastro'
                             : 'Reativar cadastro'),
-                        icon: Icon(Icons.archive_rounded),
+                        icon: const Icon(Icons.archive_rounded),
                         style:
                             mOutlinedButtonStyle.merge(OutlinedButton.styleFrom(
                           primary: Colors.white,
@@ -427,8 +395,8 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                             : null,
                       ),
                     )
-                  : SizedBox(),
-              Expanded(flex: 1, child: SizedBox()),
+                  : const SizedBox(),
+              const Expanded(flex: 1, child: SizedBox()),
             ],
           ),
         ],

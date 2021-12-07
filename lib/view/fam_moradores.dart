@@ -1,13 +1,15 @@
-import 'package:acao_ipbfoz/data/escolaridade.dart';
-import 'package:acao_ipbfoz/models/morador.dart';
-import 'package:acao_ipbfoz/ui/dialogs.dart';
-import 'package:acao_ipbfoz/ui/estilos.dart';
-import 'package:acao_ipbfoz/view/familia_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import '/data/escolaridade.dart';
+import '/models/morador.dart';
+import '/ui/dialogs.dart';
+import '/ui/estilos.dart';
+import '/utils/util.dart';
+import '/view/familia_page.dart';
+
 class FamiliaMoradores extends StatefulWidget {
-  FamiliaMoradores();
+  const FamiliaMoradores({Key? key}) : super(key: key);
 
   @override
   _FamiliaMoradoresState createState() => _FamiliaMoradoresState();
@@ -17,14 +19,14 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      key: PageStorageKey('moradores'),
+      key: const PageStorageKey('moradores'),
       child: Padding(
-        padding: EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(24.0),
         child: Column(
           children: [
             OutlinedButton.icon(
-              label: Text('Adicionar morador'),
-              icon: Icon(Icons.person_add),
+              label: const Text('Adicionar morador'),
+              icon: const Icon(Icons.person_add),
               style: mOutlinedButtonStyle,
               onPressed: editMode
                   ? () {
@@ -32,13 +34,11 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                     }
                   : null,
             ),
-            SizedBox(
-              height: 8.0,
-            ),
+            const SizedBox(height: 8.0),
             ListView.builder(
                 scrollDirection: Axis.vertical,
                 shrinkWrap: true,
-                padding: EdgeInsets.all(0),
+                padding: const EdgeInsets.all(0),
                 itemCount: familia.moradores.length,
                 itemBuilder: (context, index) {
                   var mIdade =
@@ -49,7 +49,7 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                   return ListTile(
                     horizontalTitleGap: 2,
                     visualDensity: VisualDensity.compact,
-                    leading: Icon(Icons.person),
+                    leading: const Icon(Icons.person),
                     title: Text(familia.moradores[index].nome),
                     subtitle: Text('$sIdade • $profissao'),
                     onTap: editMode
@@ -66,7 +66,7 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
   }
 
   void _dialogAddMorador(Morador? valor, int pos) {
-    Morador morador = new Morador(
+    Morador morador = Morador(
         nome: '',
         nascimento: Timestamp.fromDate(DateTime(1800)),
         escolaridade: 0,
@@ -84,16 +84,15 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                 bottom: MediaQuery.of(context).viewInsets.bottom,
                 top: MediaQuery.of(context).padding.top),
             child: ListView(
-              padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
               children: [
-                Text(
+                const Text(
                   'Cadastro de morador',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
                 ),
-                SizedBox(
-                  height: 24.0,
-                ),
+                const SizedBox(height: 24.0),
                 // Nome
                 TextFormField(
                   initialValue: morador.nome,
@@ -106,9 +105,7 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                     morador.nome = value;
                   },
                 ),
-                SizedBox(
-                  height: 8.0,
-                ),
+                const SizedBox(height: 8.0),
 
                 Row(
                   children: [
@@ -129,7 +126,6 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                             morador.nascimento =
                                 Timestamp.fromDate(DateTime(1800));
                           }
-                          print(value.length.toString());
                           if (value.length >= 10) {
                             DateTime date = maskDate.parse(value);
                             morador.nascimento = Timestamp.fromDate(date);
@@ -137,11 +133,9 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                         },
                       ),
                     ),
-                    Expanded(
+                    const Expanded(
                       flex: 0,
-                      child: SizedBox(
-                        width: 8.0,
-                      ),
+                      child: SizedBox(width: 8.0),
                     ),
                     // Escolaridade
                     Expanded(
@@ -155,9 +149,9 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                         ),
                         items: Escolaridade.values
                             .map(
-                              (value) => new DropdownMenuItem(
+                              (value) => DropdownMenuItem(
                                 value: value.index,
-                                child: new Text(getEscolaridadeString(value)),
+                                child: Text(getEscolaridadeString(value)),
                               ),
                             )
                             .toList(),
@@ -170,9 +164,7 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                     ),
                   ],
                 ),
-                SizedBox(
-                  height: 8.0,
-                ),
+                const SizedBox(height: 8.0),
                 // Profissao
                 TextFormField(
                   initialValue: morador.profissao,
@@ -185,12 +177,10 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                     morador.profissao = value;
                   },
                 ),
-                SizedBox(
-                  height: 8.0,
-                ),
+                const SizedBox(height: 8.0),
                 // E Especial
                 ListTile(
-                    title: Text("Possui necessidades especiais"),
+                    title: const Text("Possui necessidades especiais"),
                     leading: Checkbox(
                       value: morador.especial,
                       onChanged: (value) {
@@ -199,22 +189,16 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                         });
                       },
                     )),
-                SizedBox(
-                  height: 8.0,
-                ),
+                const SizedBox(height: 8.0),
                 Row(
                   children: [
                     pos == 9999
-                        ? Expanded(
-                            flex: 1,
-                            child: SizedBox(
-                              width: 24.0,
-                            ))
+                        ? const Expanded(flex: 1, child: SizedBox(width: 24.0))
                         : Expanded(
                             flex: 1,
                             child: OutlinedButton.icon(
-                              label: Text('Excluir'),
-                              icon: Icon(Icons.archive_rounded),
+                              label: const Text('Excluir'),
+                              icon: const Icon(Icons.archive_rounded),
                               style: mOutlinedButtonStyle
                                   .merge(OutlinedButton.styleFrom(
                                 primary: Colors.white,
@@ -236,24 +220,21 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                               },
                             ),
                           ),
-                    Expanded(
-                        flex: 0,
-                        child: SizedBox(
-                          width: 24.0,
-                        )),
+                    const Expanded(flex: 0, child: SizedBox(width: 24.0)),
                     Expanded(
                       flex: 2,
                       child: OutlinedButton.icon(
-                        label: Text('Salvar'),
-                        icon: Icon(Icons.save_rounded),
+                        label: const Text('Salvar'),
+                        icon: const Icon(Icons.save_rounded),
                         style: mOutlinedButtonStyle,
                         onPressed: () {
                           Navigator.pop(context, true);
                           setState(() {
-                            if (pos == 9999)
+                            if (pos == 9999) {
                               familia.moradores.add(morador);
-                            else
+                            } else {
                               familia.moradores[pos] = morador;
+                            }
                           });
                         },
                       ),
@@ -306,10 +287,10 @@ String _mostrarIdade(bool isBirthday, int idade) {
   }
   //Verifica se está fazendo aniversário hoje
   else if (isBirthday) {
-    return "$idade ano(s) - Aniversariante!";
+    return "$idade ano${Util.isPlural(idade)} - Aniversariante!";
   }
   //Se nenhuma das opções anteriores, então já fez aniversário este ano
   else {
-    return "$idade anos(s)";
+    return "$idade anos${Util.isPlural(idade)}";
   }
 }

@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 
 showLoaderDialog(BuildContext context) {
   AlertDialog alert = AlertDialog(
-    content: new Row(
+    content: Row(
       children: [
-        CircularProgressIndicator(),
+        const CircularProgressIndicator(),
         Container(
-            margin: EdgeInsets.only(left: 7), child: Text("Carregando...")),
+          margin: const EdgeInsets.only(left: 7),
+          child: const Text("Carregando..."),
+        ),
       ],
     ),
   );
@@ -21,16 +23,16 @@ showLoaderDialog(BuildContext context) {
 
 AlertDialog dialogConfirmaAcao(context) {
   return AlertDialog(
-    content: new Row(
+    content: Row(
       children: [
         Container(
-            margin: EdgeInsets.only(left: 7),
-            child: Text("Deseja excluir esse item?")),
+            margin: const EdgeInsets.only(left: 7),
+            child: const Text("Deseja excluir esse item?")),
       ],
     ),
-    actions: <Widget>[
+    actions: [
       TextButton(
-        child: Text('OK'),
+        child: const Text('OK'),
         onPressed: () {
           Navigator.pop(context, true);
         },

@@ -1,9 +1,9 @@
 enum Beneficios {
   nenhum,
-  bolsa_familia,
+  bolsaFamilia,
   aposentadoria,
   pensao,
-  auxilio_emergencial,
+  auxilioEmergencial,
 }
 
 String getBeneficiosString(Beneficios value) {

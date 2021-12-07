@@ -19,7 +19,7 @@ void main() async {
   runApp(
     ModularApp(
       module: AppModule(),
-      child: MyApp(),
+      child: const MyApp(),
       debugMode: !kReleaseMode,
     ),
   );
@@ -35,9 +35,13 @@ class MyApp extends StatelessWidget {
       title: 'Ação Social IPBFoz',
       // Tema
       theme: ThemeData(
+        // Cor primaria
         primarySwatch: Colors.teal,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
+        // Fonte padrão
         fontFamily: 'Quicksand',
+        // Densidade dos elementos
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+        // Botões coloridos
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             minimumSize: const Size(150, 48),
@@ -46,13 +50,14 @@ class MyApp extends StatelessWidget {
             ),
           ),
         ),
+        // Caixas de texto
         inputDecorationTheme: const InputDecorationTheme(
           border: OutlineInputBorder(
             borderRadius: BorderRadius.all(Radius.circular(16)),
           ),
         ),
       ),
-      // Debug banner
+      // Identificador de tipo de Release
       debugShowCheckedModeBanner: !kReleaseMode,
     ).modular();
   }

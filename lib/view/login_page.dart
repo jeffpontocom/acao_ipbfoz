@@ -1,13 +1,17 @@
+import 'dart:developer' as dev;
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
 import '/main.dart';
-import '../app_data.dart';
-import '../models/diacono.dart';
-import '../utils/util.dart';
+import '/app_data.dart';
+import '/models/diacono.dart';
+import '/utils/util.dart';
 
 class LoginPage extends StatefulWidget {
+  const LoginPage({Key? key}) : super(key: key);
+
   @override
   _LoginPageState createState() => _LoginPageState();
 }
@@ -16,7 +20,7 @@ class _LoginPageState extends State<LoginPage> {
   /* VARIAVEIS */
   final _controleUsuario = TextEditingController();
   final _controleSenha = TextEditingController();
-  final _formKey = new GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
 
   /* METODOS DO SISTEMA */
   @override
@@ -32,7 +36,7 @@ class _LoginPageState extends State<LoginPage> {
     double margemH = Util.margemH(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text('Login'),
+        title: const Text('Login'),
       ),
       body: Center(
         child: Scrollbar(
@@ -74,9 +78,7 @@ class _LoginPageState extends State<LoginPage> {
                                 prefixIcon: Icon(Icons.email_rounded),
                               ),
                             ),
-                            SizedBox(
-                              height: 8.0,
-                            ),
+                            const SizedBox(height: 8.0),
                             // SENHA
                             TextFormField(
                               controller: _controleSenha,
@@ -86,27 +88,23 @@ class _LoginPageState extends State<LoginPage> {
                               textInputAction: TextInputAction.done,
                               autofillHints: const [AutofillHints.password],
                               enableSuggestions: false,
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                 labelText: 'Senha',
                                 prefixIcon: Icon(Icons.password_rounded),
                               ),
                               onFieldSubmitted: (_) => _logar(),
                             ),
-                            SizedBox(
-                              height: 24.0,
-                            ),
+                            const SizedBox(height: 24.0),
                             // BOTAO ENTRAR
                             ElevatedButton.icon(
-                              icon: Icon(Icons.login_rounded),
-                              label: Text('ENTRAR'),
+                              icon: const Icon(Icons.login_rounded),
+                              label: const Text('ENTRAR'),
                               onPressed: _logar,
                             ),
-                            SizedBox(
-                              height: 36.0,
-                            ),
+                            const SizedBox(height: 36.0),
                             // BOTAO ESQUECI SENHA
                             TextButton(
-                              child: Text(
+                              child: const Text(
                                 'Esqueci minha senha',
                                 style: TextStyle(color: Colors.red),
                               ),
@@ -117,9 +115,9 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     // Texto Informativo
-                    SizedBox(
+                    const SizedBox(
                       width: double.maxFinite,
-                      child: const Text(
+                      child: Text(
                         'Apenas usuários cadastrados pelo administrador tem acesso ao sistema.',
                         style: TextStyle(color: Colors.grey),
                         textAlign: TextAlign.center,
@@ -159,12 +157,12 @@ class _LoginPageState extends State<LoginPage> {
             softWrap: false,
           ),
         ),
-        Text(
+        const Text(
           'Igreja Presbiteriana de Foz do Iguaçu',
           overflow: TextOverflow.ellipsis,
           softWrap: false,
         ),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         Text(
           AppData.version,
           style: const TextStyle(color: Colors.grey),
@@ -190,7 +188,7 @@ class _LoginPageState extends State<LoginPage> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return Center(child: CircularProgressIndicator());
+        return const Center(child: CircularProgressIndicator());
       },
     );
     // Tenta acessar a conta
@@ -213,7 +211,7 @@ class _LoginPageState extends State<LoginPage> {
             AppData.usuario!.uid = credential.user!.uid;
             Modular.to.navigate('/');
           } else {
-            AppData.usuario = new Diacono(
+            AppData.usuario = Diacono(
               nome: '',
               email: credential.user!.email!,
               telefone: 0,
@@ -225,7 +223,7 @@ class _LoginPageState extends State<LoginPage> {
         return;
       }
     } catch (e) {
-      print(e);
+      dev.log(e.toString(), name: 'LoginPage');
     }
     Navigator.pop(context); // Fecha progresso
     // Ao falhar abre dialogo
@@ -233,13 +231,13 @@ class _LoginPageState extends State<LoginPage> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('Não foi possível logar'),
-            content: Text('Verifique seu usuário e senha.\n\n' +
+            title: const Text('Não foi possível logar'),
+            content: const Text('Verifique seu usuário e senha.\n\n' +
                 'Apenas usuários previamente cadastrados podem acessar o sistema.\n\n' +
                 'Qualquer dúvida fale com o administrador do sistema.'),
-            actions: <Widget>[
-              new OutlinedButton(
-                child: new Text('OK'),
+            actions: [
+              OutlinedButton(
+                child: const Text('OK'),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
@@ -260,13 +258,13 @@ class _LoginPageState extends State<LoginPage> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return Center(child: CircularProgressIndicator());
+        return const Center(child: CircularProgressIndicator());
       },
     );
     try {
       await auth.sendPasswordResetEmail(email: _controleUsuario.text);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text(
               'Verifique a sua caixa de entrada para redefinir a sua senha!'),
         ),

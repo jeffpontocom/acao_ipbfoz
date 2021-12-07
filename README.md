@@ -1,12 +1,10 @@
-# acao_ipbfoz
+# Ação Social IPBFoz
 
-A new Flutter project.
+App para controle das ações sociais da Igreja Presbiteriana de Foz do Iguaçu.
 
-## Getting Started
+## Desenvolvimento em Flutter
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
+Para apoio ao desenvolvimento acessar os seguintes endereços:
 
 - [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
 - [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)

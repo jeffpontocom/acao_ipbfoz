@@ -1,5 +1,5 @@
-import '/models/morador.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '/models/morador.dart';
 
 class Familia {
   late bool cadAtivo;
@@ -69,7 +69,7 @@ class Familia {
           famRendaMedia: (json['famRendaMedia'] ?? 0) as num,
           famBeneficioGov: (json['famBeneficioGov'] ?? 0) as int,
           endGeopoint: (json['endGeopoint'] ??
-              new GeoPoint(-25.5322523, -54.5864979)) as GeoPoint,
+              const GeoPoint(-25.5322523, -54.5864979)) as GeoPoint,
           endCEP: (json['endCEP'] ?? 85852000) as int,
           endLogradouro: (json['endLogradouro'] ?? '') as String,
           endNumero: (json['endNumero'] ?? '') as String,
@@ -79,15 +79,12 @@ class Familia {
           endPais: (json['endPais'] ?? 'Brasil') as String,
           endReferencia: (json['endReferencia'] ?? '') as String,
           extraInfo: (json['extraInfo'] ?? '') as String,
-          moradores: List<Morador>.from(
-              ((json['moradores'] ?? null) as List<dynamic>)
-                  .map((e) => Morador.fromJson(e))),
+          moradores: List<Morador>.from(((json['moradores']) as List<dynamic>)
+              .map((e) => Morador.fromJson(e))),
         );
 
   Map<String, Object?> extractMap(Map<String, Object?>? json) {
-    if (json == null) {
-      json = new Map<String, Object?>();
-    }
+    json ??= <String, Object?>{};
     return json;
   }
 

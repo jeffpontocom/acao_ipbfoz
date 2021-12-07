@@ -2,15 +2,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'familia_page.dart';
-import '../app_data.dart';
-import '../main.dart';
-import '../models/entrega.dart';
-import '../models/entrega_itens.dart';
-import '../ui/dialogs.dart';
-import '../ui/estilos.dart';
+import '/app_data.dart';
+import '/main.dart';
+import '/models/entrega.dart';
+import '/models/entrega_itens.dart';
+import '/ui/dialogs.dart';
+import '/ui/estilos.dart';
 
 class FamiliaEntregas extends StatefulWidget {
-  FamiliaEntregas();
+  const FamiliaEntregas({Key? key}) : super(key: key);
 
   @override
   _FamiliaEntregasState createState() => _FamiliaEntregasState();
@@ -20,14 +20,14 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      key: PageStorageKey('entregas'),
+      key: const PageStorageKey('entregas'),
       child: Padding(
-        padding: EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(24.0),
         child: Column(
           children: [
             OutlinedButton.icon(
-              label: Text('Nova entrega'),
-              icon: Icon(Icons.person_add),
+              label: const Text('Nova entrega'),
+              icon: const Icon(Icons.person_add),
               style: mOutlinedButtonStyle,
               onPressed: onFirestore
                   ? () {
@@ -39,19 +39,17 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
                             toFirestore: (documento, _) => documento.toJson(),
                           )
                           .doc();
-                      Entrega nova = new Entrega(
+                      Entrega nova = Entrega(
                         data: Timestamp.now(),
                         diacono: auth.currentUser!.uid,
-                        itens: new List<ItensEntrega>.empty(growable: true),
+                        itens: List<ItensEntrega>.empty(growable: true),
                         entregue: false,
                       );
                       _dialogAddEntrega(ref, nova, true);
                     }
                   : null,
             ),
-            SizedBox(
-              height: 8.0,
-            ),
+            const SizedBox(height: 8.0),
             StreamBuilder<QuerySnapshot<Entrega>>(
                 stream: reference
                     .collection('entregas')
@@ -73,7 +71,7 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
                     return const Center(child: CircularProgressIndicator());
                   }
                   if (snapshots.data!.size == 0) {
-                    return Center(
+                    return const Center(
                       heightFactor: 5,
                       child: Text('Nenhuma entrega realizada ainda.'),
                     );
@@ -83,24 +81,24 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
                     child: ListView.builder(
                         scrollDirection: Axis.vertical,
                         shrinkWrap: true,
-                        padding: EdgeInsets.all(0),
+                        padding: const EdgeInsets.all(0),
                         itemCount: data!.size,
                         itemBuilder: (context, index) {
                           Entrega iEntrega = data.docs[index].data();
                           int totalItens = 0;
-                          iEntrega.itens.forEach((element) {
+                          for (var element in iEntrega.itens) {
                             totalItens += element.quantidade;
-                          });
+                          }
                           return ListTile(
                             contentPadding:
-                                EdgeInsets.symmetric(horizontal: 8.0),
+                                const EdgeInsets.symmetric(horizontal: 8.0),
                             title: Text(
                               totalItens.toString() + ' itens',
-                              style: TextStyle(
+                              style: const TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 16.0),
                             ),
-                            subtitle: Text('Responsável: ' +
-                                AppData.diaconos[iEntrega.diacono]!.nome),
+                            subtitle: Text(
+                                'Responsável: ${AppData.diaconos[iEntrega.diacono]?.nome ?? "[verificar]"}'),
                             trailing: iEntrega.entregue
                                 ? IconButton(
                                     onPressed: null,
@@ -108,7 +106,7 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
                                       Icons.check_circle_rounded,
                                       color: Colors.primaries.first,
                                     ))
-                                : IconButton(
+                                : const IconButton(
                                     onPressed: null,
                                     icon: Icon(
                                       Icons.check_circle_outline_rounded,
@@ -130,13 +128,13 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
 
   void _dialogAddEntrega(
       DocumentReference<Entrega> ref, Entrega entrega, bool isNew) {
-    ItensEntrega novoItem = new ItensEntrega(
-        quantidade: 1, descricao: '', validade: Timestamp.now());
+    ItensEntrega novoItem =
+        ItensEntrega(quantidade: 1, descricao: '', validade: Timestamp.now());
 
     _addItem() {
       entrega.itens.add(novoItem);
-      novoItem = new ItensEntrega(
-          quantidade: 1, descricao: '', validade: Timestamp.now());
+      novoItem =
+          ItensEntrega(quantidade: 1, descricao: '', validade: Timestamp.now());
     }
 
     showModalBottomSheet(
@@ -150,12 +148,13 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
                 bottom: MediaQuery.of(context).viewInsets.bottom,
                 top: MediaQuery.of(context).padding.top),
             child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 32.0),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0, vertical: 32.0),
                 child: Column(
                   children: [
                     Row(
                       children: [
-                        Expanded(
+                        const Expanded(
                           flex: 1,
                           child: Text(
                             'Cadastro de entrega',
@@ -166,19 +165,17 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
                         ),
                         IconButton(
                           onPressed: () => Navigator.pop(context),
-                          icon: Icon(Icons.close_rounded),
+                          icon: const Icon(Icons.close_rounded),
                         ),
                       ],
                     ),
-                    SizedBox(
-                      height: 24.0,
-                    ),
+                    const SizedBox(height: 24.0),
                     Expanded(
                       flex: 1,
                       child: ListView.builder(
                           scrollDirection: Axis.vertical,
                           shrinkWrap: true,
-                          padding: EdgeInsets.all(0),
+                          padding: const EdgeInsets.all(0),
                           itemCount: entrega.itens.length,
                           itemBuilder: (context, index) {
                             return ListTile(
@@ -188,7 +185,8 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
                                   entrega.itens[index].quantidade.toString()),
                               title: Text(entrega.itens[index].descricao),
                               trailing: IconButton(
-                                icon: Icon(Icons.remove_circle_outline_rounded),
+                                icon: const Icon(
+                                    Icons.remove_circle_outline_rounded),
                                 onPressed: () {
                                   setState.call(
                                       () => entrega.itens.removeAt(index));
@@ -203,19 +201,19 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
                           onPressed: () {
                             setState.call(() => novoItem.quantidade -= 1);
                           },
-                          icon: Icon(Icons.remove_circle_rounded),
+                          icon: const Icon(Icons.remove_circle_rounded),
                         ),
                         Text(
                           novoItem.quantidade.toString(),
                           textAlign: TextAlign.center,
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 18.0),
                         ),
                         IconButton(
                           onPressed: () {
                             setState.call(() => novoItem.quantidade += 1);
                           },
-                          icon: Icon(Icons.add_circle_rounded),
+                          icon: const Icon(Icons.add_circle_rounded),
                         ),
                         // Nome
                         Expanded(
@@ -233,29 +231,24 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
                           ),
                         ),
                         IconButton(
-                          icon: Icon(Icons.send_rounded),
+                          icon: const Icon(Icons.send_rounded),
                           onPressed: () {
                             setState.call(() => _addItem());
                           },
                         ),
                       ],
                     ),
-                    SizedBox(
-                      height: 24.0,
-                    ),
+                    const SizedBox(height: 24.0),
                     Row(
                       children: [
                         isNew
-                            ? Expanded(
-                                flex: 1,
-                                child: SizedBox(
-                                  width: 24.0,
-                                ))
+                            ? const Expanded(
+                                flex: 1, child: SizedBox(width: 24.0))
                             : Expanded(
                                 flex: 1,
                                 child: OutlinedButton.icon(
-                                  label: Text('Excluir'),
-                                  icon: Icon(Icons.archive_rounded),
+                                  label: const Text('Excluir'),
+                                  icon: const Icon(Icons.archive_rounded),
                                   style: mOutlinedButtonStyle
                                       .merge(OutlinedButton.styleFrom(
                                     primary: Colors.white,
@@ -277,16 +270,12 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
                                   },
                                 ),
                               ),
-                        Expanded(
-                            flex: 0,
-                            child: SizedBox(
-                              width: 24.0,
-                            )),
+                        const Expanded(flex: 0, child: SizedBox(width: 24.0)),
                         Expanded(
                           flex: 2,
                           child: OutlinedButton.icon(
-                            label: Text('Salvar'),
-                            icon: Icon(Icons.save_rounded),
+                            label: const Text('Salvar'),
+                            icon: const Icon(Icons.save_rounded),
                             style: mOutlinedButtonStyle,
                             onPressed: () {
                               Navigator.pop(context, true);

@@ -23,20 +23,20 @@ class Estilos {
       disabledBorder: OutlineInputBorder(borderSide: BorderSide.none));
 }
 
-var inputPhone = new TextInputMask(
-    mask: ['(99) 9999-9999', '(99) 99999-9999'], reverse: false);
-var maskPhone = new MagicMask.buildMask(inputPhone.mask);
+var inputPhone =
+    TextInputMask(mask: ['(99) 9999-9999', '(99) 99999-9999'], reverse: false);
+var maskPhone = MagicMask.buildMask(inputPhone.mask);
 
-var inputCEP = new TextInputMask(mask: '99999-999', reverse: false);
-var maskCEP = new MagicMask.buildMask(inputCEP.mask);
+var inputCEP = TextInputMask(mask: '99999-999', reverse: false);
+var maskCEP = MagicMask.buildMask(inputCEP.mask);
 
-var inputCurrency = new TextInputMask(mask: '9+.999,99', reverse: true);
+var inputCurrency = TextInputMask(mask: '9+.999,99', reverse: true);
 var maskCurrency =
-    new NumberFormat.currency(locale: 'pt_BR', customPattern: '###,###.##');
+    NumberFormat.currency(locale: 'pt_BR', customPattern: '###,###.##');
 
-var inputDate = new TextInputMask(
-    mask: '99/99/9999', placeholder: 'x', maxPlaceHolders: 10);
-var maskDate = new DateFormat('dd/MM/yyyy');
+var inputDate =
+    TextInputMask(mask: '99/99/9999', placeholder: 'x', maxPlaceHolders: 10);
+var maskDate = DateFormat('dd/MM/yyyy');
 
 // INTERFACE PADRÃO para caixas de texto
 const mTextFieldDecoration = InputDecoration(
@@ -60,17 +60,17 @@ const mTextFieldDecoration = InputDecoration(
 );
 
 ButtonStyle mOutlinedButtonStyle = OutlinedButton.styleFrom(
-  padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+  padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
   visualDensity: VisualDensity.standard,
   shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.all(Radius.circular(16.0))),
 );
 
 class CurrencyInputFormatter extends TextInputFormatter {
+  @override
   TextEditingValue formatEditUpdate(
       TextEditingValue oldValue, TextEditingValue newValue) {
     if (newValue.selection.baseOffset == 0) {
-      print(true);
       return newValue;
     }
 
@@ -80,6 +80,6 @@ class CurrencyInputFormatter extends TextInputFormatter {
 
     return newValue.copyWith(
         text: newText,
-        selection: new TextSelection.collapsed(offset: newText.length));
+        selection: TextSelection.collapsed(offset: newText.length));
   }
 }
