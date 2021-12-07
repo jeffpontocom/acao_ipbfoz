@@ -9,7 +9,8 @@ import '../ui/estilos.dart';
 import '../utils/util.dart';
 
 class FamiliaDados extends StatefulWidget {
-  const FamiliaDados({Key? key}) : super(key: key);
+  final bool editMode;
+  const FamiliaDados({Key? key, required this.editMode}) : super(key: key);
 
   @override
   _FamiliaDadosState createState() => _FamiliaDadosState();
@@ -26,7 +27,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
       child: ListView(
         key: const PageStorageKey('dados'),
         padding: EdgeInsets.symmetric(
-            horizontal: Util.margemH(context), vertical: Util.margemV(context)),
+            horizontal: Util.margemH(context), vertical: 12),
         children: [
           // INFORMACAO GERAL
           Text(
@@ -60,7 +61,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                   decoration: mTextFieldDecoration.copyWith(
                     labelText: 'Familiar responsável',
                     isDense: true,
-                    enabled: editMode,
+                    enabled: widget.editMode,
                   ),
                   items: familia.moradores
                       .map(
@@ -70,7 +71,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                         ),
                       )
                       .toList(),
-                  onChanged: editMode
+                  onChanged: widget.editMode
                       ? (value) {
                           setState(() {
                             familia.famResponsavel = value!;
@@ -90,7 +91,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
               Expanded(
                 flex: 1,
                 child: TextFormField(
-                  enabled: editMode,
+                  enabled: widget.editMode,
                   initialValue: familia.famTelefone1 == 0
                       ? ''
                       : maskPhone
@@ -120,7 +121,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
               Expanded(
                 flex: 1,
                 child: TextFormField(
-                  enabled: editMode,
+                  enabled: widget.editMode,
                   initialValue: familia.famTelefone2 == 0
                       ? ''
                       : maskPhone
@@ -154,7 +155,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
               Expanded(
                 flex: 1,
                 child: TextFormField(
-                  enabled: editMode,
+                  enabled: widget.editMode,
                   initialValue:
                       maskCEP.getMaskedString(familia.endCEP.toString()),
                   inputFormatters: [inputCEP],
@@ -180,7 +181,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
               Expanded(
                 flex: 1,
                 child: TextFormField(
-                  enabled: editMode,
+                  enabled: widget.editMode,
                   initialValue: familia.endNumero,
                   keyboardType: TextInputType.text,
                   textInputAction: TextInputAction.next,
@@ -196,7 +197,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
           const SizedBox(height: 8.0),
           // Logradouro
           TextFormField(
-            enabled: editMode,
+            enabled: widget.editMode,
             initialValue: familia.endLogradouro,
             textCapitalization: TextCapitalization.words,
             keyboardType: TextInputType.streetAddress,
@@ -209,7 +210,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
           const SizedBox(height: 8.0),
           // Bairro
           TextFormField(
-            enabled: editMode,
+            enabled: widget.editMode,
             initialValue: familia.endBairro,
             textCapitalization: TextCapitalization.words,
             keyboardType: TextInputType.streetAddress,
@@ -223,7 +224,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
           const SizedBox(height: 8.0),
           // Referencia
           TextFormField(
-            enabled: editMode,
+            enabled: widget.editMode,
             initialValue: familia.endReferencia,
             textCapitalization: TextCapitalization.sentences,
             keyboardType: TextInputType.multiline,
@@ -248,7 +249,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
               Expanded(
                 flex: 1,
                 child: TextFormField(
-                  enabled: editMode,
+                  enabled: widget.editMode,
                   initialValue: maskCurrency.format(familia.famRendaMedia),
                   keyboardType: TextInputType.number,
                   inputFormatters: [
@@ -280,7 +281,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                   decoration: mTextFieldDecoration.copyWith(
                     labelText: 'Benefício do governo',
                     isDense: true,
-                    enabled: editMode,
+                    enabled: widget.editMode,
                   ),
                   focusNode: FocusNode(
                     skipTraversal: true,
@@ -293,7 +294,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                         ),
                       )
                       .toList(),
-                  onChanged: editMode
+                  onChanged: widget.editMode
                       ? (value) {
                           setState(() {
                             familia.famBeneficioGov = value!;
@@ -312,7 +313,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
           const SizedBox(height: 8.0),
           // Informacao Extra
           TextFormField(
-            enabled: editMode,
+            enabled: widget.editMode,
             initialValue: familia.extraInfo,
             textCapitalization: TextCapitalization.sentences,
             keyboardType: TextInputType.multiline,
@@ -329,7 +330,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
           const SizedBox(height: 8.0),
           // Solicitante
           TextFormField(
-            enabled: editMode,
+            enabled: widget.editMode,
             initialValue: familia.cadSolicitante,
             textCapitalization: TextCapitalization.words,
             keyboardType: TextInputType.name,
@@ -347,7 +348,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
             decoration: mTextFieldDecoration.copyWith(
               labelText: 'Diácono responsável',
               isDense: true,
-              enabled: editMode,
+              enabled: widget.editMode,
             ),
             focusNode: FocusNode(
               skipTraversal: true,
@@ -358,7 +359,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                       child: Text(mDiacono.value.nome ?? '[verificar]]'),
                     ))
                 .toList(),
-            onChanged: editMode
+            onChanged: widget.editMode
                 ? (value) {
                     setState(() {
                       familia.cadDiacono = value!.toString();
@@ -382,7 +383,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                           primary: Colors.white,
                           backgroundColor: Colors.red,
                         )),
-                        onPressed: editMode
+                        onPressed: widget.editMode
                             ? () {
                                 if (familia.cadAtivo) {
                                   reference.update({'cadAtivo': false});

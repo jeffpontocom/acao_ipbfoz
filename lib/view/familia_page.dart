@@ -16,7 +16,7 @@ import '/ui/dialogs.dart';
 
 late DocumentReference<Familia> reference;
 late Familia familia;
-late bool editMode;
+//late bool editMode;
 late bool onFirestore;
 
 class FamiliaPage extends StatefulWidget {
@@ -31,6 +31,9 @@ class FamiliaPage extends StatefulWidget {
 }
 
 class _FamiliaPageState extends State<FamiliaPage> {
+  late bool editMode;
+
+  /// Criar nova família
   DocumentReference<Familia> novaFamilia() {
     return FirebaseFirestore.instance
         .collection('familias')
@@ -49,7 +52,9 @@ class _FamiliaPageState extends State<FamiliaPage> {
       if (value.exists) {
         familia = value.data()!;
         onFirestore = true;
+        editMode = false;
       } else {
+        editMode = true;
         familia = Familia(
             cadAtivo: true,
             cadDiacono: auth.currentUser!.uid,
@@ -154,12 +159,12 @@ class _FamiliaPageState extends State<FamiliaPage> {
                 ],
               ),
             ),
-            body: const TabBarView(
+            body: TabBarView(
               children: [
-                FamiliaDados(),
-                FamiliaMoradores(),
-                FamiliaEntregas(),
-                FamiliaMapa(),
+                FamiliaDados(editMode: editMode),
+                FamiliaMoradores(editMode: editMode),
+                const FamiliaEntregas(),
+                const FamiliaMapa(),
               ],
             ),
           ),

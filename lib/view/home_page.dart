@@ -1,5 +1,6 @@
 import 'dart:developer' as dev;
 import 'dart:async';
+import 'dart:math';
 
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -23,7 +24,7 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   /* VARIAVEIS */
   final _totalFamilias = ValueNotifier<int>(0);
   final _totalEntregas = ValueNotifier<int>(0);
@@ -43,7 +44,8 @@ class _HomePageState extends State<HomePage> {
     EntregaMensal(11, 0),
   ];
 
-  final ScrollController _scrollController = ScrollController();
+  late ScrollController _scrollController;
+  bool silverCollapsed = false;
 
   /* WIDGETS */
 
@@ -51,6 +53,7 @@ class _HomePageState extends State<HomePage> {
   Widget get _btnAdmin {
     return IconButton(
       icon: const Icon(Icons.admin_panel_settings_rounded),
+      color: Colors.teal,
       onPressed: () => Modular.to.pushNamed('/admin').then(onGoBack),
     );
   }
@@ -59,6 +62,7 @@ class _HomePageState extends State<HomePage> {
   Widget get _btnRelatorios {
     return const IconButton(
       onPressed: null,
+      color: Colors.teal,
       icon: Icon(Icons.insert_chart_rounded),
     );
   }
@@ -76,6 +80,23 @@ class _HomePageState extends State<HomePage> {
         softWrap: false,
       ),
       onPressed: () => Modular.to.pushNamed('/familia').then(onGoBack),
+    );
+  }
+
+  /// Cabeçalhos
+  SliverPersistentHeader _header(Widget titulo, Color cor) {
+    return SliverPersistentHeader(
+      pinned: true,
+      delegate: _SliverHeaderDelegate(
+        minHeight: 48,
+        maxHeight: 56,
+        child: Container(
+          alignment: Alignment.center,
+          padding: const EdgeInsets.all(8),
+          color: cor,
+          child: titulo,
+        ),
+      ),
     );
   }
 
@@ -191,117 +212,132 @@ class _HomePageState extends State<HomePage> {
     setState(() {});
   }
 
+  /// Verifica se a AppBar está expandida
+  bool get _isAppBarExpanded {
+    return _scrollController.hasClients &&
+        _scrollController.offset > (200 - kToolbarHeight);
+  }
+
   /* METODOS DO SISTEMA */
   @override
   void initState() {
     initializeDateFormatting('pt_BR', null);
+    _scrollController = ScrollController()
+      ..addListener(() {
+        if (_isAppBarExpanded != silverCollapsed) {
+          setState(() {
+            silverCollapsed = _isAppBarExpanded;
+          });
+        }
+      });
     super.initState();
   }
 
   @override
   void dispose() {
     super.dispose();
+    _scrollController.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: NestedScrollView(
+      body: CustomScrollView(
         controller: _scrollController,
-        //floatHeaderSlivers: true,
-        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-          return [
-            SliverAppBar(
-              // Definições
-              expandedHeight: 200,
-              pinned: true,
-              //stretch: true,
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
-              systemOverlayStyle: const SystemUiOverlayStyle(
-                statusBarColor: Colors.transparent,
-                statusBarIconBrightness: Brightness.dark,
-              ),
-              // Leading
-              leading: innerBoxIsScrolled
-                  ? IconButton(
-                      icon: Image.asset('assets/icons/ic_launcher.png'),
-                      onPressed: null,
-                    )
-                  : null,
-              leadingWidth: 48,
-              // Actions
-              actions: [
-                TextButton.icon(
-                  icon: Hero(
-                    tag: AppData.usuario?.uid ?? '',
-                    child: const Icon(Icons.account_circle_rounded),
-                  ),
-                  label: Text(AppData.usuario?.nome?.split(' ')[0] ?? 'ERRO'),
-                  onPressed: () {
-                    Modular.to
-                        .pushNamed('/diacono?id=' + AppData.usuario!.uid)
-                        .then(onGoBack);
-                  },
+        slivers: [
+          // AppBar
+          SliverAppBar(
+            // Definições
+            expandedHeight: 200,
+            pinned: true, floating: true,
+            backgroundColor: Colors.white,
+            foregroundColor: Colors.black,
+            systemOverlayStyle: const SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness: Brightness.dark,
+            ),
+            // Leading
+            leading: silverCollapsed
+                ? IconButton(
+                    icon: Image.asset('assets/icons/ic_launcher.png'),
+                    onPressed: null,
+                  )
+                : null,
+            leadingWidth: 48,
+            // Actions
+            actions: [
+              TextButton.icon(
+                icon: Hero(
+                  tag: AppData.usuario?.uid ?? '',
+                  child: const Icon(Icons.account_circle_rounded),
                 ),
+                label: Text(AppData.usuario?.nome?.split(' ')[0] ?? 'ERRO'),
+                onPressed: () {
+                  Modular.to
+                      .pushNamed('/diacono?id=' + AppData.usuario!.uid)
+                      .then(onGoBack);
+                },
+              ),
+            ],
+            // FlexibleSpace
+            flexibleSpace: FlexibleSpaceBar(
+              stretchModes: const [
+                StretchMode.blurBackground,
+                StretchMode.zoomBackground
               ],
-              // FlexibleSpace
-              flexibleSpace: FlexibleSpaceBar(
-                stretchModes: const [
-                  StretchMode.blurBackground,
-                  StretchMode.zoomBackground
-                ],
-                // Titulo
-                titlePadding: const EdgeInsets.only(left: 48, bottom: 16),
-                title: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text(
-                      AppData.appName,
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Pacifico',
+              // Titulo
+              titlePadding: const EdgeInsets.only(left: 48, bottom: 16),
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    AppData.appName,
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Pacifico',
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    softWrap: false,
+                    strutStyle:
+                        const StrutStyle(forceStrutHeight: true, height: 0.75),
+                  ),
+                  Visibility(
+                    visible: !silverCollapsed,
+                    child: const Text(
+                      'Igreja Presbiteriana de Foz do Iguaçu',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey,
                       ),
                       overflow: TextOverflow.ellipsis,
                       softWrap: false,
-                      strutStyle: const StrutStyle(
-                          forceStrutHeight: true, height: 0.75),
                     ),
-                    Visibility(
-                      visible: !innerBoxIsScrolled,
-                      child: const Text(
-                        'Igreja Presbiteriana de Foz do Iguaçu',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        softWrap: false,
-                      ),
-                    ),
-                  ],
-                ),
-                // Fundo
-                background: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    // Imagem de fundo
-                    const Image(
-                      fit: BoxFit.cover,
-                      image: AssetImage('assets/images/home-background.jpg'),
-                    ),
-                    // Logotipo de fundo
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        const SizedBox(width: 24), // espaço a esquerda
-                        SizedBox(
+                  ),
+                ],
+              ),
+              // Fundo
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  // Imagem de fundo
+                  const Image(
+                    fit: BoxFit.cover,
+                    image: AssetImage('assets/images/home-background.jpg'),
+                  ),
+                  // Logotipo de fundo
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      const SizedBox(width: 24), // espaço a esquerda
+                      Visibility(
+                        visible: !silverCollapsed,
+                        child: SizedBox(
                           width: 72,
-                          height: 112,
+                          height: 120,
                           child: Hero(
                             tag: 'logo',
                             child: Transform.rotate(
@@ -315,65 +351,60 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                  ],
-                ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-            // Informação em destaque
-            SliverToBoxAdapter(
-              child: Container(
-                color: Colors.grey.shade200,
-                padding: const EdgeInsets.all(12),
-                child: ValueListenableBuilder(
-                  valueListenable: _totalFamilias,
-                  builder: (BuildContext context, int value, Widget? child) {
-                    return Text(
-                      '$value famílias sendo atendidas atualmente',
-                      textAlign: TextAlign.center,
-                    );
-                  },
-                ),
-              ),
-            )
-          ];
-        },
-        // Corpo
-        body: Scrollbar(
-          isAlwaysShown: true,
-          showTrackOnHover: true,
-          controller: _scrollController,
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                // Grafico
-                Container(
-                  height: 150,
-                  color: Colors.grey.shade100,
-                  child: ValueListenableBuilder(
-                    valueListenable: _contagemConcluida,
-                    builder: (BuildContext context, bool value, Widget? child) {
-                      return charts.BarChart(
-                        _graficoEntregasMensais(),
-                        barRendererDecorator:
-                            charts.BarLabelDecorator<String>(),
-                        domainAxis: const charts.OrdinalAxisSpec(),
-                        behaviors: [
-                          charts.ChartTitle('Entregas',
-                              behaviorPosition: charts.BehaviorPosition.start),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 12.0),
-                // Lista
-                Text(
-                  'FAMÍLIAS',
+          ),
+          // Resumo
+          _header(
+            ValueListenableBuilder(
+              valueListenable: _totalFamilias,
+              builder: (BuildContext context, int value, Widget? child) {
+                return Text(
+                  '$value famílias sendo atendidas atualmente',
                   textAlign: TextAlign.center,
-                  style: Estilos.titulo,
-                ),
+                  style: Estilos.titulo.copyWith(fontSize: 14),
+                );
+              },
+            ),
+            Colors.grey.shade200,
+          ),
+          // Gráfico
+          SliverToBoxAdapter(
+            child: Container(
+              height: 150,
+              color: Colors.grey.shade100,
+              child: ValueListenableBuilder(
+                valueListenable: _contagemConcluida,
+                builder: (BuildContext context, bool value, Widget? child) {
+                  return charts.BarChart(
+                    _graficoEntregasMensais(),
+                    barRendererDecorator: charts.BarLabelDecorator<String>(),
+                    domainAxis: const charts.OrdinalAxisSpec(),
+                    behaviors: [
+                      charts.ChartTitle('Entregas',
+                          behaviorPosition: charts.BehaviorPosition.start),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ), // Lista Famílias
+
+          _header(
+            Text(
+              'FAMÍLIAS',
+              textAlign: TextAlign.center,
+              style: Estilos.titulo,
+            ),
+            Colors.grey.shade200,
+          ),
+          SliverList(
+            delegate: SliverChildListDelegate(
+              [
                 StreamBuilder<QuerySnapshot<Familia>>(
                   stream: FirebaseFirestore.instance
                       .collection('familias')
@@ -458,7 +489,7 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
-        ),
+        ],
       ),
       persistentFooterButtons: [_btnAdmin, _btnRelatorios, _btnNovoCadastro],
     );
@@ -473,4 +504,36 @@ class EntregaMensal {
   EntregaMensal(this.mes, this.total);
 
   void increment() => total++;
+}
+
+/// Cabeçalhos Delegados
+class _SliverHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final double minHeight;
+  final double maxHeight;
+  final Widget child;
+
+  _SliverHeaderDelegate({
+    required this.minHeight,
+    required this.maxHeight,
+    required this.child,
+  });
+
+  @override
+  double get minExtent => minHeight;
+
+  @override
+  double get maxExtent => max(maxHeight, minHeight);
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return SizedBox.expand(child: child);
+  }
+
+  @override
+  bool shouldRebuild(_SliverHeaderDelegate oldDelegate) {
+    return maxHeight != oldDelegate.maxHeight ||
+        minHeight != oldDelegate.minHeight ||
+        child != oldDelegate.child;
+  }
 }

@@ -7,7 +7,7 @@ import 'package:easy_mask/easy_mask.dart';
 class Estilos {
   /// Para titulos
   static TextStyle titulo = TextStyle(
-      color: Colors.grey.shade800, fontSize: 19, fontWeight: FontWeight.bold);
+      color: Colors.grey.shade800, fontSize: 18, fontWeight: FontWeight.bold);
 
   /// Para destaques
   static TextStyle destaque =

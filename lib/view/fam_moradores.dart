@@ -9,13 +9,22 @@ import '/utils/util.dart';
 import '/view/familia_page.dart';
 
 class FamiliaMoradores extends StatefulWidget {
-  const FamiliaMoradores({Key? key}) : super(key: key);
+  final bool editMode;
+  const FamiliaMoradores({Key? key, required this.editMode}) : super(key: key);
 
   @override
   _FamiliaMoradoresState createState() => _FamiliaMoradoresState();
 }
 
 class _FamiliaMoradoresState extends State<FamiliaMoradores> {
+  //late bool editMode;
+
+  @override
+  void initState() {
+    //editMode = widget.editMode;
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -28,7 +37,7 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
               label: const Text('Adicionar morador'),
               icon: const Icon(Icons.person_add),
               style: mOutlinedButtonStyle,
-              onPressed: editMode
+              onPressed: widget.editMode
                   ? () {
                       _dialogAddMorador(null, 9999);
                     }
@@ -52,7 +61,7 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                     leading: const Icon(Icons.person),
                     title: Text(familia.moradores[index].nome),
                     subtitle: Text('$sIdade • $profissao'),
-                    onTap: editMode
+                    onTap: widget.editMode
                         ? () {
                             _dialogAddMorador(familia.moradores[index], index);
                           }
@@ -291,6 +300,6 @@ String _mostrarIdade(bool isBirthday, int idade) {
   }
   //Se nenhuma das opções anteriores, então já fez aniversário este ano
   else {
-    return "$idade anos${Util.isPlural(idade)}";
+    return "$idade ano${Util.isPlural(idade)}";
   }
 }
