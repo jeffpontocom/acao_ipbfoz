@@ -4,6 +4,9 @@ description: Cadastro de famílias atendidas pelo projeto de Ação Social da Ig
 # Após cada alteração neste arquivo executar:
 # - flutter pub get
 
+# Para atualizar pacotes/dependencias
+# - flutter update-packages
+
 # Para publicar a versão no servidor local executar:
 # - flutter build web
 # Copiar arquivos resultantes para a pasta definida no servidor IIS

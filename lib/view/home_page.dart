@@ -44,8 +44,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     EntregaMensal(11, 0),
   ];
 
-  late ScrollController _scrollController;
-  bool silverCollapsed = false;
+  late final double _appBarHeight;
+  late final ScrollController _scrollController;
+  bool _sliverCollapsed = false;
 
   /* WIDGETS */
 
@@ -84,15 +85,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   /// Cabeçalhos
-  SliverPersistentHeader _header(Widget titulo, Color cor) {
+  SliverPersistentHeader _cabecalho(Widget titulo, Color cor) {
     return SliverPersistentHeader(
       pinned: true,
       delegate: _SliverHeaderDelegate(
-        minHeight: 48,
+        minHeight: 40,
         maxHeight: 56,
         child: Container(
           alignment: Alignment.center,
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(4),
           color: cor,
           child: titulo,
         ),
@@ -215,7 +216,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   /// Verifica se a AppBar está expandida
   bool get _isAppBarExpanded {
     return _scrollController.hasClients &&
-        _scrollController.offset > (200 - kToolbarHeight);
+        _scrollController.offset > (_appBarHeight - kToolbarHeight);
   }
 
   /* METODOS DO SISTEMA */
@@ -224,13 +225,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     initializeDateFormatting('pt_BR', null);
     _scrollController = ScrollController()
       ..addListener(() {
-        if (_isAppBarExpanded != silverCollapsed) {
+        if (_isAppBarExpanded != _sliverCollapsed) {
           setState(() {
-            silverCollapsed = _isAppBarExpanded;
+            _sliverCollapsed = _isAppBarExpanded;
           });
         }
       });
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    _appBarHeight = MediaQuery.of(context).size.height / 4;
+    super.didChangeDependencies();
   }
 
   @override
@@ -248,7 +255,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           // AppBar
           SliverAppBar(
             // Definições
-            expandedHeight: 200,
+            expandedHeight: _appBarHeight,
             pinned: true, floating: true,
             backgroundColor: Colors.white,
             foregroundColor: Colors.black,
@@ -257,7 +264,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               statusBarIconBrightness: Brightness.dark,
             ),
             // Leading
-            leading: silverCollapsed
+            leading: _sliverCollapsed
                 ? IconButton(
                     icon: Image.asset('assets/icons/ic_launcher.png'),
                     onPressed: null,
@@ -306,7 +313,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         const StrutStyle(forceStrutHeight: true, height: 0.75),
                   ),
                   Visibility(
-                    visible: !silverCollapsed,
+                    visible: !_sliverCollapsed,
                     child: const Text(
                       'Igreja Presbiteriana de Foz do Iguaçu',
                       style: TextStyle(
@@ -334,7 +341,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     children: [
                       const SizedBox(width: 24), // espaço a esquerda
                       Visibility(
-                        visible: !silverCollapsed,
+                        visible: !_sliverCollapsed,
                         child: SizedBox(
                           width: 72,
                           height: 120,
@@ -359,7 +366,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ),
           ),
           // Resumo
-          _header(
+          _cabecalho(
             ValueListenableBuilder(
               valueListenable: _totalFamilias,
               builder: (BuildContext context, int value, Widget? child) {
@@ -394,7 +401,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ),
           ), // Lista Famílias
 
-          _header(
+          _cabecalho(
             Text(
               'FAMÍLIAS',
               textAlign: TextAlign.center,
@@ -496,7 +503,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 }
 
-/// Sample ordinal data type.
+/// Classe para registro do total de entregas mensais
 class EntregaMensal {
   final int mes;
   int total = 0;

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -18,8 +17,7 @@ class Estilos {
 
   static InputDecoration mInputDecoration = const InputDecoration(
       floatingLabelBehavior: FloatingLabelBehavior.always,
-      contentPadding:
-          EdgeInsets.symmetric(vertical: kIsWeb ? 12 : 8, horizontal: 12),
+      contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
       disabledBorder: OutlineInputBorder(borderSide: BorderSide.none));
 }
 
