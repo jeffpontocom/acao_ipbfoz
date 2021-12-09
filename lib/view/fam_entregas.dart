@@ -1,131 +1,133 @@
+import 'package:acao_ipbfoz/models/familia.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 
-import 'familia_page.dart';
 import '/app_data.dart';
 import '/main.dart';
 import '/models/entrega.dart';
 import '/models/entrega_itens.dart';
-import '/ui/dialogs.dart';
-import '/ui/estilos.dart';
+import '/utils/mensagens.dart';
 
 class FamiliaEntregas extends StatefulWidget {
-  const FamiliaEntregas({Key? key}) : super(key: key);
+  final DocumentReference<Familia> refFamilia;
+  const FamiliaEntregas({Key? key, required this.refFamilia}) : super(key: key);
 
   @override
   _FamiliaEntregasState createState() => _FamiliaEntregasState();
 }
 
 class _FamiliaEntregasState extends State<FamiliaEntregas> {
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      key: const PageStorageKey('entregas'),
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          children: [
-            OutlinedButton.icon(
-              label: const Text('Nova entrega'),
-              icon: const Icon(Icons.person_add),
-              style: mOutlinedButtonStyle,
-              onPressed: onFirestore
-                  ? () {
-                      DocumentReference<Entrega> ref = reference
-                          .collection('entregas')
-                          .withConverter<Entrega>(
-                            fromFirestore: (snapshots, _) =>
-                                Entrega.fromJson(snapshots.data()!),
-                            toFirestore: (documento, _) => documento.toJson(),
-                          )
-                          .doc();
-                      Entrega nova = Entrega(
-                        data: Timestamp.now(),
-                        diacono: auth.currentUser!.uid,
-                        itens: List<ItensEntrega>.empty(growable: true),
-                        entregue: false,
-                      );
-                      _dialogAddEntrega(ref, nova, true);
-                    }
-                  : null,
-            ),
-            const SizedBox(height: 8.0),
-            StreamBuilder<QuerySnapshot<Entrega>>(
-                stream: reference
-                    .collection('entregas')
-                    .orderBy('data', descending: false)
-                    .withConverter<Entrega>(
-                      fromFirestore: (snapshots, _) =>
-                          Entrega.fromJson(snapshots.data()!),
-                      toFirestore: (documento, _) => documento.toJson(),
-                    )
-                    .snapshots(),
-                builder: (context, snapshots) {
-                  if (snapshots.hasError) {
-                    return Center(
-                      heightFactor: 5,
-                      child: Text(snapshots.error.toString()),
-                    );
-                  }
-                  if (!snapshots.hasData) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (snapshots.data!.size == 0) {
-                    return const Center(
-                      heightFactor: 5,
-                      child: Text('Nenhuma entrega realizada ainda.'),
-                    );
-                  }
-                  final data = snapshots.data;
-                  return Center(
-                    child: ListView.builder(
-                        scrollDirection: Axis.vertical,
-                        shrinkWrap: true,
-                        padding: const EdgeInsets.all(0),
-                        itemCount: data!.size,
-                        itemBuilder: (context, index) {
-                          Entrega iEntrega = data.docs[index].data();
-                          int totalItens = 0;
-                          for (var element in iEntrega.itens) {
-                            totalItens += element.quantidade;
-                          }
-                          return ListTile(
-                            contentPadding:
-                                const EdgeInsets.symmetric(horizontal: 8.0),
-                            title: Text(
-                              totalItens.toString() + ' itens',
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 16.0),
-                            ),
-                            subtitle: Text(
-                                'Responsável: ${AppData.diaconos[iEntrega.diacono]?.nome ?? "[verificar]"}'),
-                            trailing: iEntrega.entregue
-                                ? IconButton(
-                                    onPressed: null,
-                                    icon: Icon(
-                                      Icons.check_circle_rounded,
-                                      color: Colors.primaries.first,
-                                    ))
-                                : const IconButton(
-                                    onPressed: null,
-                                    icon: Icon(
-                                      Icons.check_circle_outline_rounded,
-                                      color: Colors.grey,
-                                    )),
-                            onTap: () {
-                              _dialogAddEntrega(
-                                  data.docs[index].reference, iEntrega, false);
-                            },
-                          );
-                        }),
-                  );
-                }),
-          ],
-        ),
-      ),
+  /* VARIAVEIS */
+  final _scrollController = ScrollController();
+  bool _cadastroNovo = true;
+
+  /* WIDGETS */
+
+  /// Botão adicionar entrega
+  Widget get _btnAddEntrega {
+    return OutlinedButton.icon(
+      label: const Text('Nova entrega'),
+      icon: const Icon(Icons.person_add),
+      onPressed: !_cadastroNovo
+          ? () {
+              DocumentReference<Entrega> ref = widget.refFamilia
+                  .collection('entregas')
+                  .withConverter<Entrega>(
+                    fromFirestore: (snapshots, _) =>
+                        Entrega.fromJson(snapshots.data()!),
+                    toFirestore: (documento, _) => documento.toJson(),
+                  )
+                  .doc();
+              Entrega nova = Entrega(
+                data: Timestamp.now(),
+                diacono: auth.currentUser!.uid,
+                itens: List<ItensEntrega>.empty(growable: true),
+                entregue: false,
+              );
+              _dialogAddEntrega(ref, nova, true);
+            }
+          : null,
     );
   }
 
+  /// Entregas
+  Widget get _listaEntregas {
+    return StreamBuilder<QuerySnapshot<Entrega>>(
+      stream: widget.refFamilia
+          .collection('entregas')
+          .orderBy('data', descending: false)
+          .withConverter<Entrega>(
+            fromFirestore: (snapshots, _) =>
+                Entrega.fromJson(snapshots.data()!),
+            toFirestore: (documento, _) => documento.toJson(),
+          )
+          .snapshots(),
+      builder: (context, snapshots) {
+        if (snapshots.hasError) {
+          return Center(
+            heightFactor: 5,
+            child: Text(snapshots.error.toString()),
+          );
+        }
+        if (!snapshots.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshots.data!.size == 0) {
+          return const Center(
+            heightFactor: 5,
+            child: Text('Nenhuma entrega realizada ainda.'),
+          );
+        }
+        final data = snapshots.data;
+        return Center(
+          child: ListView.builder(
+              scrollDirection: Axis.vertical,
+              shrinkWrap: true,
+              padding: const EdgeInsets.all(0),
+              itemCount: data!.size,
+              itemBuilder: (context, index) {
+                Entrega iEntrega = data.docs[index].data();
+                int totalItens = 0;
+                for (var element in iEntrega.itens) {
+                  totalItens += element.quantidade;
+                }
+                return ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  title: Text(
+                    totalItens.toString() + ' itens',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16.0),
+                  ),
+                  subtitle: Text(
+                      'Responsável: ${AppData.diaconos[iEntrega.diacono]?.nome ?? "[verificar]"}'),
+                  trailing: iEntrega.entregue
+                      ? IconButton(
+                          onPressed: null,
+                          icon: Icon(
+                            Icons.check_circle_rounded,
+                            color: Colors.primaries.first,
+                          ))
+                      : const IconButton(
+                          onPressed: null,
+                          icon: Icon(
+                            Icons.check_circle_outline_rounded,
+                            color: Colors.grey,
+                          )),
+                  onTap: () {
+                    _dialogAddEntrega(
+                        data.docs[index].reference, iEntrega, false);
+                  },
+                );
+              }),
+        );
+      },
+    );
+  }
+
+  /* METODOS */
+
+  /// Adicionar nova entrega
   void _dialogAddEntrega(
       DocumentReference<Entrega> ref, Entrega entrega, bool isNew) {
     ItensEntrega novoItem =
@@ -249,24 +251,24 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
                                 child: OutlinedButton.icon(
                                   label: const Text('Excluir'),
                                   icon: const Icon(Icons.archive_rounded),
-                                  style: mOutlinedButtonStyle
-                                      .merge(OutlinedButton.styleFrom(
+                                  style: OutlinedButton.styleFrom(
                                     primary: Colors.white,
                                     backgroundColor: Colors.red,
-                                  )),
+                                  ),
                                   onPressed: () {
-                                    showDialog(
-                                            context: context,
-                                            builder: (context) =>
-                                                dialogConfirmaAcao(context))
-                                        .then((value) {
-                                      if (value != null && value == true) {
-                                        Navigator.pop(context, true);
-                                        setState(() {
-                                          ref.delete();
-                                        });
-                                      }
-                                    });
+                                    Mensagem.decisao(
+                                      context: context,
+                                      titulo: 'Excluir',
+                                      mensagem: 'Deseja excluir esse item?',
+                                      onPressed: (value) {
+                                        if (value == true) {
+                                          Modular.to.pop(); // Fecha o dialogo
+                                          setState(() {
+                                            ref.delete();
+                                          });
+                                        }
+                                      },
+                                    );
                                   },
                                 ),
                               ),
@@ -276,7 +278,6 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
                           child: OutlinedButton.icon(
                             label: const Text('Salvar'),
                             icon: const Icon(Icons.save_rounded),
-                            style: mOutlinedButtonStyle,
                             onPressed: () {
                               Navigator.pop(context, true);
                               setState(() {
@@ -295,5 +296,28 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
     ).then((value) {
       setState(() {});
     });
+  }
+
+  /* METODOS DO SISTEMA */
+  @override
+  Widget build(BuildContext context) {
+    //_cadastroNovo = widget.refFamilia.;
+    return Scrollbar(
+      key: const PageStorageKey('entregas'),
+      controller: _scrollController,
+      child: SingleChildScrollView(
+        controller: _scrollController,
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            children: [
+              _btnAddEntrega,
+              const SizedBox(height: 8.0),
+              _listaEntregas,
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

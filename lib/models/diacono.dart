@@ -1,9 +1,9 @@
 class Diacono {
   late final String uid;
 
-  String? nome; // OBRIGATORIO
-  String? email; // OBRIGATORIO
-  int? telefone; // OBRIGATORIO
+  String? nome;
+  String? email;
+  int? telefone;
 
   Diacono({
     this.nome,
@@ -25,9 +25,4 @@ class Diacono {
       'telefone': telefone,
     };
   }
-
-  // Instanciador Singleton
-  //Diacono._constructor();
-  //static late Diacono _instance = Diacono._constructor();
-  //static Diacono get instance => _instance;
 }

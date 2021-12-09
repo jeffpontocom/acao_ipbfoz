@@ -4,7 +4,6 @@ import 'dart:math';
 
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -14,7 +13,7 @@ import '/app_data.dart';
 import '/models/entrega.dart';
 import '/models/familia.dart';
 import '/models/morador.dart';
-import '/ui/estilos.dart';
+import '../utils/estilos.dart';
 import '/utils/util.dart';
 
 class HomePage extends StatefulWidget {
@@ -44,7 +43,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     EntregaMensal(11, 0),
   ];
 
-  late final double _appBarHeight;
+  late double _appBarHeight;
   late final ScrollController _scrollController;
   bool _sliverCollapsed = false;
 

@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 
 import '/app_data.dart';
 import '/models/diacono.dart';
-import '/ui/estilos.dart';
+import '../utils/estilos.dart';
 
 class DiaconoPage extends StatefulWidget {
   final String diaconoId;
@@ -67,21 +67,22 @@ class _DiaconoPageState extends State<DiaconoPage> {
                     onChanged: (value) {
                       mDiacono.nome = value;
                     },
-                    decoration: mTextFieldDecoration.copyWith(
-                        labelText: 'Nome completo'),
+                    decoration: Estilos.mInputDecoration
+                        .copyWith(labelText: 'Nome completo'),
                   ),
                   const SizedBox(height: 8.0),
                   TextFormField(
-                    initialValue:
-                        maskPhone.getMaskedString(mDiacono.telefone.toString()),
-                    inputFormatters: [inputPhone],
+                    initialValue: Inputs.mascaraFone
+                        .getMaskedString(mDiacono.telefone.toString()),
+                    inputFormatters: [Inputs.textoFone],
                     keyboardType: TextInputType.phone,
                     textInputAction: TextInputAction.next,
                     onChanged: (value) {
-                      mDiacono.telefone = int.parse(maskPhone.clearMask(value));
+                      mDiacono.telefone =
+                          int.parse(Inputs.mascaraFone.clearMask(value));
                     },
-                    decoration:
-                        mTextFieldDecoration.copyWith(labelText: 'Whatsapp'),
+                    decoration: Estilos.mInputDecoration
+                        .copyWith(labelText: 'Whatsapp'),
                   ),
                   const SizedBox(height: 24.0),
                   Row(
@@ -92,9 +93,8 @@ class _DiaconoPageState extends State<DiaconoPage> {
                           label: const Text('Sair'),
                           icon: const Icon(Icons.logout_rounded),
                           style: OutlinedButton.styleFrom(
-                                  primary: Colors.white,
-                                  backgroundColor: Colors.red)
-                              .merge(mOutlinedButtonStyle),
+                              primary: Colors.white,
+                              backgroundColor: Colors.red),
                           onPressed: () {
                             FirebaseAuth.instance.signOut();
                             Navigator.pushNamedAndRemoveUntil(
@@ -111,7 +111,6 @@ class _DiaconoPageState extends State<DiaconoPage> {
                         child: OutlinedButton.icon(
                           label: const Text('Atualizar dados'),
                           icon: const Icon(Icons.save_rounded),
-                          style: mOutlinedButtonStyle,
                           onPressed: () {
                             _gravar();
                           },

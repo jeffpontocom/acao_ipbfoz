@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class Util {
-  Util();
-
   /// Formato de data e hora no padrão brasileiro "1 de janeiro de 2020 23:59:59."
   static final DateFormat fmtDataHora = DateFormat.yMMMMd('pt_BR').add_Hms();
 
@@ -55,7 +53,7 @@ class Util {
     return mesure > minPad ? mesure : minPad;
   }
 
-  /// Margem ou Padding horizontal padrão (min 32)
+  /// Margem ou Padding horizontal padrão (min 0)
   static double paddingListH(context) {
     double minPad = 0;
     var mesure = ((MediaQuery.of(context).size.width - 860) / 2) + minPad;

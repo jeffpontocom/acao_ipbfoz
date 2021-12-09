@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '/models/entrega_itens.dart';
 
 class Entrega {
-  late Timestamp data; // OBRIGATORIO
+  late Timestamp data;
   late String diacono;
   late List<ItensEntrega> itens;
   late bool entregue;

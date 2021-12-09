@@ -50,6 +50,14 @@ class MyApp extends StatelessWidget {
             ),
           ),
         ),
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            minimumSize: const Size(150, 48),
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+            ),
+          ),
+        ),
         // Caixas de texto
         inputDecorationTheme: const InputDecorationTheme(
           border: OutlineInputBorder(

@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Morador {
-  late String nome; // OBRIGATORIO
-  late Timestamp nascimento; // OBRIGATORIO
+  late String nome;
+  late Timestamp nascimento;
   late int escolaridade;
   late String profissao;
   late bool especial;
