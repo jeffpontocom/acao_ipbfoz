@@ -33,11 +33,10 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    double margemV = Util.margemV(context);
-    double margemH = Util.margemH(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Login'),
+        titleSpacing: 0,
       ),
       body: Center(
         child: Scrollbar(
@@ -45,8 +44,10 @@ class _LoginPageState extends State<LoginPage> {
           showTrackOnHover: true,
           child: SingleChildScrollView(
             child: Padding(
-              padding:
-                  EdgeInsets.symmetric(vertical: margemV, horizontal: margemH),
+              padding: EdgeInsets.symmetric(
+                vertical: Util.margemV(context),
+                horizontal: Util.margemH(context),
+              ),
               child: Container(
                 alignment: Alignment.center,
                 child: Wrap(
@@ -186,7 +187,7 @@ class _LoginPageState extends State<LoginPage> {
   void _logar() async {
     if (!_validarFormulario()) return;
     // Abre circulo de progresso
-    Mensagem.aguardar(context: context, mensagem: 'Realizando login...');
+    Mensagem.aguardar(context: context, mensagem: 'Entrando...');
     // Tenta acessar a conta
     try {
       final credential = await auth.signInWithEmailAndPassword(

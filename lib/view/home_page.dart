@@ -28,6 +28,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   final _totalFamilias = ValueNotifier<int>(0);
   final _totalEntregas = ValueNotifier<int>(0);
   final _contagemConcluida = ValueNotifier(false);
+  late int anoGrafico;
   final List<EntregaMensal> _entregasMensais = [
     EntregaMensal(0, 0),
     EntregaMensal(1, 0),
@@ -105,12 +106,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   /// Conta o total de famílias cadastradas e o total global de entregas
   /// realizadas
   void _contarTotais(QuerySnapshot<Familia>? data) {
+    // Se contagem ainda não concluida e total de entregas diferente de zero
+    // Significa que contagem está em andamento
+    if (_contagemConcluida.value) {
+      return;
+    }
     // Total de famílias
     _totalFamilias.value = data!.size;
     // Zerando entregas
     _totalEntregas.value = 0;
     for (var element in _entregasMensais) {
-      element.total = 0;
+      element.clear();
     }
     _contagemConcluida.value = false;
     int analisadas = 0;
@@ -121,6 +127,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       // Atualizar o total de entregas verificando cada item da coleção
       element.reference
           .collection('entregas')
+          .where('data',
+              isGreaterThanOrEqualTo:
+                  Timestamp.fromDate(DateTime(anoGrafico, 1, 1)))
+          .where('data',
+              isLessThanOrEqualTo:
+                  Timestamp.fromDate(DateTime(anoGrafico, 12, 31)))
           .withConverter<Entrega>(
             fromFirestore: (snapshots, _) =>
                 Entrega.fromJson(snapshots.data()!),
@@ -212,6 +224,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   /// Atualiza interface ao voltar para essa pagina
   FutureOr onGoBack(dynamic value) {
+    _contagemConcluida.value = false;
     setState(() {});
   }
 
@@ -233,6 +246,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           });
         }
       });
+    anoGrafico = Timestamp.now().toDate().year;
     super.initState();
   }
 
@@ -383,23 +397,54 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ),
           // Gráfico
           SliverToBoxAdapter(
-            child: Container(
-              height: 150,
-              color: Colors.grey.shade100,
-              child: ValueListenableBuilder(
-                valueListenable: _contagemConcluida,
-                builder: (BuildContext context, bool value, Widget? child) {
-                  return charts.BarChart(
-                    _graficoEntregasMensais(),
-                    barRendererDecorator: charts.BarLabelDecorator<String>(),
-                    domainAxis: const charts.OrdinalAxisSpec(),
-                    behaviors: [
-                      charts.ChartTitle('Entregas',
-                          behaviorPosition: charts.BehaviorPosition.start),
-                    ],
-                  );
-                },
-              ),
+            child: Column(
+              children: [
+                Container(
+                  height: 150,
+                  color: Colors.grey.shade100,
+                  child: ValueListenableBuilder(
+                    valueListenable: _contagemConcluida,
+                    builder: (BuildContext context, bool value, Widget? child) {
+                      return charts.BarChart(
+                        _graficoEntregasMensais(),
+                        barRendererDecorator:
+                            charts.BarLabelDecorator<String>(),
+                        domainAxis: const charts.OrdinalAxisSpec(),
+                        behaviors: [
+                          charts.ChartTitle('Entregas',
+                              behaviorPosition: charts.BehaviorPosition.start),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.navigate_before),
+                      onPressed: () {
+                        _contagemConcluida.value = false;
+                        //_totalFamilias.value = 0; // zera para força recontagem
+                        setState(() {
+                          anoGrafico--;
+                        });
+                      },
+                    ),
+                    Text('$anoGrafico'),
+                    IconButton(
+                      icon: const Icon(Icons.navigate_next),
+                      onPressed: () {
+                        _contagemConcluida.value = false;
+                        //_totalFamilias.value = 0; // zera para força recontagem
+                        setState(() {
+                          anoGrafico++;
+                        });
+                      },
+                    ),
+                  ],
+                )
+              ],
             ),
           ), // Lista Famílias
 
@@ -418,6 +463,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   stream: FirebaseFirestore.instance
                       .collection('familias')
                       .where('cadAtivo', isEqualTo: true)
+                      .orderBy('cadData')
                       .withConverter<Familia>(
                         fromFirestore: (snapshots, _) =>
                             Familia.fromJson(snapshots.data()!),
@@ -447,12 +493,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     // Realizar contagens ao estabilizar conexão
                     if (snapshots.connectionState == ConnectionState.active) {
                       // Contar apenas se total de famílias for alterado
-                      if ((snapshots.data?.size ?? _totalFamilias.value) !=
-                          _totalFamilias.value) {
-                        // Executar função apenas o após carregamento da interface
-                        WidgetsBinding.instance?.addPostFrameCallback(
-                            (_) => _contarTotais(snapshots.data));
-                      }
+                      //if ((snapshots.data?.size ?? _totalFamilias.value) !=
+                      //    _totalFamilias.value) {
+                      // Executar função apenas o após carregamento da interface
+                      WidgetsBinding.instance?.addPostFrameCallback(
+                        (_) => _contarTotais(snapshots.data),
+                      );
+                      //}
                     }
                     // Widget
                     return ListView.builder(
@@ -513,6 +560,8 @@ class EntregaMensal {
   EntregaMensal(this.mes, this.total);
 
   void increment() => total++;
+
+  void clear() => total = 0;
 }
 
 /// Cabeçalhos Delegados

@@ -42,6 +42,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   charts_flutter: ^0.12.0 # para trabalhar com Gráficos
   cloud_firestore: ^2.4.0 # para trabalhar com Google Firebase (arquivos)
   easy_mask: ^2.0.1 # para trabalhar com mascaras

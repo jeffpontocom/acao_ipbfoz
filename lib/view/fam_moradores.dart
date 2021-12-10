@@ -1,7 +1,6 @@
 import 'package:acao_ipbfoz/models/familia.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_modular/flutter_modular.dart';
 
 import '/data/escolaridade.dart';
 import '/models/morador.dart';
@@ -11,7 +10,10 @@ import '/utils/util.dart';
 
 class FamiliaMoradores extends StatefulWidget {
   final Familia familia;
-  const FamiliaMoradores({Key? key, required this.familia}) : super(key: key);
+  final DocumentReference<Familia> reference;
+  const FamiliaMoradores(
+      {Key? key, required this.familia, required this.reference})
+      : super(key: key);
 
   @override
   _FamiliaMoradoresState createState() => _FamiliaMoradoresState();
@@ -29,7 +31,7 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
       label: const Text('Adicionar morador'),
       icon: const Icon(Icons.person_add),
       onPressed: () {
-        _dialogAddMorador(null, 9999);
+        _dialogMorador(null, 9999);
       },
     );
   }
@@ -39,6 +41,7 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
     return ListView.builder(
       scrollDirection: Axis.vertical,
       shrinkWrap: true,
+      controller: _scrollController,
       padding: const EdgeInsets.all(0),
       itemCount: widget.familia.moradores.length,
       itemBuilder: (context, index) {
@@ -52,7 +55,7 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
           title: Text(widget.familia.moradores[index].nome),
           subtitle: Text('$sIdade • $profissao'),
           onTap: () {
-            _dialogAddMorador(widget.familia.moradores[index], index);
+            _dialogMorador(widget.familia.moradores[index], index);
           },
         );
       },
@@ -62,7 +65,7 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
   /* METODOS */
 
   /// Cria novo registro de morador
-  void _dialogAddMorador(Morador? valor, int pos) {
+  void _dialogMorador(Morador? valor, int pos) {
     Morador morador = Morador(
         nome: '',
         nascimento: Timestamp.fromDate(DateTime(1800)),
@@ -73,23 +76,38 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
       morador = Morador.fromJson(valor.toJson());
     }
     showModalBottomSheet(
+      isScrollControlled: true,
       context: context,
+      isDismissible: false,
+      constraints:
+          BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.9),
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setState) {
             return Padding(
               padding: EdgeInsets.only(
                   bottom: MediaQuery.of(context).viewInsets.bottom,
-                  top: MediaQuery.of(context).padding.top),
+                  top: MediaQuery.of(context).viewInsets.top),
               child: ListView(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 24.0, vertical: 32.0),
+                    horizontal: 24.0, vertical: 16.0),
                 children: [
-                  const Text(
-                    'Cadastro do morador',
-                    textAlign: TextAlign.center,
-                    style:
-                        TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
+                  Row(
+                    children: [
+                      const CloseButton(),
+                      Expanded(
+                        flex: 1,
+                        child: Text(
+                          'Cadastro do morador',
+                          textAlign: TextAlign.center,
+                          style: Estilos.titulo,
+                        ),
+                      ),
+                      const IconButton(
+                        onPressed: null,
+                        icon: Icon(Icons.person),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 24.0),
                   // Nome
@@ -191,56 +209,55 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                       )),
                   const SizedBox(height: 8.0),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       pos == 9999
-                          ? const Expanded(
-                              flex: 1, child: SizedBox(width: 24.0))
-                          : Expanded(
-                              flex: 1,
-                              child: OutlinedButton.icon(
-                                label: const Text('Excluir'),
-                                icon: const Icon(Icons.archive_rounded),
-                                style: OutlinedButton.styleFrom(
-                                  primary: Colors.white,
-                                  backgroundColor: Colors.red,
-                                ),
-                                onPressed: () {
-                                  Mensagem.decisao(
-                                    context: context,
-                                    titulo: 'Excluir',
-                                    mensagem:
-                                        'Deseja excluir o registro desse morador?',
-                                    onPressed: (value) {
-                                      if (value == true) {
-                                        Modular.to.pop(); // Fecha o dialogo
-                                        setState(() {
-                                          widget.familia.moradores
-                                              .remove(morador);
-                                        });
-                                      }
-                                    },
-                                  );
-                                },
+                          ? const SizedBox()
+                          : OutlinedButton.icon(
+                              label: const Text('EXCLUIR'),
+                              icon: const Icon(Icons.archive_rounded),
+                              style: OutlinedButton.styleFrom(
+                                primary: Colors.white,
+                                backgroundColor: Colors.red,
                               ),
+                              onPressed: () {
+                                Mensagem.decisao(
+                                  context: context,
+                                  titulo: 'Excluir',
+                                  mensagem:
+                                      'Deseja excluir o registro desse morador?',
+                                  onPressed: (value) {
+                                    if (value) {
+                                      widget.familia.moradores.removeAt(pos);
+                                      widget.reference.update({
+                                        'moradores': List<dynamic>.from(widget
+                                            .familia.moradores
+                                            .map((morador) => morador.toJson()))
+                                      }).then(
+                                        // Fecha o dialogo
+                                        (value) => Navigator.pop(context),
+                                      );
+                                    }
+                                  },
+                                );
+                              },
                             ),
-                      const Expanded(flex: 0, child: SizedBox(width: 24.0)),
-                      Expanded(
-                        flex: 2,
-                        child: OutlinedButton.icon(
-                          label: const Text('Salvar'),
-                          icon: const Icon(Icons.save_rounded),
-                          //style: mOutlinedButtonStyle,
-                          onPressed: () {
-                            Navigator.pop(context, true);
-                            setState(() {
-                              if (pos == 9999) {
-                                widget.familia.moradores.add(morador);
-                              } else {
-                                widget.familia.moradores[pos] = morador;
-                              }
-                            });
-                          },
-                        ),
+                      OutlinedButton.icon(
+                        label: const Text('SALVAR'),
+                        icon: const Icon(Icons.save_rounded),
+                        onPressed: () {
+                          Navigator.pop(context, true);
+                          if (pos == 9999) {
+                            widget.familia.moradores.add(morador);
+                          } else {
+                            widget.familia.moradores[pos] = morador;
+                          }
+                          widget.reference.update({
+                            'moradores': List<dynamic>.from(widget
+                                .familia.moradores
+                                .map((morador) => morador.toJson()))
+                          });
+                        },
                       ),
                     ],
                   ),

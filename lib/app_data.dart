@@ -30,6 +30,7 @@ class AppData {
   Future loadDiaconos() async {
     await FirebaseFirestore.instance
         .collection('diaconos')
+        .orderBy('nome')
         .withConverter<Diacono>(
             fromFirestore: (snapshot, _) => Diacono.fromJson(snapshot.data()!),
             toFirestore: (diacono, _) => diacono.toJson())

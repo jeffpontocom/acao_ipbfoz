@@ -21,6 +21,7 @@ class _FamiliaPageState extends State<FamiliaPage> {
   /* VARIAVEIS */
   late Familia mFamilia;
   late DocumentReference<Familia> mReference;
+  late bool novoCadastro;
 
   /* WIDGETS */
 
@@ -67,6 +68,7 @@ class _FamiliaPageState extends State<FamiliaPage> {
   @override
   void initState() {
     initializeDateFormatting('pt_BR');
+    novoCadastro = widget.referenceId?.isEmpty ?? true;
     mReference = _getReference();
     super.initState();
   }
@@ -133,7 +135,7 @@ class _FamiliaPageState extends State<FamiliaPage> {
             body: TabBarView(
               children: [
                 FamiliaDados(familia: mFamilia, reference: mReference),
-                FamiliaMoradores(familia: mFamilia),
+                FamiliaMoradores(familia: mFamilia, reference: mReference),
                 FamiliaEntregas(refFamilia: mReference),
               ],
             ),

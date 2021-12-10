@@ -1,8 +1,10 @@
 import 'package:acao_ipbfoz/models/familia.dart';
+import 'package:acao_ipbfoz/utils/estilos.dart';
 import 'package:acao_ipbfoz/utils/util.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 import '/app_data.dart';
 import '/main.dart';
@@ -81,45 +83,76 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
           );
         }
         final data = snapshots.data;
-        return Center(
-          child: ListView.builder(
-              scrollDirection: Axis.vertical,
-              shrinkWrap: true,
-              padding: const EdgeInsets.all(0),
-              itemCount: data!.size,
-              itemBuilder: (context, index) {
-                Entrega iEntrega = data.docs[index].data();
-                int totalItens = 0;
-                for (var element in iEntrega.itens) {
-                  totalItens += element.quantidade;
-                }
-                return ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  title: Text(
-                    totalItens.toString() + ' itens',
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 16.0),
-                  ),
-                  subtitle: Text(
-                      'Responsável: ${AppData.diaconos[iEntrega.diacono]?.nome ?? "[verificar]"}'),
-                  trailing: iEntrega.entregue
-                      ? IconButton(
-                          onPressed: null,
-                          icon: Icon(
-                            Icons.check_circle_rounded,
-                            color: Colors.primaries.first,
-                          ))
-                      : const IconButton(
-                          onPressed: null,
-                          icon: Icon(
-                            Icons.check_circle_outline_rounded,
-                            color: Colors.grey,
-                          )),
-                  onTap: () {
-                    _dialogEntrega(data.docs[index].reference, iEntrega, false);
-                  },
-                );
-              }),
+        return ListView.builder(
+          scrollDirection: Axis.vertical,
+          shrinkWrap: true,
+          controller: _scrollController,
+          padding: const EdgeInsets.all(0),
+          itemCount: data!.size,
+          itemBuilder: (context, index) {
+            Entrega iEntrega = data.docs[index].data();
+            int totalItens = 0;
+            for (var element in iEntrega.itens) {
+              totalItens += element.quantidade;
+            }
+            return ListTile(
+              leading: const Icon(Icons.delivery_dining),
+              horizontalTitleGap: 0,
+              title: Text(
+                totalItens.toString() + ' itens',
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold, fontSize: 16.0),
+              ),
+              subtitle: Text(
+                  'Responsável: ${AppData.diaconos[iEntrega.diacono]?.nome ?? "[verificar]"}'),
+              trailing: iEntrega.entregue
+                  ? IconButton(
+                      tooltip: 'Desmarcar entrega',
+                      icon: const Icon(
+                        Icons.check_circle_rounded,
+                        color: Colors.teal,
+                      ),
+                      onPressed: () {
+                        Mensagem.decisao(
+                            context: context,
+                            titulo: 'Desmarcar entrega',
+                            mensagem:
+                                'Deseja desmarcar esse item como entregue?',
+                            onPressed: (value) {
+                              if (value) {
+                                data.docs[index].reference
+                                    .update({'entregue': false});
+                              }
+                            });
+                      },
+                    )
+                  : IconButton(
+                      tooltip: 'Registrar entrega',
+                      icon: const Icon(
+                        Icons.check_circle_outline_rounded,
+                        color: Colors.grey,
+                      ),
+                      onPressed: () async {
+                        final DateTime? picked = await showDatePicker(
+                          helpText: 'Data de entrega',
+                          context: context,
+                          locale: const Locale('pt', 'BR'),
+                          initialDate: iEntrega.data.toDate(),
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2030),
+                        );
+                        if (picked != null) {
+                          data.docs[index].reference
+                              .update({'data': Timestamp.fromDate(picked)});
+                          data.docs[index].reference.update({'entregue': true});
+                        }
+                      },
+                    ),
+              onTap: () {
+                _dialogEntrega(data.docs[index].reference, iEntrega, false);
+              },
+            );
+          },
         );
       },
     );
@@ -142,34 +175,42 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
     showModalBottomSheet(
       isScrollControlled: true,
       isDismissible: false,
+      constraints:
+          BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.9),
       context: context,
       builder: (context) {
         return StatefulBuilder(builder: (context, setState) {
           return Padding(
             padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom,
-                top: MediaQuery.of(context).padding.top),
+                top: MediaQuery.of(context).viewInsets.top),
             child: Padding(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0, vertical: 32.0),
+                    horizontal: 16.0, vertical: 16.0),
                 child: Column(
                   children: [
                     Row(
                       children: [
-                        const Expanded(
+                        const CloseButton(),
+                        Expanded(
                           flex: 1,
                           child: Text(
                             'Cadastro de entrega',
                             textAlign: TextAlign.center,
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 18.0),
+                            style: Estilos.titulo,
                           ),
                         ),
-                        IconButton(
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.close_rounded),
+                        const IconButton(
+                          onPressed: null,
+                          icon: Icon(Icons.delivery_dining),
                         ),
                       ],
+                    ),
+                    Text(
+                      entrega.entregue
+                          ? 'Entregue em ${Util.fmtDataLonga.format(entrega.data.toDate())}.'
+                          : 'Entrega pendente',
+                      textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 24.0),
                     Expanded(
@@ -301,6 +342,7 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
   /* METODOS DO SISTEMA */
   @override
   void initState() {
+    initializeDateFormatting('pt_BR', null);
     _cadastroNovo = true;
     widget.refFamilia.get().then((value) {
       setState(() {

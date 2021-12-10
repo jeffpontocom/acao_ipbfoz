@@ -72,7 +72,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
   // Titulo do grupo
   Widget _subtitulo(String value) {
     return Padding(
-      padding: const EdgeInsets.only(top: 24, bottom: 16),
+      padding: const EdgeInsets.symmetric(vertical: 16),
       child: Text(
         value,
         style: const TextStyle(fontWeight: FontWeight.bold),
@@ -116,7 +116,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                       }
                     : null,
               ),
-              const SizedBox(height: 8.0),
+              const SizedBox(height: 16.0),
             ],
           ),
         ),
@@ -137,9 +137,9 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                 textInputAction: TextInputAction.next,
                 decoration: Estilos.mInputDecoration.copyWith(
                   labelText: 'Whatsapp',
-                  prefixIcon: IconButton(
+                  prefixIcon: const IconButton(
                     onPressed: null,
-                    icon: Icon(Icons.phone),
+                    icon: Icon(Icons.perm_phone_msg),
                   ),
                 ),
                 onChanged: (value) {
@@ -155,7 +155,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
             const Expanded(
               flex: 0,
               child: SizedBox(
-                width: 8.0,
+                width: 16.0,
               ),
             ),
             // Telefone
@@ -172,9 +172,9 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                 textInputAction: TextInputAction.next,
                 decoration: Estilos.mInputDecoration.copyWith(
                   labelText: 'Telefone (outro)',
-                  prefixIcon: IconButton(
+                  prefixIcon: const IconButton(
                     onPressed: null,
-                    icon: Icon(Icons.phone),
+                    icon: Icon(Icons.settings_phone),
                   ),
                 ),
                 onChanged: (value) {
@@ -225,7 +225,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
             const Expanded(
               flex: 0,
               child: SizedBox(
-                width: 8.0,
+                width: 16.0,
               ),
             ),
             // Número
@@ -238,10 +238,10 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                 textInputAction: TextInputAction.next,
                 decoration: Estilos.mInputDecoration.copyWith(
                   labelText: 'Número',
-                  suffixIcon: IconButton(
+                  /* suffixIcon: const IconButton(
                     onPressed: null,
                     icon: Icon(Icons.map),
-                  ),
+                  ), */
                 ),
                 onChanged: (value) {
                   widget.familia.endNumero = value;
@@ -250,7 +250,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
             ),
           ],
         ),
-        const SizedBox(height: 8.0),
+        const SizedBox(height: 16.0),
         // Logradouro
         TextFormField(
           enabled: editMode,
@@ -264,7 +264,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
             widget.familia.endLogradouro = value;
           },
         ),
-        const SizedBox(height: 8.0),
+        const SizedBox(height: 16.0),
         // Bairro
         TextFormField(
           enabled: editMode,
@@ -278,16 +278,12 @@ class _FamiliaDadosState extends State<FamiliaDados> {
             widget.familia.endBairro = value;
           },
         ),
-        const SizedBox(height: 8.0),
+        const SizedBox(height: 16.0),
         // Referencia
         TextFormField(
           enabled: editMode,
           initialValue: widget.familia.endReferencia,
           textCapitalization: TextCapitalization.sentences,
-          keyboardType: TextInputType.multiline,
-          minLines: 2,
-          maxLines: 4,
-          textAlignVertical: TextAlignVertical.top,
           textInputAction: TextInputAction.next,
           decoration:
               Estilos.mInputDecoration.copyWith(labelText: 'Referência'),
@@ -334,7 +330,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
             ),
             const Expanded(
               flex: 0,
-              child: SizedBox(width: 8.0),
+              child: SizedBox(width: 16.0),
             ),
             // Beneficio Governo (combo box)
             Expanded(
@@ -384,17 +380,17 @@ class _FamiliaDadosState extends State<FamiliaDados> {
           initialValue: widget.familia.extraInfo,
           textCapitalization: TextCapitalization.sentences,
           keyboardType: TextInputType.multiline,
-          textInputAction: TextInputAction.next,
+          //textInputAction: TextInputAction.next,
           minLines: 5,
           maxLines: 8,
-          textAlignVertical: TextAlignVertical.top,
+          //textAlignVertical: TextAlignVertical.top,
           decoration: Estilos.mInputDecoration
               .copyWith(labelText: 'Informações extras'),
           onChanged: (value) {
             widget.familia.extraInfo = value;
           },
         ),
-        const SizedBox(height: 8.0),
+        const SizedBox(height: 16.0),
         // Solicitante
         TextFormField(
           enabled: editMode,
@@ -408,7 +404,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
             widget.familia.cadSolicitante = value;
           },
         ),
-        const SizedBox(height: 8.0),
+        const SizedBox(height: 16.0),
         // Diacono Responsavel (combo box)
         DropdownButtonFormField<String>(
           value: widget.familia.cadDiacono,
@@ -534,19 +530,19 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                   alignment: WrapAlignment.center,
                   children: [
                     ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 600),
+                      constraints: const BoxConstraints(maxWidth: 480),
                       child: _contatos,
                     ),
                     ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 600),
+                      constraints: const BoxConstraints(maxWidth: 480),
                       child: _endereco,
                     ),
                     ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 600),
+                      constraints: const BoxConstraints(maxWidth: 480),
                       child: _analiseSocial,
                     ),
                     ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 600),
+                      constraints: const BoxConstraints(maxWidth: 480),
                       child: _controleCadastro,
                     ),
                     Padding(
