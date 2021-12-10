@@ -1,4 +1,5 @@
 import 'package:acao_ipbfoz/models/familia.dart';
+import 'package:acao_ipbfoz/utils/util.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -20,7 +21,7 @@ class FamiliaEntregas extends StatefulWidget {
 class _FamiliaEntregasState extends State<FamiliaEntregas> {
   /* VARIAVEIS */
   final _scrollController = ScrollController();
-  bool _cadastroNovo = true;
+  late bool _cadastroNovo;
 
   /* WIDGETS */
 
@@ -45,7 +46,7 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
                 itens: List<ItensEntrega>.empty(growable: true),
                 entregue: false,
               );
-              _dialogAddEntrega(ref, nova, true);
+              _dialogEntrega(ref, nova, true);
             }
           : null,
     );
@@ -115,8 +116,7 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
                             color: Colors.grey,
                           )),
                   onTap: () {
-                    _dialogAddEntrega(
-                        data.docs[index].reference, iEntrega, false);
+                    _dialogEntrega(data.docs[index].reference, iEntrega, false);
                   },
                 );
               }),
@@ -128,7 +128,7 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
   /* METODOS */
 
   /// Adicionar nova entrega
-  void _dialogAddEntrega(
+  void _dialogEntrega(
       DocumentReference<Entrega> ref, Entrega entrega, bool isNew) {
     ItensEntrega novoItem =
         ItensEntrega(quantidade: 1, descricao: '', validade: Timestamp.now());
@@ -300,15 +300,28 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
 
   /* METODOS DO SISTEMA */
   @override
+  void initState() {
+    _cadastroNovo = true;
+    widget.refFamilia.get().then((value) {
+      setState(() {
+        _cadastroNovo = !value.exists;
+      });
+    });
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    //_cadastroNovo = widget.refFamilia.;
     return Scrollbar(
       key: const PageStorageKey('entregas'),
       controller: _scrollController,
       child: SingleChildScrollView(
         controller: _scrollController,
         child: Padding(
-          padding: const EdgeInsets.all(24.0),
+          padding: EdgeInsets.symmetric(
+            vertical: 24,
+            horizontal: Util.paddingListH(context),
+          ),
           child: Column(
             children: [
               _btnAddEntrega,

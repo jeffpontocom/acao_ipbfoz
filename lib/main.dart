@@ -58,6 +58,11 @@ class MyApp extends StatelessWidget {
             ),
           ),
         ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            minimumSize: const Size(double.minPositive, 48),
+          ),
+        ),
         // Caixas de texto
         inputDecorationTheme: const InputDecorationTheme(
           border: OutlineInputBorder(

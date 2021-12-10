@@ -7,6 +7,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import '/main.dart';
 import '/app_data.dart';
 import '/models/diacono.dart';
+import '/utils/mensagens.dart';
 import '/utils/util.dart';
 
 class LoginPage extends StatefulWidget {
@@ -185,12 +186,7 @@ class _LoginPageState extends State<LoginPage> {
   void _logar() async {
     if (!_validarFormulario()) return;
     // Abre circulo de progresso
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return const Center(child: CircularProgressIndicator());
-      },
-    );
+    Mensagem.aguardar(context: context, mensagem: 'Realizando login...');
     // Tenta acessar a conta
     try {
       final credential = await auth.signInWithEmailAndPassword(
@@ -227,24 +223,11 @@ class _LoginPageState extends State<LoginPage> {
     }
     Navigator.pop(context); // Fecha progresso
     // Ao falhar abre dialogo
-    showDialog(
+    Mensagem.simples(
         context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Não foi possível logar'),
-            content: const Text('Verifique seu usuário e senha.\n\n' +
-                'Apenas usuários previamente cadastrados podem acessar o sistema.\n\n' +
-                'Qualquer dúvida fale com o administrador do sistema.'),
-            actions: [
-              OutlinedButton(
-                child: const Text('OK'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        });
+        titulo: 'Erro',
+        mensagem:
+            'Verifique seu usuário e senha.\n\nApenas usuários previamente cadastrados podem acessar o sistema');
   }
 
   /// Esqueci minha senha

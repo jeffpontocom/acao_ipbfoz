@@ -47,7 +47,7 @@ class Mensagem {
       required String titulo,
       required String mensagem,
       Widget? extra,
-      Function(bool)? onPressed}) {
+      required Function(bool) onPressed}) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -70,27 +70,25 @@ class Mensagem {
               ],
             ),
           ),
-          buttonPadding: const EdgeInsets.all(0),
-          actionsPadding: const EdgeInsets.symmetric(horizontal: 8),
+          //buttonPadding: const EdgeInsets.all(0),
+          actionsPadding: const EdgeInsets.symmetric(horizontal: 12),
           actionsAlignment: MainAxisAlignment.spaceBetween,
           actions: [
-            MaterialButton(
-              child: const Text('CANCELAR'),
-              textColor: Colors.grey,
+            TextButton(
+              child: const Text(
+                'CANCELAR',
+                style: TextStyle(color: Colors.grey),
+              ),
               onPressed: () {
                 Modular.to.pop(); // Fecha o dialogo
-                if (onPressed != null) {
-                  onPressed(false);
-                }
+                onPressed(false);
               },
             ),
-            MaterialButton(
-              child: const Text('OK'),
+            TextButton(
+              child: const Text('SIM'),
               onPressed: () {
                 Modular.to.pop(); // Fecha o dialogo
-                if (onPressed != null) {
-                  onPressed(true);
-                }
+                onPressed(true);
               },
             ),
           ],

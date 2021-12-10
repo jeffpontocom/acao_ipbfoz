@@ -109,6 +109,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     _totalFamilias.value = data!.size;
     // Zerando entregas
     _totalEntregas.value = 0;
+    for (var element in _entregasMensais) {
+      element.total = 0;
+    }
     _contagemConcluida.value = false;
     int analisadas = 0;
     // Analizando cada familia

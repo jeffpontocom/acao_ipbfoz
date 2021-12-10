@@ -53,7 +53,7 @@ class _FamiliaPageState extends State<FamiliaPage> {
         moradores: List<Morador>.empty(growable: true));
   }
 
-  /// Cria um novo registro no Firestore para a Família
+  /// Resgata a referencia ao banco de dados
   DocumentReference<Familia> _getReference() {
     return FirebaseFirestore.instance
         .collection('familias')
@@ -100,8 +100,9 @@ class _FamiliaPageState extends State<FamiliaPage> {
             ),
           );
         }
-        // Se OK
+        // Preenche família
         mFamilia = snapshot.data?.data() ?? _novaFamilia();
+        // Interface
         return DefaultTabController(
           length: 3,
           child: Scaffold(
@@ -131,10 +132,7 @@ class _FamiliaPageState extends State<FamiliaPage> {
             ),
             body: TabBarView(
               children: [
-                FamiliaDados(
-                  familia: mFamilia,
-                  reference: mReference,
-                ),
+                FamiliaDados(familia: mFamilia, reference: mReference),
                 FamiliaMoradores(familia: mFamilia),
                 FamiliaEntregas(refFamilia: mReference),
               ],

@@ -3,10 +3,12 @@ import 'dart:developer' as dev;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 
 import '/app_data.dart';
 import '/models/diacono.dart';
-import '../utils/estilos.dart';
+import '/utils/estilos.dart';
+import '/utils/mensagens.dart';
 
 class DiaconoPage extends StatefulWidget {
   final String diaconoId;
@@ -90,15 +92,17 @@ class _DiaconoPageState extends State<DiaconoPage> {
                       Expanded(
                         flex: 3,
                         child: OutlinedButton.icon(
-                          label: const Text('Sair'),
+                          label: const Text('SAIR'),
                           icon: const Icon(Icons.logout_rounded),
                           style: OutlinedButton.styleFrom(
                               primary: Colors.white,
                               backgroundColor: Colors.red),
                           onPressed: () {
-                            FirebaseAuth.instance.signOut();
-                            Navigator.pushNamedAndRemoveUntil(
-                                context, '/login', (route) => false);
+                            Mensagem.aguardar(
+                                context: context, mensagem: 'Saindo...');
+                            FirebaseAuth.instance
+                                .signOut()
+                                .then((value) => Modular.to.navigate('/'));
                           },
                         ),
                       ),
@@ -109,7 +113,7 @@ class _DiaconoPageState extends State<DiaconoPage> {
                       Expanded(
                         flex: 4,
                         child: OutlinedButton.icon(
-                          label: const Text('Atualizar dados'),
+                          label: const Text('ATUALIZAR'),
                           icon: const Icon(Icons.save_rounded),
                           onPressed: () {
                             _gravar();
@@ -124,25 +128,23 @@ class _DiaconoPageState extends State<DiaconoPage> {
     );
   }
 
-  void _gravar() async {
+  void _gravar() {
     // Abre circulo de progresso
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return const Center(child: CircularProgressIndicator());
-      },
-    );
+    Mensagem.aguardar(context: context, mensagem: 'Salvando dados...');
     try {
       FirebaseFirestore.instance
           .collection('diaconos')
-          .doc(mDiacono.uid)
+          .doc(widget.diaconoId)
           .set(mDiacono.toJson())
-          .then((value) => Navigator.pop(context))
-          .catchError((error) => dev.log("Falha ao adicionar diacono: $error",
-              name: 'DiaconoPage'));
+          .then((value) {
+        Navigator.pop(context);
+      }).catchError((error) {
+        dev.log("Falha ao adicionar diacono: $error", name: 'DiaconoPage');
+        Navigator.pop(context);
+      });
     } catch (e) {
       dev.log(e.toString(), name: 'DiaconoPage');
+      Navigator.pop(context);
     }
-    Navigator.pop(context);
   }
 }

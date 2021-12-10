@@ -24,8 +24,8 @@ class FamiliaDados extends StatefulWidget {
 class _FamiliaDadosState extends State<FamiliaDados> {
   /* VARIAVEIS */
   final _scrollController = ScrollController();
-  bool editMode = false;
-  bool cadastroNovo = true;
+  late bool editMode;
+  late bool cadastroNovo;
 
   /* WIDGETS */
 
@@ -45,10 +45,12 @@ class _FamiliaDadosState extends State<FamiliaDados> {
               ? widget.familia.cadAtivo
                   ? 'Situação: ATIVO'
                   : 'Situação: INATIVO'
-              : 'Situação: EM CRIAÇÃO',
+              : 'EM CRIAÇÃO',
         ),
         subtitle: Text(
-          'Registrada em ${Util.fmtDataCurta.format(widget.familia.cadData.toDate())}.',
+          !cadastroNovo
+              ? 'Registrada em ${Util.fmtDataCurta.format(widget.familia.cadData.toDate())}.'
+              : 'Adicione um morador para salvar',
         ),
         trailing: TextButton.icon(
           label: Text(editMode ? 'SALVAR' : 'EDITAR'),
@@ -78,101 +80,115 @@ class _FamiliaDadosState extends State<FamiliaDados> {
     );
   }
 
-  // Familiar Responsavel
-  Widget get _famResponsavel {
-    return Visibility(
-      visible: widget.familia.moradores.isNotEmpty,
-      child: Column(
-        children: [
-          // Familiar responsável (combo box)
-          DropdownButtonFormField<int>(
-            value: widget.familia.famResponsavel,
-            iconDisabledColor: Colors.transparent,
-            decoration: Estilos.mInputDecoration.copyWith(
-              labelText: 'Familiar responsável',
-              isDense: true,
-              enabled: editMode,
-            ),
-            items: widget.familia.moradores
-                .map(
-                  (morador) => DropdownMenuItem(
-                    value: widget.familia.moradores.indexOf(morador),
-                    child: Text(morador.nome),
-                  ),
-                )
-                .toList(),
-            onChanged: editMode
-                ? (value) {
-                    setState(() {
-                      widget.familia.famResponsavel = value!;
-                    });
-                  }
-                : null,
-          ),
-          const SizedBox(height: 8.0),
-        ],
-      ),
-    );
-  }
-
-  // Telefones
+  // Contato
   Widget get _contatos {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Whatsapp
-        Expanded(
-          flex: 1,
-          child: TextFormField(
-            enabled: editMode,
-            initialValue: widget.familia.famTelefone1 == 0
-                ? ''
-                : Inputs.mascaraFone
-                    .getMaskedString(widget.familia.famTelefone1.toString()),
-            inputFormatters: [Inputs.textoFone],
-            keyboardType: TextInputType.number,
-            textInputAction: TextInputAction.next,
-            decoration:
-                Estilos.mInputDecoration.copyWith(labelText: 'Whatsapp'),
-            onChanged: (value) {
-              if (value.isEmpty) {
-                widget.familia.famTelefone1 = 0;
-              } else {
-                widget.familia.famTelefone1 =
-                    int.parse(Inputs.mascaraFone.clearMask(value));
-              }
-            },
+        _subtitulo('CONTATO'),
+
+        // Familiar Responsavel
+        Visibility(
+          visible: widget.familia.moradores.isNotEmpty,
+          child: Column(
+            children: [
+              // Familiar responsável (combo box)
+              DropdownButtonFormField<int>(
+                value: widget.familia.famResponsavel,
+                iconDisabledColor: Colors.transparent,
+                decoration: Estilos.mInputDecoration.copyWith(
+                  labelText: 'Familiar responsável',
+                  enabled: editMode,
+                ),
+                items: widget.familia.moradores
+                    .map(
+                      (morador) => DropdownMenuItem(
+                        value: widget.familia.moradores.indexOf(morador),
+                        child: Text(morador.nome),
+                      ),
+                    )
+                    .toList(),
+                onChanged: editMode
+                    ? (value) {
+                        setState(() {
+                          widget.familia.famResponsavel = value!;
+                        });
+                      }
+                    : null,
+              ),
+              const SizedBox(height: 8.0),
+            ],
           ),
         ),
-        const Expanded(
-          flex: 0,
-          child: SizedBox(
-            width: 8.0,
-          ),
-        ),
-        // Telefone
-        Expanded(
-          flex: 1,
-          child: TextFormField(
-            enabled: editMode,
-            initialValue: widget.familia.famTelefone2 == 0
-                ? ''
-                : Inputs.mascaraFone
-                    .getMaskedString(widget.familia.famTelefone2.toString()),
-            inputFormatters: [Inputs.textoFone],
-            keyboardType: TextInputType.number,
-            textInputAction: TextInputAction.next,
-            decoration: Estilos.mInputDecoration
-                .copyWith(labelText: 'Telefone (outro)'),
-            onChanged: (value) {
-              if (value.isEmpty) {
-                widget.familia.famTelefone2 = 0;
-              } else {
-                widget.familia.famTelefone2 =
-                    int.parse(Inputs.mascaraFone.clearMask(value));
-              }
-            },
-          ),
-        ),
+        // Telefones
+        Row(
+          children: [
+            // Whatsapp
+            Expanded(
+              flex: 1,
+              child: TextFormField(
+                enabled: editMode,
+                initialValue: widget.familia.famTelefone1 == 0
+                    ? ''
+                    : Inputs.mascaraFone.getMaskedString(
+                        widget.familia.famTelefone1.toString()),
+                inputFormatters: [Inputs.textoFone],
+                keyboardType: TextInputType.number,
+                textInputAction: TextInputAction.next,
+                decoration: Estilos.mInputDecoration.copyWith(
+                  labelText: 'Whatsapp',
+                  prefixIcon: IconButton(
+                    onPressed: null,
+                    icon: Icon(Icons.phone),
+                  ),
+                ),
+                onChanged: (value) {
+                  if (value.isEmpty) {
+                    widget.familia.famTelefone1 = 0;
+                  } else {
+                    widget.familia.famTelefone1 =
+                        int.parse(Inputs.mascaraFone.clearMask(value));
+                  }
+                },
+              ),
+            ),
+            const Expanded(
+              flex: 0,
+              child: SizedBox(
+                width: 8.0,
+              ),
+            ),
+            // Telefone
+            Expanded(
+              flex: 1,
+              child: TextFormField(
+                enabled: editMode,
+                initialValue: widget.familia.famTelefone2 == 0
+                    ? ''
+                    : Inputs.mascaraFone.getMaskedString(
+                        widget.familia.famTelefone2.toString()),
+                inputFormatters: [Inputs.textoFone],
+                keyboardType: TextInputType.number,
+                textInputAction: TextInputAction.next,
+                decoration: Estilos.mInputDecoration.copyWith(
+                  labelText: 'Telefone (outro)',
+                  prefixIcon: IconButton(
+                    onPressed: null,
+                    icon: Icon(Icons.phone),
+                  ),
+                ),
+                onChanged: (value) {
+                  if (value.isEmpty) {
+                    widget.familia.famTelefone2 = 0;
+                  } else {
+                    widget.familia.famTelefone2 =
+                        int.parse(Inputs.mascaraFone.clearMask(value));
+                  }
+                },
+              ),
+            ),
+          ],
+        )
       ],
     );
   }
@@ -180,7 +196,9 @@ class _FamiliaDadosState extends State<FamiliaDados> {
   // Endereço
   Widget get _endereco {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        _subtitulo('ENDEREÇO'),
         Row(
           children: [
             // CEP
@@ -218,8 +236,13 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                 initialValue: widget.familia.endNumero,
                 keyboardType: TextInputType.text,
                 textInputAction: TextInputAction.next,
-                decoration:
-                    Estilos.mInputDecoration.copyWith(labelText: 'Número'),
+                decoration: Estilos.mInputDecoration.copyWith(
+                  labelText: 'Número',
+                  suffixIcon: IconButton(
+                    onPressed: null,
+                    icon: Icon(Icons.map),
+                  ),
+                ),
                 onChanged: (value) {
                   widget.familia.endNumero = value;
                 },
@@ -278,67 +301,73 @@ class _FamiliaDadosState extends State<FamiliaDados> {
 
   // Analise Social
   Widget get _analiseSocial {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Renda Media
-        Expanded(
-          flex: 1,
-          child: TextFormField(
-            enabled: editMode,
-            initialValue:
-                Inputs.mascaraMoeda.format(widget.familia.famRendaMedia),
-            keyboardType: TextInputType.number,
-            inputFormatters: [
-              FilteringTextInputFormatter.digitsOnly,
-              CurrencyInputFormatter()
-            ],
-            textInputAction: TextInputAction.next,
-            decoration: Estilos.mInputDecoration
-                .copyWith(labelText: 'Renda Média', prefixText: 'R\$ '),
-            onChanged: (value) {
-              if (value.isEmpty) {
-                widget.familia.famRendaMedia = 0;
-              } else {
-                widget.familia.famRendaMedia = Inputs.mascaraMoeda.parse(value);
-              }
-            },
-          ),
-        ),
-        const Expanded(
-          flex: 0,
-          child: SizedBox(width: 8.0),
-        ),
-        // Beneficio Governo (combo box)
-        Expanded(
-          flex: 1,
-          child: DropdownButtonFormField<int>(
-            value: widget.familia.famBeneficioGov,
-            iconDisabledColor: Colors.transparent,
-            decoration: Estilos.mInputDecoration.copyWith(
-              labelText: 'Benefício do governo',
-              isDense: true,
-              enabled: editMode,
-            ),
-            focusNode: FocusNode(
-              skipTraversal: true,
-            ),
-            items: Beneficios.values
-                .map(
-                  (value) => DropdownMenuItem(
-                    value: value.index,
-                    child: Text(getBeneficiosString(value)),
-                  ),
-                )
-                .toList(),
-            onChanged: editMode
-                ? (value) {
-                    setState(() {
-                      widget.familia.famBeneficioGov = value!;
-                    });
+        _subtitulo('ANALISE SOCIAL'),
+        Row(
+          children: [
+            // Renda Media
+            Expanded(
+              flex: 1,
+              child: TextFormField(
+                enabled: editMode,
+                initialValue:
+                    Inputs.mascaraMoeda.format(widget.familia.famRendaMedia),
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  CurrencyInputFormatter()
+                ],
+                textInputAction: TextInputAction.next,
+                decoration: Estilos.mInputDecoration
+                    .copyWith(labelText: 'Renda Média', prefixText: 'R\$ '),
+                onChanged: (value) {
+                  if (value.isEmpty) {
+                    widget.familia.famRendaMedia = 0;
+                  } else {
+                    widget.familia.famRendaMedia =
+                        Inputs.mascaraMoeda.parse(value);
                   }
-                : null,
-          ),
-        ),
+                },
+              ),
+            ),
+            const Expanded(
+              flex: 0,
+              child: SizedBox(width: 8.0),
+            ),
+            // Beneficio Governo (combo box)
+            Expanded(
+              flex: 1,
+              child: DropdownButtonFormField<int>(
+                value: widget.familia.famBeneficioGov,
+                iconDisabledColor: Colors.transparent,
+                decoration: Estilos.mInputDecoration.copyWith(
+                  labelText: 'Benefício do governo',
+                  enabled: editMode,
+                ),
+                focusNode: FocusNode(
+                  skipTraversal: true,
+                ),
+                items: Beneficios.values
+                    .map(
+                      (value) => DropdownMenuItem(
+                        value: value.index,
+                        child: Text(getBeneficiosString(value)),
+                      ),
+                    )
+                    .toList(),
+                onChanged: editMode
+                    ? (value) {
+                        setState(() {
+                          widget.familia.famBeneficioGov = value!;
+                        });
+                      }
+                    : null,
+              ),
+            ),
+          ],
+        )
       ],
     );
   }
@@ -346,7 +375,9 @@ class _FamiliaDadosState extends State<FamiliaDados> {
   // Controle cadastral
   Widget get _controleCadastro {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        _subtitulo('CONTROLE IPBFOZ'),
         // Informacao Extra
         TextFormField(
           enabled: editMode,
@@ -384,7 +415,6 @@ class _FamiliaDadosState extends State<FamiliaDados> {
           iconDisabledColor: Colors.transparent,
           decoration: Estilos.mInputDecoration.copyWith(
             labelText: 'Diácono responsável',
-            isDense: true,
             enabled: editMode,
           ),
           focusNode: FocusNode(
@@ -410,35 +440,18 @@ class _FamiliaDadosState extends State<FamiliaDados> {
 
   // Botão ativar/desativar cadastro
   Widget get _btnAtivar {
-    return Row(
-      children: [
-        !cadastroNovo && editMode
-            ? Expanded(
-                flex: 2,
-                child: OutlinedButton.icon(
-                  label: Text(widget.familia.cadAtivo
-                      ? 'Desativar cadastro'
-                      : 'Reativar cadastro'),
-                  icon: const Icon(Icons.archive_rounded),
-                  style: OutlinedButton.styleFrom(
-                    primary: Colors.white,
-                    backgroundColor: Colors.red,
-                  ),
-                  onPressed: () {
-                    if (widget.familia.cadAtivo) {
-                      widget.reference.update({'cadAtivo': false});
-                    } else {
-                      widget.reference.update({'cadAtivo': true});
-                    }
-                    widget.familia.cadAtivo = !widget.familia.cadAtivo;
-                    setState(() {});
-                  },
-                ),
-              )
-            : const SizedBox(),
-        const Expanded(flex: 1, child: SizedBox()),
-      ],
-    );
+    return !cadastroNovo && editMode
+        ? ElevatedButton.icon(
+            label: Text(widget.familia.cadAtivo
+                ? 'Desativar cadastro'
+                : 'Reativar cadastro'),
+            icon: const Icon(Icons.archive_rounded),
+            style: ElevatedButton.styleFrom(primary: Colors.red),
+            onPressed: () {
+              _alterarStatusCadastro();
+            },
+          )
+        : const SizedBox();
   }
 
   /* METODOS */
@@ -446,15 +459,12 @@ class _FamiliaDadosState extends State<FamiliaDados> {
   /// Salva as alterações no banco de dados
   void _salvarDados() {
     if (widget.familia.moradores.isEmpty) {
-      showDialog(
-        context: context,
-        builder: (context) => const AlertDialog(
-          title: Text('Atenção'),
-          content: Text('Ao menos um morador deve ser cadastrado.'),
-        ),
-      ).then((value) {
-        return;
-      });
+      // Abre a mensagem de erro
+      Mensagem.simples(
+          context: context,
+          titulo: 'Atenção',
+          mensagem: 'Ao menos um morador deve ser cadastrado.');
+      return;
     } else {
       // Abre a tela de progresso
       Mensagem.aguardar(
@@ -471,10 +481,36 @@ class _FamiliaDadosState extends State<FamiliaDados> {
     }
   }
 
+  void _alterarStatusCadastro() {
+    Mensagem.decisao(
+      context: context,
+      titulo: widget.familia.cadAtivo ? 'Desativar' : 'Reativar',
+      mensagem: 'Está certo que deseja executar essa ação?',
+      onPressed: (value) {
+        if (value) {
+          if (widget.familia.cadAtivo) {
+            widget.reference.update({'cadAtivo': false});
+          } else {
+            widget.reference.update({'cadAtivo': true});
+          }
+          widget.familia.cadAtivo = !widget.familia.cadAtivo;
+          setState(() {});
+        }
+      },
+    );
+  }
+
   /* METODOS DO SISTEMA */
+
+  @override
+  void initState() {
+    cadastroNovo = widget.familia.moradores.isEmpty;
+    editMode = cadastroNovo;
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    cadastroNovo = widget.familia.moradores.isEmpty;
     return CustomScrollView(
       slivers: [
         _situacao,
@@ -482,6 +518,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
           child: InkWell(
             splashColor: Colors.transparent,
             focusColor: Colors.transparent,
+            hoverColor: Colors.transparent,
             onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
             child: Scrollbar(
               key: const PageStorageKey('dados'),
@@ -490,22 +527,34 @@ class _FamiliaDadosState extends State<FamiliaDados> {
               showTrackOnHover: true,
               child: SingleChildScrollView(
                 controller: _scrollController,
-                padding: EdgeInsets.symmetric(
-                    horizontal: Util.margemH(context), vertical: 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Wrap(
+                  spacing: 24,
+                  runSpacing: 12,
+                  alignment: WrapAlignment.center,
                   children: [
-                    _subtitulo('CONTATO'),
-                    _famResponsavel,
-                    _contatos,
-                    _subtitulo('ENDEREÇO'),
-                    _endereco,
-                    _subtitulo('ANALISE SOCIAL'),
-                    _analiseSocial,
-                    _subtitulo('CONTROLE IPBFOZ'),
-                    _controleCadastro,
-                    const SizedBox(height: 36.0),
-                    _btnAtivar,
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 600),
+                      child: _contatos,
+                    ),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 600),
+                      child: _endereco,
+                    ),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 600),
+                      child: _analiseSocial,
+                    ),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 600),
+                      child: _controleCadastro,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Row(
+                        children: [_btnAtivar],
+                      ),
+                    ),
                   ],
                 ),
               ),
