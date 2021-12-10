@@ -15,23 +15,79 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="Ação Social IPBFoz" content="Controle das ações sociais da igreja.">
+  <meta name="description" content="Controle das ações sociais da igreja.">
 
   <!-- iOS meta tags & icons -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="acao_ipbfoz">
+  <meta name="apple-mobile-web-app-title" content="Ação Social IPBFoz">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
-  <title>acao_ipbfoz</title>
+  <title>Ação Social IPBFoz</title>
   <link rel="manifest" href="manifest.json">
+  <!-- FavIcon -->
+  <link rel="shortcut icon" href="favicon.png" />
+  <!-- Para carregar imagem e textos centralizados na inicialização -->
+  <style>
+    div *{
+      font-family: "Quicksand","Trebuchet MS",monospace;
+    }
+    .centered {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+    .centered *{
+      text-align: center;
+      color: black;
+    }
+  </style>
+  <!-- Recursos para o visualizador PDF  -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.8.335/pdf.min.js"></script>
+  <script type="text/javascript">
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.8.335/pdf.worker.min.js";
+  </script>
 </head>
 <body>
+  <!-- Interface de carregamento  -->
+  <div class="centered">
+    <img src="icons/Icon-192.png" />
+    <span></br></span>
+    <span style="font-size: 32px; font-weight: bold;">Ação Social</br></span>
+    <span style="font-size: 14px">Igreja Presbiteriana de Foz do Iguaçu</span>
+    <span></br></span>
+    <span></br></span>
+    <span style="font-size: 14px; color: grey;" id="mStatus">Verificando acesso a internet...</span>
+  </div>
+  <!-- Verifica se a internet esta disponivel
+       Impede a tela branca caso o script mainDartJs não seja baixado -->
+  <script>    
+    console.log('Verificando conexão com a internet...');
+    fetch('https://static-global-s-msn-com.akamaized.net/hp-neu/sc/2b/a5ea21.ico?d='+Date.now())
+      .then(function(response) {
+        console.log('Status de conexão com a internet = %d %s', response.status, response.statusText);
+        if (response.status >= 200 && response.status < 300){
+          document.getElementById('mStatus').innerText = 'Conectado! Carregando app...';
+          document.getElementById('mStatus').style.color = '#1e90ff'; /* Color: dodgerblue */
+        } else {
+          document.getElementById('mStatus').innerText = 'Não é possível acessar o sistema!\nVerifique sua conexão com a Internet ou tente em outro navegador mais atualizado.';
+          document.getElementById('mStatus').style.color = 'red';
+        }
+      })
+      .catch(function(error) {
+        console.log('Conexão falhou', error)
+        status = 'Não é possível acessar o sistema!\nVerifique sua conexão com a Internet.';
+        document.getElementById('mStatus').innerText = status;
+        document.getElementById('mStatus').style.color = 'red';
+      });
+  </script>
   <!-- This script installs service_worker.js to provide PWA functionality to
        application. For more information, see:
        https://developers.google.com/web/fundamentals/primers/service-workers -->
   <script>
-    var serviceWorkerVersion = '1703994179';
+    var serviceWorkerVersion = '1106284730';
     var scriptLoaded = false;
     function loadMainDartJs() {
       if (scriptLoaded) {
