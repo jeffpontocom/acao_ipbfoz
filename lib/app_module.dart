@@ -37,7 +37,10 @@ class AppModule extends Module {
     ),
     ChildRoute(
       '/familia',
-      child: (_, args) => FamiliaPage(referenceId: args.queryParams['id']),
+      child: (_, args) => FamiliaPage(
+        referenceId: args.queryParams['id'],
+        novoCadastro: args.data,
+      ),
       transition: TransitionType.leftToRightWithFade,
       guards: [AuthGuard()],
     ),

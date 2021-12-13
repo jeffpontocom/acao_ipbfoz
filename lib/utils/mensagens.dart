@@ -1,3 +1,5 @@
+import 'package:acao_ipbfoz/utils/util.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
@@ -128,5 +130,74 @@ class Mensagem {
         );
       },
     );
+  }
+
+  /// Apresenta um bottom dialog padrão com o título e conteúdo definido
+  static void bottomDialog({
+    required BuildContext context,
+    required String titulo,
+    required Widget conteudo,
+    IconData? icon,
+    ScrollController? scrollController,
+    VoidCallback? onPressed,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useRootNavigator: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
+      ),
+      constraints: BoxConstraints(
+          minHeight: MediaQuery.of(context).size.height * 0.3,
+          maxHeight: MediaQuery.of(context).size.height * 0.9),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            top: MediaQuery.of(context).viewInsets.top,
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: Util.paddingListH(context),
+            right: Util.paddingListH(context),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Elemento grafico (indicador de dialog)
+              Container(
+                width: 64,
+                height: 4,
+                margin: const EdgeInsets.only(top: 12),
+                decoration: const BoxDecoration(
+                  shape: BoxShape.rectangle,
+                  borderRadius: BorderRadius.all(Radius.circular(16.0)),
+                  color: Colors.black38,
+                ),
+              ),
+              // Cabeçalho
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: null,
+                    icon: Icon(icon ?? Icons.subtitles, color: Colors.teal),
+                  ),
+                  Expanded(
+                    child: Text(
+                      titulo,
+                      textAlign: TextAlign.center,
+                      style: Estilos.titulo,
+                    ),
+                  ),
+                  const CloseButton(color: Colors.black38),
+                ],
+              ),
+              // Conteúdo
+              Flexible(child: conteudo),
+            ],
+          ),
+        );
+      },
+    ).then((value) {
+      if (onPressed != null) onPressed();
+    });
   }
 }

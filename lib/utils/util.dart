@@ -46,7 +46,7 @@ class Util {
     return mesure > minPad ? mesure : minPad;
   }
 
-  /// Margem ou Padding horizontal padrão (min 32)
+  /// Margem ou Padding horizontal padrão (min 24)
   static double margemH(context) {
     double minPad = 24;
     var mesure = ((MediaQuery.of(context).size.width - 860) / 2) + minPad;

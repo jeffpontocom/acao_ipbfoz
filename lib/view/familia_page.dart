@@ -5,13 +5,13 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'fam_dados.dart';
 import 'fam_entregas.dart';
 import 'fam_moradores.dart';
-import '/main.dart';
 import '/models/familia.dart';
-import '/models/morador.dart';
 
 class FamiliaPage extends StatefulWidget {
   final String? referenceId;
-  const FamiliaPage({Key? key, this.referenceId}) : super(key: key);
+  final bool? novoCadastro;
+  const FamiliaPage({Key? key, this.referenceId, this.novoCadastro})
+      : super(key: key);
 
   @override
   _FamiliaPageState createState() => _FamiliaPageState();
@@ -27,41 +27,15 @@ class _FamiliaPageState extends State<FamiliaPage> {
 
   /* METODOS */
 
-  /// Cria o registro para um novo cadastro
-  Familia _novaFamilia() {
-    return Familia(
-        cadAtivo: true,
-        cadDiacono: auth.currentUser!.uid,
-        cadData: Timestamp.now(),
-        cadSolicitante: '',
-        cadEntregas: 0,
-        famResponsavel: 0,
-        famFoto: '',
-        famTelefone1: 450,
-        famTelefone2: 450,
-        famRendaMedia: 0,
-        famBeneficioGov: 0,
-        endGeopoint: const GeoPoint(-25.5322523, -54.5864979),
-        endCEP: 85852000,
-        endLogradouro: '',
-        endNumero: '',
-        endBairro: '',
-        endCidade: 'Foz do Iguaçu',
-        endEstado: 'PR',
-        endPais: 'Brasil',
-        endReferencia: '',
-        extraInfo: '',
-        moradores: List<Morador>.empty(growable: true));
-  }
-
   /// Resgata a referencia ao banco de dados
   DocumentReference<Familia> _getReference() {
     return FirebaseFirestore.instance
         .collection('familias')
         .doc(widget.referenceId)
         .withConverter(
-            fromFirestore: (snapshot, _) => Familia.fromJson(snapshot.data()!),
-            toFirestore: (document, _) => document.toJson());
+          fromFirestore: (snapshot, _) => Familia.fromJson(snapshot.data()!),
+          toFirestore: (document, _) => document.toJson(),
+        );
   }
 
   /* METODOS DO SISTEMA */
@@ -103,7 +77,7 @@ class _FamiliaPageState extends State<FamiliaPage> {
           );
         }
         // Preenche família
-        mFamilia = snapshot.data?.data() ?? _novaFamilia();
+        mFamilia = snapshot.data?.data() ?? Familia.novaFamilia();
         // Interface
         return DefaultTabController(
           length: 3,
@@ -134,7 +108,10 @@ class _FamiliaPageState extends State<FamiliaPage> {
             ),
             body: TabBarView(
               children: [
-                FamiliaDados(familia: mFamilia, reference: mReference),
+                FamiliaDados(
+                    familia: mFamilia,
+                    reference: mReference,
+                    editMode: widget.novoCadastro),
                 FamiliaMoradores(familia: mFamilia, reference: mReference),
                 FamiliaEntregas(refFamilia: mReference),
               ],

@@ -2,6 +2,8 @@ import 'dart:developer' as dev;
 import 'dart:async';
 import 'dart:math';
 
+import 'package:acao_ipbfoz/data/escolaridade.dart';
+import 'package:acao_ipbfoz/utils/mensagens.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -27,8 +29,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   /* VARIAVEIS */
   final _totalFamilias = ValueNotifier<int>(0);
   final _totalEntregas = ValueNotifier<int>(0);
-  final _contagemConcluida = ValueNotifier(false);
-  late int anoGrafico;
+  final _atualizarGrafico = ValueNotifier(false);
+  late int _anoGrafico;
   final List<EntregaMensal> _entregasMensais = [
     EntregaMensal(0, 0),
     EntregaMensal(1, 0),
@@ -43,7 +45,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     EntregaMensal(10, 0),
     EntregaMensal(11, 0),
   ];
-
   late double _appBarHeight;
   late final ScrollController _scrollController;
   bool _sliverCollapsed = false;
@@ -70,6 +71,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   /// Botão Novo Cadastro
   Widget get _btnNovoCadastro {
+    TextEditingController ctrNome = TextEditingController();
+    TextEditingController ctrDataNasc = TextEditingController();
+    Escolaridade ctrEscolaridade = Escolaridade.indefinido;
+    TextEditingController ctrProfissao = TextEditingController();
+    bool ctrEspecial = false;
     return TextButton.icon(
       icon: const Hero(
         tag: 'novo',
@@ -80,7 +86,153 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         overflow: TextOverflow.ellipsis,
         softWrap: false,
       ),
-      onPressed: () => Modular.to.pushNamed('/familia').then(onGoBack),
+      onPressed: () {
+        // Widget
+        Widget conteudo = Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: ctrNome,
+                textCapitalization: TextCapitalization.words,
+                keyboardType: TextInputType.name,
+                textInputAction: TextInputAction.next,
+                decoration: Estilos.mInputDecoration
+                    .copyWith(labelText: 'Nome do responsável'),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  // Nascimento
+                  Expanded(
+                    flex: 1,
+                    child: TextFormField(
+                      readOnly: true,
+                      controller: ctrDataNasc,
+                      decoration: Estilos.mInputDecoration.copyWith(
+                        labelText: 'Nascimento',
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            showDatePicker(
+                                    context: context,
+                                    initialDate: DateTime.now(),
+                                    firstDate: DateTime(1900),
+                                    lastDate: DateTime.now())
+                                .then((value) => ctrDataNasc.text = Util
+                                    .fmtDataCurta
+                                    .format(value ?? DateTime.now()));
+                          },
+                          icon: const Icon(Icons.date_range),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const Expanded(
+                    flex: 0,
+                    child: SizedBox(width: 16),
+                  ),
+                  // Escolaridade
+                  Expanded(
+                    flex: 2,
+                    child: DropdownButtonFormField<Escolaridade>(
+                      value: ctrEscolaridade,
+                      decoration: Estilos.mInputDecoration
+                          .copyWith(labelText: 'Escolaridade'),
+                      focusNode: FocusNode(
+                        skipTraversal: true,
+                      ),
+                      items: Escolaridade.values
+                          .map(
+                            (value) => DropdownMenuItem(
+                              value: value,
+                              child: Text(getEscolaridadeString(value)),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          ctrEscolaridade = value ?? Escolaridade.indefinido;
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              // Profissao
+              TextFormField(
+                controller: ctrProfissao,
+                textCapitalization: TextCapitalization.words,
+                keyboardType: TextInputType.name,
+                textInputAction: TextInputAction.next,
+                decoration:
+                    Estilos.mInputDecoration.copyWith(labelText: 'Profissão'),
+              ),
+              const SizedBox(height: 16),
+              // E Especial
+              ListTile(
+                title: const Text("Possui necessidades especiais"),
+                leading: Checkbox(
+                  value: ctrEspecial,
+                  tristate: false,
+                  onChanged: (value) {
+                    setState(() {
+                      ctrEspecial = value!;
+                    });
+                  },
+                ),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () {
+                  // Cria nova familia
+                  var novaFamilia = Familia.novaFamilia();
+                  novaFamilia.moradores.add(
+                    Morador(
+                      nome: ctrNome.text,
+                      nascimento: getTimeStamp(ctrDataNasc.text),
+                      escolaridade: ctrEscolaridade.index,
+                      profissao: ctrProfissao.text,
+                      especial: ctrEspecial,
+                    ),
+                  );
+                  // Registra no Firebase
+                  FirebaseFirestore.instance
+                      .collection('familias')
+                      .add(novaFamilia.toJson())
+                      .then(
+                    (value) {
+                      // Abre tela da familia
+                      Modular.to
+                          .popAndPushNamed('/familia?id=${value.id}',
+                              arguments: true)
+                          .then(onGoBack);
+                    },
+                  );
+                },
+                child: const Text('Criar'),
+              ),
+            ],
+          ),
+        );
+        // Bottom dialog
+        var scroll = ScrollController();
+        Mensagem.bottomDialog(
+          context: context,
+          icon: Icons.add_business_sharp,
+          titulo: 'Novo cadastro',
+          conteudo: Scrollbar(
+            isAlwaysShown: true,
+            showTrackOnHover: true,
+            controller: scroll,
+            child: SingleChildScrollView(
+              child: conteudo,
+              controller: scroll,
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -103,12 +255,22 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   /* METODOS */
 
+  Timestamp getTimeStamp(String data) {
+    Timestamp stamp = Timestamp.now();
+    try {
+      stamp = Timestamp.fromDate(Util.fmtDataCurta.parse(data));
+    } catch (e) {
+      dev.log(e.toString());
+    }
+    return stamp;
+  }
+
   /// Conta o total de famílias cadastradas e o total global de entregas
   /// realizadas
   void _contarTotais(QuerySnapshot<Familia>? data) {
     // Se contagem ainda não concluida e total de entregas diferente de zero
     // Significa que contagem está em andamento
-    if (_contagemConcluida.value) {
+    if (_atualizarGrafico.value) {
       return;
     }
     // Total de famílias
@@ -118,7 +280,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     for (var element in _entregasMensais) {
       element.clear();
     }
-    _contagemConcluida.value = false;
+    _atualizarGrafico.value = false;
     int analisadas = 0;
     // Analizando cada familia
     for (var element in data.docs) {
@@ -129,10 +291,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           .collection('entregas')
           .where('data',
               isGreaterThanOrEqualTo:
-                  Timestamp.fromDate(DateTime(anoGrafico, 1, 1)))
+                  Timestamp.fromDate(DateTime(_anoGrafico, 1, 1)))
           .where('data',
               isLessThanOrEqualTo:
-                  Timestamp.fromDate(DateTime(anoGrafico, 12, 31)))
+                  Timestamp.fromDate(DateTime(_anoGrafico, 12, 31)))
           .withConverter<Entrega>(
             fromFirestore: (snapshots, _) =>
                 Entrega.fromJson(snapshots.data()!),
@@ -156,7 +318,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         }
         // Finaliza no último elemento
         if (analisadas == _totalFamilias.value) {
-          _contagemConcluida.value = true;
+          _atualizarGrafico.value = true;
         }
       });
     }
@@ -224,7 +386,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   /// Atualiza interface ao voltar para essa pagina
   FutureOr onGoBack(dynamic value) {
-    _contagemConcluida.value = false;
+    _atualizarGrafico.value = false;
     setState(() {});
   }
 
@@ -246,7 +408,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           });
         }
       });
-    anoGrafico = Timestamp.now().toDate().year;
+    _anoGrafico = Timestamp.now().toDate().year;
     super.initState();
   }
 
@@ -403,7 +565,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   height: 150,
                   color: Colors.grey.shade100,
                   child: ValueListenableBuilder(
-                    valueListenable: _contagemConcluida,
+                    valueListenable: _atualizarGrafico,
                     builder: (BuildContext context, bool value, Widget? child) {
                       return charts.BarChart(
                         _graficoEntregasMensais(),
@@ -424,21 +586,21 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     IconButton(
                       icon: const Icon(Icons.navigate_before),
                       onPressed: () {
-                        _contagemConcluida.value = false;
+                        _atualizarGrafico.value = false;
                         //_totalFamilias.value = 0; // zera para força recontagem
                         setState(() {
-                          anoGrafico--;
+                          _anoGrafico--;
                         });
                       },
                     ),
-                    Text('$anoGrafico'),
+                    Text('$_anoGrafico'),
                     IconButton(
                       icon: const Icon(Icons.navigate_next),
                       onPressed: () {
-                        _contagemConcluida.value = false;
+                        _atualizarGrafico.value = false;
                         //_totalFamilias.value = 0; // zera para força recontagem
                         setState(() {
-                          anoGrafico++;
+                          _anoGrafico++;
                         });
                       },
                     ),

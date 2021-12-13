@@ -4,6 +4,7 @@ import 'package:acao_ipbfoz/models/familia.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 
 import '/app_data.dart';
 import '/data/beneficios_gov.dart';
@@ -14,7 +15,9 @@ import '/utils/mensagens.dart';
 class FamiliaDados extends StatefulWidget {
   final Familia familia;
   final DocumentReference<Familia> reference;
-  const FamiliaDados({Key? key, required this.familia, required this.reference})
+  final bool? editMode;
+  const FamiliaDados(
+      {Key? key, required this.familia, required this.reference, this.editMode})
       : super(key: key);
 
   @override
@@ -32,7 +35,8 @@ class _FamiliaDadosState extends State<FamiliaDados> {
   // Situação cadastral
   Widget get _situacao {
     return SliverAppBar(
-      backgroundColor: Colors.grey.shade300,
+      backgroundColor:
+          widget.familia.cadAtivo ? Colors.grey.shade300 : Colors.red,
       floating: true,
       leading: null,
       automaticallyImplyLeading: false,
@@ -49,12 +53,13 @@ class _FamiliaDadosState extends State<FamiliaDados> {
         ),
         subtitle: Text(
           !cadastroNovo
-              ? 'Registrada em ${Util.fmtDataCurta.format(widget.familia.cadData.toDate())}.'
+              ? 'Cadastrada em ${Util.fmtDataCurta.format(widget.familia.cadData.toDate())}.'
               : 'Adicione um morador para salvar',
         ),
         trailing: TextButton.icon(
           label: Text(editMode ? 'SALVAR' : 'EDITAR'),
           icon: Icon(editMode ? Icons.save_rounded : Icons.mode_edit_rounded),
+          style: TextButton.styleFrom(primary: Colors.black),
           onPressed: () {
             if (editMode) {
               _salvarDados();
@@ -86,7 +91,6 @@ class _FamiliaDadosState extends State<FamiliaDados> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _subtitulo('CONTATO'),
-
         // Familiar Responsavel
         Visibility(
           visible: widget.familia.moradores.isNotEmpty,
@@ -442,9 +446,24 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                 ? 'Desativar cadastro'
                 : 'Reativar cadastro'),
             icon: const Icon(Icons.archive_rounded),
+            style: ElevatedButton.styleFrom(
+                primary: widget.familia.cadAtivo ? Colors.red : Colors.teal),
+            onPressed: () {
+              _alterarSituacaoCadastro();
+            },
+          )
+        : const SizedBox();
+  }
+
+  // Botão ativar/desativar cadastro
+  Widget get _btnEliminar {
+    return editMode && !widget.familia.cadAtivo
+        ? ElevatedButton.icon(
+            label: const Text('Eliminar cadastro'),
+            icon: const Icon(Icons.delete_forever),
             style: ElevatedButton.styleFrom(primary: Colors.red),
             onPressed: () {
-              _alterarStatusCadastro();
+              _eliminarCadastro();
             },
           )
         : const SizedBox();
@@ -477,12 +496,17 @@ class _FamiliaDadosState extends State<FamiliaDados> {
     }
   }
 
-  void _alterarStatusCadastro() {
+  /// Altera a situação do cadastros (ativo/inativo)
+  void _alterarSituacaoCadastro() {
     Mensagem.decisao(
       context: context,
       titulo: widget.familia.cadAtivo ? 'Desativar' : 'Reativar',
       mensagem: 'Está certo que deseja executar essa ação?',
       onPressed: (value) {
+        WidgetsBinding.instance?.addPostFrameCallback(
+          (_) => _scrollController.jumpTo(0),
+        );
+
         if (value) {
           if (widget.familia.cadAtivo) {
             widget.reference.update({'cadAtivo': false});
@@ -490,7 +514,23 @@ class _FamiliaDadosState extends State<FamiliaDados> {
             widget.reference.update({'cadAtivo': true});
           }
           widget.familia.cadAtivo = !widget.familia.cadAtivo;
+          editMode = false;
           setState(() {});
+        }
+      },
+    );
+  }
+
+  /// Elimina o cadastro definitivamente
+  void _eliminarCadastro() {
+    Mensagem.decisao(
+      context: context,
+      titulo: 'Eliminar cadastro',
+      mensagem:
+          'Está certo que deseja executar essa ação?\n\nEssa ação não pode ser desfeita!',
+      onPressed: (value) {
+        if (value) {
+          widget.reference.delete().then((value) => Modular.to.pop(true));
         }
       },
     );
@@ -501,7 +541,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
   @override
   void initState() {
     cadastroNovo = widget.familia.moradores.isEmpty;
-    editMode = cadastroNovo;
+    editMode = widget.editMode ?? false;
     super.initState();
   }
 
@@ -548,7 +588,8 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                     Padding(
                       padding: const EdgeInsets.all(24),
                       child: Row(
-                        children: [_btnAtivar],
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [_btnAtivar, _btnEliminar],
                       ),
                     ),
                   ],

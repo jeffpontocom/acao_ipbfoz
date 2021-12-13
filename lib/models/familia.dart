@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../main.dart';
 import '/models/morador.dart';
 
 class Familia {
@@ -115,4 +116,31 @@ class Familia {
           List<dynamic>.from(moradores.map((morador) => morador.toJson())),
     };
   }
+
+  /// Cria o registro para um novo cadastro
+  Familia.novaFamilia()
+      : this(
+          cadAtivo: true,
+          cadDiacono: auth.currentUser!.uid,
+          cadData: Timestamp.now(),
+          cadSolicitante: '',
+          cadEntregas: 0,
+          famResponsavel: 0,
+          famFoto: '',
+          famTelefone1: 450,
+          famTelefone2: 450,
+          famRendaMedia: 0,
+          famBeneficioGov: 0,
+          endGeopoint: const GeoPoint(-25.5322523, -54.5864979),
+          endCEP: 85852000,
+          endLogradouro: '',
+          endNumero: '',
+          endBairro: '',
+          endCidade: 'Foz do Iguaçu',
+          endEstado: 'PR',
+          endPais: 'Brasil',
+          endReferencia: '',
+          extraInfo: '',
+          moradores: List<Morador>.empty(growable: true),
+        );
 }
