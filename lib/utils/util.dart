@@ -15,6 +15,7 @@ class Util {
   static final NumberFormat fmtMilhar = NumberFormat.decimalPattern('pt_BR');
 
   static final List<String> listaMesCurto = [
+    'Mês',
     'Jan',
     'Fev',
     'Mar',
@@ -39,9 +40,9 @@ class Util {
     return valor > 1 ? 's' : '';
   }
 
-  /// Margem ou Padding vertical padrão (min 12)
+  /// Margem ou Padding vertical padrão (min 32)
   static double margemV(context) {
-    double minPad = 12;
+    double minPad = 32;
     var mesure = ((MediaQuery.of(context).size.height - 860) / 2) + minPad;
     return mesure > minPad ? mesure : minPad;
   }

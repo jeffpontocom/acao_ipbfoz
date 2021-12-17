@@ -1,77 +1,79 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../main.dart';
 import '/models/morador.dart';
 
 class Familia {
-  late bool cadAtivo;
-  late String cadDiacono; // auto
+  late bool cadAtivo; // OBRIGATORIO
   late Timestamp cadData; // auto
-  late String cadSolicitante;
-  late int cadEntregas; // auto
+  late String cadDiacono; // auto
+  late String cadNomeFamilia; // OBRIGATORIO
+  String? cadSolicitante;
 
-  late int famResponsavel;
-  late String famFoto;
-  late int famTelefone1;
-  late int famTelefone2;
-  late num famRendaMedia;
-  late int famBeneficioGov;
+  String? famFoto;
+  int? famTelefone1;
+  int? famTelefone2;
+  num? famRendaMedia;
+  int? famBeneficioGov;
 
-  late GeoPoint endGeopoint;
-  late int endCEP;
-  late String endLogradouro;
-  late String endNumero;
-  late String endBairro;
-  late String endCidade;
-  late String endEstado;
-  late String endPais;
-  late String endReferencia;
+  GeoPoint? endGeopoint;
+  int? endCEP;
+  String? endLogradouro;
+  String? endNumero;
+  String? endBairro;
+  String? endCidade;
+  String? endEstado;
+  String? endPais;
+  String? endReferencia;
 
-  late String extraInfo;
+  String? extraInfo;
 
   late List<Morador> moradores; // 1 item OBRIGATORIO
+
+  int? cadEntregas; // @deprecar
+  int? famResponsavel; // @deprecar
 
   Familia({
     required this.cadAtivo,
     required this.cadDiacono,
     required this.cadData,
-    required this.cadSolicitante,
-    required this.cadEntregas,
-    required this.famResponsavel,
-    required this.famFoto,
-    required this.famTelefone1,
-    required this.famTelefone2,
-    required this.famRendaMedia,
-    required this.famBeneficioGov,
-    required this.endGeopoint,
-    required this.endCEP,
-    required this.endLogradouro,
-    required this.endNumero,
-    required this.endBairro,
-    required this.endCidade,
-    required this.endEstado,
-    required this.endPais,
-    required this.endReferencia,
-    required this.extraInfo,
+    required this.cadNomeFamilia,
+    this.cadSolicitante,
+    this.famFoto,
+    this.famTelefone1,
+    this.famTelefone2,
+    this.famRendaMedia,
+    this.famBeneficioGov,
+    this.endGeopoint,
+    this.endCEP,
+    this.endLogradouro,
+    this.endNumero,
+    this.endBairro,
+    this.endCidade,
+    this.endEstado,
+    this.endPais,
+    this.endReferencia,
+    this.extraInfo,
     required this.moradores,
+    this.cadEntregas, // @deprecar
+    this.famResponsavel, // @deprecar
   });
 
-  Familia.fromJson(Map<String, Object?> json)
+  Familia.fromJson(Map<String, dynamic> json)
       : this(
           cadAtivo: (json['cadAtivo'] ?? true) as bool,
           cadDiacono: (json['cadDiacono'] ?? '') as String,
           cadData: (json['cadData'] ?? Timestamp.fromDate(DateTime.now()))
               as Timestamp,
+          cadNomeFamilia:
+              (json['cadNomeFamilia'] ?? '[Não definido]') as String,
           cadSolicitante: (json['cadSolicitante'] ?? '') as String,
-          cadEntregas: (json['cadEntregas'] ?? 0) as int,
-          famResponsavel: (json['famResponsavel'] ?? 0) as int,
           famFoto: (json['famFoto'] ?? '') as String,
-          famTelefone1: (json['famTelefone1'] ?? 450) as int,
-          famTelefone2: (json['famTelefone2'] ?? 450) as int,
+          famTelefone1: (json['famTelefone1'] ?? 0) as int,
+          famTelefone2: (json['famTelefone2'] ?? 0) as int,
           famRendaMedia: (json['famRendaMedia'] ?? 0) as num,
           famBeneficioGov: (json['famBeneficioGov'] ?? 0) as int,
           endGeopoint: (json['endGeopoint'] ??
               const GeoPoint(-25.5322523, -54.5864979)) as GeoPoint,
-          endCEP: (json['endCEP'] ?? 85852000) as int,
+          endCEP: (json['endCEP'] ?? 0) as int,
           endLogradouro: (json['endLogradouro'] ?? '') as String,
           endNumero: (json['endNumero'] ?? '') as String,
           endBairro: (json['endBairro'] ?? '') as String,
@@ -82,6 +84,8 @@ class Familia {
           extraInfo: (json['extraInfo'] ?? '') as String,
           moradores: List<Morador>.from(((json['moradores']) as List<dynamic>)
               .map((e) => Morador.fromJson(e))),
+          cadEntregas: (json['cadEntregas'] ?? 0) as int, //@deprecar
+          famResponsavel: (json['famResponsavel'] ?? 0) as int, //@deprecar
         );
 
   Map<String, Object?> extractMap(Map<String, Object?>? json) {
@@ -89,14 +93,13 @@ class Familia {
     return json;
   }
 
-  Map<String, Object?> toJson() {
+  Map<String, dynamic> toJson() {
     return {
       'cadAtivo': cadAtivo,
       'cadDiacono': cadDiacono,
       'cadData': cadData,
+      'cadNomeFamilia': cadNomeFamilia,
       'cadSolicitante': cadSolicitante,
-      'cadEntregas': cadEntregas,
-      'famResponsavel': famResponsavel,
       'famFoto': famFoto,
       'famTelefone1': famTelefone1,
       'famTelefone2': famTelefone2,
@@ -114,33 +117,8 @@ class Familia {
       'extraInfo': extraInfo,
       'moradores':
           List<dynamic>.from(moradores.map((morador) => morador.toJson())),
+      'cadEntregas': cadEntregas, // @deprecar
+      'famResponsavel': famResponsavel, // @deprecar
     };
   }
-
-  /// Cria o registro para um novo cadastro
-  Familia.novaFamilia()
-      : this(
-          cadAtivo: true,
-          cadDiacono: auth.currentUser!.uid,
-          cadData: Timestamp.now(),
-          cadSolicitante: '',
-          cadEntregas: 0,
-          famResponsavel: 0,
-          famFoto: '',
-          famTelefone1: 450,
-          famTelefone2: 450,
-          famRendaMedia: 0,
-          famBeneficioGov: 0,
-          endGeopoint: const GeoPoint(-25.5322523, -54.5864979),
-          endCEP: 85852000,
-          endLogradouro: '',
-          endNumero: '',
-          endBairro: '',
-          endCidade: 'Foz do Iguaçu',
-          endEstado: 'PR',
-          endPais: 'Brasil',
-          endReferencia: '',
-          extraInfo: '',
-          moradores: List<Morador>.empty(growable: true),
-        );
 }

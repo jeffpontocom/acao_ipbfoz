@@ -1,5 +1,6 @@
 //import 'dart:developer' as dev;
 
+import 'package:acao_ipbfoz/data/funcoes.dart';
 import 'package:acao_ipbfoz/models/familia.dart';
 import 'package:acao_ipbfoz/utils/mensagens.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -18,7 +19,7 @@ class AdminPage extends StatefulWidget {
 
 class _AdminPageState extends State<AdminPage> with TickerProviderStateMixin {
   /* VARIAVEIS */
-  ScrollController _scrollController = ScrollController();
+  final ScrollController _scrollController = ScrollController();
 
   /* METODOS */
 
@@ -99,16 +100,13 @@ class _AdminPageState extends State<AdminPage> with TickerProviderStateMixin {
         }
         // Widget
         return Scrollbar(
+          controller: _scrollController,
           isAlwaysShown: true,
           showTrackOnHover: true,
-          controller: _scrollController,
           child: ListView.builder(
+            controller: _scrollController,
             scrollDirection: Axis.vertical,
             shrinkWrap: true, // Obrigatorio (gera erro se falso)
-            physics: const ScrollPhysics(), // Obrigatorio (nao move se nulo)
-            padding:
-                EdgeInsets.symmetric(horizontal: Util.paddingListH(context)),
-            controller: _scrollController,
             itemCount: snapshots.data?.size ?? 0,
             itemBuilder: (context, index) {
               Familia familia = snapshots.data!.docs[index].data();
@@ -120,14 +118,11 @@ class _AdminPageState extends State<AdminPage> with TickerProviderStateMixin {
                 leading: const Icon(Icons.family_restroom_rounded),
                 // Nome do morador
                 title: Text(
-                  familia.moradores[familia.famResponsavel].nome,
+                  familia.moradores[familia.famResponsavel ?? 0].nome,
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 // Bairro
-                subtitle: Text(familia.endBairro),
-                //+ ' • ' +
-                //familia.cadEntregas.toString() +
-                //' entregas realizadas.'),
+                subtitle: Text('Bairro: ${familia.endBairro}'),
                 onTap: () {
                   Modular.to.pushNamed('/familia?id=' +
                       snapshots.data!.docs[index].reference.id);
@@ -143,14 +138,14 @@ class _AdminPageState extends State<AdminPage> with TickerProviderStateMixin {
   Widget get listaDiaconos {
     List<String> ids = AppData.diaconos.keys.toList();
     return Scrollbar(
+      controller: _scrollController,
       isAlwaysShown: true,
       showTrackOnHover: true,
-      controller: _scrollController,
       child: ListView.builder(
+        controller: _scrollController,
         scrollDirection: Axis.vertical,
         shrinkWrap: true, // Obrigatorio (gera erro se falso)
         itemCount: AppData.diaconos.length,
-        controller: _scrollController,
         itemBuilder: (context, i) {
           return ListTile(
             leading: IconButton(
@@ -175,6 +170,8 @@ class _AdminPageState extends State<AdminPage> with TickerProviderStateMixin {
     );
   }
 
+  /* METODOS DO SISTEMA */
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -196,9 +193,18 @@ class _AdminPageState extends State<AdminPage> with TickerProviderStateMixin {
               const Divider(),
               tituloSecao('Gerenciar base de dados'),
               ListTile(
+                leading: const Icon(Icons.refresh),
+                title: const Text('Refazer índices'),
+                subtitle: const Text(
+                    'Recria o índice com total de famílias e entregas'),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+                onTap: () => Funcao.atualizarResumos(context),
+              ),
+              ListTile(
                 leading: const Icon(Icons.groups),
                 title: const Text('Relação de Diáconos'),
-                subtitle: const Text('Consultar e/ou alterar dados de acesso'),
+                subtitle: const Text(
+                    'Consultar e/ou alterar dados de acesso dos diáconos'),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 24),
                 onTap: () {
                   Mensagem.bottomDialog(

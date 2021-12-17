@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '/models/entrega_itens.dart';
 
+/// Classe para registro das entregas
 class Entrega {
   late Timestamp data;
   late String diacono;
@@ -31,4 +31,61 @@ class Entrega {
       'entregue': entregue
     };
   }
+}
+
+/// Classe para registro dos itens das entregas
+class ItensEntrega {
+  late int quantidade;
+  late String descricao;
+  late Timestamp validade;
+
+  ItensEntrega({
+    required this.quantidade,
+    required this.descricao,
+    required this.validade,
+  });
+
+  ItensEntrega.fromJson(Map<String, Object?> json)
+      : this(
+          quantidade: (json['quantidade'] ?? 1) as int,
+          descricao: (json['descricao'] ?? '') as String,
+          validade: (json['validade'] ?? Timestamp.fromDate(DateTime(1800)))
+              as Timestamp,
+        );
+
+  Map<String, Object?> toJson() {
+    return {
+      'quantidade': quantidade,
+      'descricao': descricao,
+      'validade': validade,
+    };
+  }
+}
+
+/// Classe para registro do total de entregas mensais
+class ResumoEntregas {
+  late int ano;
+  late int mes;
+  late int total;
+
+  ResumoEntregas({required this.ano, required this.mes, required this.total});
+
+  ResumoEntregas.fromJson(Map<String, dynamic> json)
+      : this(
+          ano: (json['ano'] ?? 0) as int,
+          mes: (json['mes'] ?? 0) as int,
+          total: (json['total'] ?? 0) as int,
+        );
+
+  Map<String, dynamic> toJson() {
+    return {
+      'ano': ano,
+      'mes': mes,
+      'total': total,
+    };
+  }
+
+  void increment() => total++;
+
+  void clear() => total = 0;
 }

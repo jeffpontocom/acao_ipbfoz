@@ -1,9 +1,7 @@
 import 'dart:developer' as dev;
 import 'dart:async';
-import 'dart:math';
 
-import 'package:acao_ipbfoz/data/escolaridade.dart';
-import 'package:acao_ipbfoz/utils/mensagens.dart';
+import 'package:acao_ipbfoz/data/funcoes.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -12,10 +10,14 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import '/app_data.dart';
+import '/main.dart';
 import '/models/entrega.dart';
 import '/models/familia.dart';
+import '../models/resumo.dart';
 import '/models/morador.dart';
-import '../utils/estilos.dart';
+import '/utils/customs.dart';
+import '/utils/estilos.dart';
+import '/utils/mensagens.dart';
 import '/utils/util.dart';
 
 class HomePage extends StatefulWidget {
@@ -27,24 +29,11 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   /* VARIAVEIS */
+  late Resumo _indices;
   final _totalFamilias = ValueNotifier<int>(0);
-  final _totalEntregas = ValueNotifier<int>(0);
   final _atualizarGrafico = ValueNotifier(false);
   late int _anoGrafico;
-  final List<EntregaMensal> _entregasMensais = [
-    EntregaMensal(0, 0),
-    EntregaMensal(1, 0),
-    EntregaMensal(2, 0),
-    EntregaMensal(3, 0),
-    EntregaMensal(4, 0),
-    EntregaMensal(5, 0),
-    EntregaMensal(6, 0),
-    EntregaMensal(7, 0),
-    EntregaMensal(8, 0),
-    EntregaMensal(9, 0),
-    EntregaMensal(10, 0),
-    EntregaMensal(11, 0),
-  ];
+  List<ResumoEntregas> _resumoEntregas = [];
   late double _appBarHeight;
   late final ScrollController _scrollController;
   bool _sliverCollapsed = false;
@@ -71,16 +60,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   /// Botão Novo Cadastro
   Widget get _btnNovoCadastro {
-    TextEditingController ctrNome = TextEditingController();
-    TextEditingController ctrDataNasc = TextEditingController();
-    Escolaridade ctrEscolaridade = Escolaridade.indefinido;
-    TextEditingController ctrProfissao = TextEditingController();
+    TextEditingController ctrNomeBeneficiado = TextEditingController();
+    //TextEditingController ctrSolicitante = TextEditingController();
     bool ctrEspecial = false;
+
     return TextButton.icon(
-      icon: const Hero(
-        tag: 'novo',
-        child: Icon(Icons.add_business_sharp),
-      ),
+      icon: const Icon(Icons.add_business_sharp),
       label: const Text(
         'Novo cadastro',
         overflow: TextOverflow.ellipsis,
@@ -94,109 +79,54 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextFormField(
-                controller: ctrNome,
+                controller: ctrNomeBeneficiado,
                 textCapitalization: TextCapitalization.words,
                 keyboardType: TextInputType.name,
                 textInputAction: TextInputAction.next,
                 decoration: Estilos.mInputDecoration
-                    .copyWith(labelText: 'Nome do responsável'),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  // Nascimento
-                  Expanded(
-                    flex: 1,
-                    child: TextFormField(
-                      readOnly: true,
-                      controller: ctrDataNasc,
-                      decoration: Estilos.mInputDecoration.copyWith(
-                        labelText: 'Nascimento',
-                        suffixIcon: IconButton(
-                          onPressed: () {
-                            showDatePicker(
-                                    context: context,
-                                    initialDate: DateTime.now(),
-                                    firstDate: DateTime(1900),
-                                    lastDate: DateTime.now())
-                                .then((value) => ctrDataNasc.text = Util
-                                    .fmtDataCurta
-                                    .format(value ?? DateTime.now()));
-                          },
-                          icon: const Icon(Icons.date_range),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const Expanded(
-                    flex: 0,
-                    child: SizedBox(width: 16),
-                  ),
-                  // Escolaridade
-                  Expanded(
-                    flex: 2,
-                    child: DropdownButtonFormField<Escolaridade>(
-                      value: ctrEscolaridade,
-                      decoration: Estilos.mInputDecoration
-                          .copyWith(labelText: 'Escolaridade'),
-                      focusNode: FocusNode(
-                        skipTraversal: true,
-                      ),
-                      items: Escolaridade.values
-                          .map(
-                            (value) => DropdownMenuItem(
-                              value: value,
-                              child: Text(getEscolaridadeString(value)),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          ctrEscolaridade = value ?? Escolaridade.indefinido;
-                        });
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              // Profissao
-              TextFormField(
-                controller: ctrProfissao,
-                textCapitalization: TextCapitalization.words,
-                keyboardType: TextInputType.name,
-                textInputAction: TextInputAction.next,
-                decoration:
-                    Estilos.mInputDecoration.copyWith(labelText: 'Profissão'),
+                    .copyWith(labelText: 'Nome do beneficiado'),
               ),
               const SizedBox(height: 16),
               // E Especial
-              ListTile(
-                title: const Text("Possui necessidades especiais"),
-                leading: Checkbox(
-                  value: ctrEspecial,
-                  tristate: false,
-                  onChanged: (value) {
-                    setState(() {
-                      ctrEspecial = value!;
-                    });
-                  },
-                ),
+              StatefulBuilder(
+                builder: (context, setState) {
+                  return CheckboxListTile(
+                    tristate: false,
+                    title: const Text("PNE"),
+                    visualDensity: VisualDensity.compact,
+                    subtitle: const Text("Portador de Necessidades Especiais"),
+                    secondary: const Icon(Icons.accessible),
+                    //contentPadding: const EdgeInsets.all(0),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(16)),
+                    ),
+                    tileColor: Colors.amber.shade100,
+                    selectedTileColor: Colors.amber,
+                    selected: ctrEspecial,
+                    value: ctrEspecial,
+                    onChanged: (value) {
+                      setState(() {
+                        ctrEspecial = value ?? false;
+                      });
+                    },
+                  );
+                },
               ),
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: () {
                   // Cria nova familia
-                  var novaFamilia = Familia.novaFamilia();
-                  novaFamilia.moradores.add(
-                    Morador(
-                      nome: ctrNome.text,
-                      nascimento: getTimeStamp(ctrDataNasc.text),
-                      escolaridade: ctrEscolaridade.index,
-                      profissao: ctrProfissao.text,
-                      especial: ctrEspecial,
-                    ),
-                  );
+                  var novaFamilia = Familia(
+                      cadAtivo: true,
+                      cadDiacono: auth.currentUser!.uid,
+                      cadData: Timestamp.now(),
+                      cadNomeFamilia: ctrNomeBeneficiado.text,
+                      moradores: [
+                        Morador(
+                          nome: ctrNomeBeneficiado.text,
+                          especial: ctrEspecial,
+                        ),
+                      ]);
                   // Registra no Firebase
                   FirebaseFirestore.instance
                       .collection('familias')
@@ -240,7 +170,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   SliverPersistentHeader _cabecalho(Widget titulo, Color cor) {
     return SliverPersistentHeader(
       pinned: true,
-      delegate: _SliverHeaderDelegate(
+      delegate: MySliverHeaderDelegate(
         minHeight: 40,
         maxHeight: 56,
         child: Container(
@@ -255,133 +185,55 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   /* METODOS */
 
-  Timestamp getTimeStamp(String data) {
-    Timestamp stamp = Timestamp.now();
-    try {
-      stamp = Timestamp.fromDate(Util.fmtDataCurta.parse(data));
-    } catch (e) {
-      dev.log(e.toString());
-    }
-    return stamp;
-  }
-
-  /// Conta o total de famílias cadastradas e o total global de entregas
-  /// realizadas
-  void _contarTotais(QuerySnapshot<Familia>? data) {
-    // Se contagem ainda não concluida e total de entregas diferente de zero
-    // Significa que contagem está em andamento
-    if (_atualizarGrafico.value) {
-      return;
-    }
-    // Total de famílias
-    _totalFamilias.value = data!.size;
-    // Zerando entregas
-    _totalEntregas.value = 0;
-    for (var element in _entregasMensais) {
-      element.clear();
-    }
-    _atualizarGrafico.value = false;
-    int analisadas = 0;
-    // Analizando cada familia
-    for (var element in data.docs) {
-      // Atualiza o total de entregas pelo valor pre-carregado
-      _totalEntregas.value += element.data().cadEntregas;
-      // Atualizar o total de entregas verificando cada item da coleção
-      element.reference
-          .collection('entregas')
-          .where('data',
-              isGreaterThanOrEqualTo:
-                  Timestamp.fromDate(DateTime(_anoGrafico, 1, 1)))
-          .where('data',
-              isLessThanOrEqualTo:
-                  Timestamp.fromDate(DateTime(_anoGrafico, 12, 31)))
-          .withConverter<Entrega>(
-            fromFirestore: (snapshots, _) =>
-                Entrega.fromJson(snapshots.data()!),
-            toFirestore: (documento, _) => documento.toJson(),
-          )
-          .get()
-          .then((entregas) {
-        // Registra a analise
-        analisadas++;
-        if (entregas.size > 0) {
-          // Atualiza o total de entregas
-          element.reference.update({'cadEntregas': entregas.size});
-          // Preenche a variavel do gráfico
-          for (var element in entregas.docs) {
-            _entregasMensais[element.data().data.toDate().month - 1]
-                .increment();
-          }
-        } else {
-          // Atualizar o total de entregas
-          element.reference.update({'cadEntregas': 0});
-        }
-        // Finaliza no último elemento
-        if (analisadas == _totalFamilias.value) {
-          _atualizarGrafico.value = true;
-        }
-      });
-    }
-    dev.log('Totais contabilizados e atualizados!', name: 'HOME');
-  }
-
-  /// Conta o total de integrantes de uma familia
-  String _contarIntegrantes(Familia familia) {
-    int criancas = 0;
-    int adultos = 0;
-    int idosos = 0;
-    for (var element in familia.moradores) {
-      int idade = getIdade(element.nascimento);
-      if (idade == -1) {
-        adultos += 1;
-      } else if (idade < 15) {
-        criancas += 1;
-      } else if (idade < 60) {
-        adultos += 1;
-      } else {
-        idosos += 1;
-      }
-    }
-    if (criancas == 0 && adultos == 0 && idosos == 0) {
-      return 'sem moradores cadastrados';
-    }
-    if (criancas != 0 && adultos == 0 && idosos == 0) {
-      return '$criancas criança${Util.isPlural(criancas)}';
-    }
-    if (criancas != 0 && adultos != 0 && idosos == 0) {
-      return '$criancas criança${Util.isPlural(criancas)} e $adultos adulto${Util.isPlural(adultos)}';
-    }
-    if (criancas != 0 && adultos == 0 && idosos != 0) {
-      return '$criancas criança${Util.isPlural(criancas)} e $idosos idoso${Util.isPlural(idosos)}';
-    }
-    if (criancas != 0 && adultos != 0 && idosos != 0) {
-      return '$criancas criança${Util.isPlural(criancas)}, $adultos adulto${Util.isPlural(adultos)} e $idosos idoso${Util.isPlural(idosos)}';
-    }
-    if (criancas == 0 && adultos != 0 && idosos == 0) {
-      return '$adultos adulto${Util.isPlural(adultos)}';
-    }
-    if (criancas == 0 && adultos != 0 && idosos != 0) {
-      return '$adultos adulto${Util.isPlural(adultos)} e $idosos idoso${Util.isPlural(idosos)}';
-    }
-    if (criancas == 0 && adultos == 0 && idosos != 0) {
-      return '$idosos idoso${Util.isPlural(idosos)}';
-    }
-    return 'Analisar moradores cadastrados!';
-  }
-
   /// Cria uma serie para gráficos com dados das entregas mensais
-  List<charts.Series<EntregaMensal, String>> _graficoEntregasMensais() {
+  List<charts.Series<ResumoEntregas, String>> _graficoEntregasMensais() {
+    List<ResumoEntregas> _data = [];
+    for (int i = 1; i <= 12; i++) {
+      var _resumo = _resumoEntregas.singleWhere(
+          (element) => element.ano == _anoGrafico && element.mes == i,
+          orElse: () => ResumoEntregas(ano: _anoGrafico, mes: i, total: 0));
+      _data.add(_resumo);
+    }
     return [
-      charts.Series<EntregaMensal, String>(
+      charts.Series<ResumoEntregas, String>(
         id: 'Entregas',
         colorFn: (_, __) => charts.MaterialPalette.teal.shadeDefault,
-        domainFn: (EntregaMensal sales, _) => Util.listaMesCurto[sales.mes],
-        measureFn: (EntregaMensal sales, a) => sales.total,
-        data: _entregasMensais,
-        labelAccessorFn: (EntregaMensal sales, a) =>
-            sales.total > 0 ? '${sales.total}' : '',
+        data: _data,
+        // Eixo X
+        domainFn: (ResumoEntregas entrega, _) =>
+            Util.listaMesCurto[entrega.mes],
+        // Eixo Y
+        measureFn: (ResumoEntregas entrega, _) => entrega.total,
+        // Label
+        labelAccessorFn: (ResumoEntregas entrega, _) =>
+            entrega.total > 0 ? '${entrega.total}' : '',
       )
     ];
+  }
+
+  /// Listener para contagem de famílias e entregas
+  void _escutarTotais() {
+    FirebaseFirestore.instance
+        .collection(Resumo.colecao)
+        .doc('geral')
+        .withConverter<Resumo>(
+          fromFirestore: (snapshots, _) => Resumo.fromJson(snapshots.data()!),
+          toFirestore: (documento, _) => documento.toJson(),
+        )
+        .snapshots()
+        .listen(
+      (event) {
+        if (event.exists) {
+          _atualizarGrafico.value = false;
+          _indices = event.data() ??
+              Resumo(resumoFamiliasAtivas: 0, resumoEntregas: []);
+          _totalFamilias.value = _indices.resumoFamiliasAtivas ?? 0;
+          _resumoEntregas = _indices.resumoEntregas ?? [];
+          _atualizarGrafico.value = true;
+          dev.log('Resumo de dados atualizado!', name: 'HOME');
+        }
+      },
+    );
   }
 
   /// Atualiza interface ao voltar para essa pagina
@@ -400,6 +252,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   void initState() {
     initializeDateFormatting('pt_BR', null);
+    _anoGrafico = Timestamp.now().toDate().year;
+    _escutarTotais();
     _scrollController = ScrollController()
       ..addListener(() {
         if (_isAppBarExpanded != _sliverCollapsed) {
@@ -408,13 +262,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           });
         }
       });
-    _anoGrafico = Timestamp.now().toDate().year;
     super.initState();
   }
 
   @override
   void didChangeDependencies() {
     _appBarHeight = MediaQuery.of(context).size.height / 4;
+    _atualizarGrafico.value = false;
     super.didChangeDependencies();
   }
 
@@ -559,57 +413,61 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ),
           // Gráfico
           SliverToBoxAdapter(
-            child: Column(
-              children: [
-                Container(
-                  height: 150,
-                  color: Colors.grey.shade100,
-                  child: ValueListenableBuilder(
-                    valueListenable: _atualizarGrafico,
-                    builder: (BuildContext context, bool value, Widget? child) {
-                      return charts.BarChart(
-                        _graficoEntregasMensais(),
-                        barRendererDecorator:
-                            charts.BarLabelDecorator<String>(),
-                        domainAxis: const charts.OrdinalAxisSpec(),
-                        behaviors: [
-                          charts.ChartTitle('Entregas',
-                              behaviorPosition: charts.BehaviorPosition.start),
-                        ],
-                      );
-                    },
+            child: Container(
+              padding:
+                  EdgeInsets.symmetric(horizontal: Util.paddingListH(context)),
+              color: Colors.grey.shade100,
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: 150,
+                    child: ValueListenableBuilder(
+                      valueListenable: _atualizarGrafico,
+                      builder:
+                          (BuildContext context, bool value, Widget? child) {
+                        return charts.BarChart(
+                          _graficoEntregasMensais(),
+                          barRendererDecorator:
+                              charts.BarLabelDecorator<String>(),
+                          domainAxis: const charts.OrdinalAxisSpec(),
+                          behaviors: [
+                            charts.ChartTitle('Entregas',
+                                behaviorPosition:
+                                    charts.BehaviorPosition.start),
+                          ],
+                        );
+                      },
+                    ),
                   ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.navigate_before),
-                      onPressed: () {
-                        _atualizarGrafico.value = false;
-                        //_totalFamilias.value = 0; // zera para força recontagem
-                        setState(() {
-                          _anoGrafico--;
-                        });
-                      },
-                    ),
-                    Text('$_anoGrafico'),
-                    IconButton(
-                      icon: const Icon(Icons.navigate_next),
-                      onPressed: () {
-                        _atualizarGrafico.value = false;
-                        //_totalFamilias.value = 0; // zera para força recontagem
-                        setState(() {
-                          _anoGrafico++;
-                        });
-                      },
-                    ),
-                  ],
-                )
-              ],
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.navigate_before),
+                        onPressed: () {
+                          _atualizarGrafico.value = false;
+                          setState(() {
+                            _anoGrafico--;
+                          });
+                        },
+                      ),
+                      Text('$_anoGrafico'),
+                      IconButton(
+                        icon: const Icon(Icons.navigate_next),
+                        onPressed: () {
+                          _atualizarGrafico.value = false;
+                          setState(() {
+                            _anoGrafico++;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ), // Lista Famílias
-
+          ),
+          // Lista Famílias
           _cabecalho(
             Text(
               'FAMÍLIAS',
@@ -625,7 +483,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   stream: FirebaseFirestore.instance
                       .collection('familias')
                       .where('cadAtivo', isEqualTo: true)
-                      .orderBy('cadData')
+                      .orderBy('cadNomeFamilia')
                       .withConverter<Familia>(
                         fromFirestore: (snapshots, _) =>
                             Familia.fromJson(snapshots.data()!),
@@ -652,17 +510,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         child: Text('Nenhum cadastro localizado!'),
                       );
                     }
-                    // Realizar contagens ao estabilizar conexão
-                    if (snapshots.connectionState == ConnectionState.active) {
-                      // Contar apenas se total de famílias for alterado
-                      //if ((snapshots.data?.size ?? _totalFamilias.value) !=
-                      //    _totalFamilias.value) {
-                      // Executar função apenas o após carregamento da interface
-                      WidgetsBinding.instance?.addPostFrameCallback(
-                        (_) => _contarTotais(snapshots.data),
-                      );
-                      //}
-                    }
                     // Widget
                     return ListView.builder(
                       scrollDirection: Axis.vertical,
@@ -683,13 +530,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           leading: const Icon(Icons.family_restroom_rounded),
                           // Nome do morador
                           title: Text(
-                            familia.moradores[familia.famResponsavel].nome,
+                            familia.cadNomeFamilia,
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           // Bairro
-                          subtitle: Text(_contarIntegrantes(familia) +
+                          subtitle: Text(Funcao.resumirFamilia(familia) +
                               '\n' +
-                              familia.endBairro),
+                              (familia.endBairro ?? '[sem bairro]')),
                           //+ ' • ' +
                           //familia.cadEntregas.toString() +
                           //' entregas realizadas.'),
@@ -711,49 +558,5 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       ),
       persistentFooterButtons: [_btnAdmin, _btnRelatorios, _btnNovoCadastro],
     );
-  }
-}
-
-/// Classe para registro do total de entregas mensais
-class EntregaMensal {
-  final int mes;
-  int total = 0;
-
-  EntregaMensal(this.mes, this.total);
-
-  void increment() => total++;
-
-  void clear() => total = 0;
-}
-
-/// Cabeçalhos Delegados
-class _SliverHeaderDelegate extends SliverPersistentHeaderDelegate {
-  final double minHeight;
-  final double maxHeight;
-  final Widget child;
-
-  _SliverHeaderDelegate({
-    required this.minHeight,
-    required this.maxHeight,
-    required this.child,
-  });
-
-  @override
-  double get minExtent => minHeight;
-
-  @override
-  double get maxExtent => max(maxHeight, minHeight);
-
-  @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return SizedBox.expand(child: child);
-  }
-
-  @override
-  bool shouldRebuild(_SliverHeaderDelegate oldDelegate) {
-    return maxHeight != oldDelegate.maxHeight ||
-        minHeight != oldDelegate.minHeight ||
-        child != oldDelegate.child;
   }
 }

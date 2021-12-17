@@ -12,9 +12,9 @@ import '/utils/mensagens.dart';
 import '/utils/util.dart';
 
 class DiaconoPage extends StatefulWidget {
-  final String diaconoId;
+  final String id;
 
-  const DiaconoPage({Key? key, required this.diaconoId}) : super(key: key);
+  const DiaconoPage({Key? key, required this.id}) : super(key: key);
 
   @override
   _DiaconoPageState createState() => _DiaconoPageState();
@@ -26,8 +26,8 @@ class _DiaconoPageState extends State<DiaconoPage> {
 
   @override
   void initState() {
-    mDiacono = AppData.diaconos[widget.diaconoId] ?? Diacono();
-    editMode = widget.diaconoId == AppData.usuario?.uid;
+    mDiacono = AppData.diaconos[widget.id] ?? Diacono();
+    editMode = widget.id == AppData.usuario?.uid;
     super.initState();
   }
 
@@ -39,9 +39,7 @@ class _DiaconoPageState extends State<DiaconoPage> {
         titleSpacing: 0,
       ),
       body: mDiacono.email == null
-          ? const Center(
-              child: Text('Informações não encontradas!'),
-            )
+          ? const Center(child: Text('Informações não encontradas!'))
           : InkWell(
               splashColor: Colors.transparent,
               focusColor: Colors.transparent,
@@ -58,91 +56,99 @@ class _DiaconoPageState extends State<DiaconoPage> {
                       vertical: Util.margemV(context),
                       horizontal: Util.margemH(context),
                     ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Hero(
-                          tag: widget.diaconoId,
-                          child: const Icon(
-                            Icons.account_circle,
-                            size: 128.0,
-                            color: Colors.grey,
+                    child: Container(
+                      alignment: Alignment.center,
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        runAlignment: WrapAlignment.center,
+                        runSpacing: 32,
+                        spacing: 64,
+                        children: [
+                          // FOTO
+                          Column(
+                            children: [
+                              Hero(
+                                tag: widget.id,
+                                child: const Icon(
+                                  Icons.account_circle,
+                                  size: 128.0,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                mDiacono.email ?? '[ERRO]',
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(fontSize: 16.0),
+                              ),
+                            ],
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          mDiacono.email ?? '[ERRO]',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 16.0),
-                        ),
-                        const SizedBox(height: 24),
-                        TextFormField(
-                          enabled: editMode,
-                          initialValue: mDiacono.nome,
-                          textCapitalization: TextCapitalization.words,
-                          keyboardType: TextInputType.name,
-                          textInputAction: TextInputAction.next,
-                          onChanged: (value) {
-                            mDiacono.nome = value;
-                          },
-                          decoration: Estilos.mInputDecoration
-                              .copyWith(labelText: 'Nome completo'),
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          enabled: editMode,
-                          initialValue: Inputs.mascaraFone
-                              .getMaskedString(mDiacono.telefone.toString()),
-                          inputFormatters: [Inputs.textoFone],
-                          keyboardType: TextInputType.phone,
-                          textInputAction: TextInputAction.next,
-                          onChanged: (value) {
-                            mDiacono.telefone =
-                                int.parse(Inputs.mascaraFone.clearMask(value));
-                          },
-                          decoration: Estilos.mInputDecoration
-                              .copyWith(labelText: 'Whatsapp'),
-                        ),
-                        const SizedBox(height: 32),
-                        editMode
-                            ? Row(
-                                children: [
-                                  Expanded(
-                                    flex: 3,
-                                    child: OutlinedButton.icon(
-                                      label: const Text('SAIR'),
-                                      icon: const Icon(Icons.logout_rounded),
-                                      style: OutlinedButton.styleFrom(
-                                          primary: Colors.white,
-                                          backgroundColor: Colors.red),
-                                      onPressed: () {
-                                        Mensagem.aguardar(
-                                            context: context,
-                                            mensagem: 'Saindo...');
-                                        FirebaseAuth.instance.signOut().then(
-                                            (value) =>
-                                                Modular.to.navigate('/'));
-                                      },
-                                    ),
-                                  ),
-                                  const Expanded(
-                                    flex: 1,
-                                    child: SizedBox(width: 12.0),
-                                  ),
-                                  Expanded(
-                                    flex: 4,
-                                    child: OutlinedButton.icon(
-                                      label: const Text('ATUALIZAR'),
-                                      icon: const Icon(Icons.save_rounded),
-                                      onPressed: () {
-                                        _gravar();
-                                      },
-                                    ),
-                                  )
-                                ],
-                              )
-                            : const SizedBox(),
-                      ],
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(
+                                minWidth: 200, maxWidth: 450),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                TextFormField(
+                                  enabled: editMode,
+                                  initialValue: mDiacono.nome,
+                                  textCapitalization: TextCapitalization.words,
+                                  keyboardType: TextInputType.name,
+                                  textInputAction: TextInputAction.next,
+                                  onChanged: (value) {
+                                    mDiacono.nome = value;
+                                  },
+                                  decoration: Estilos.mInputDecoration
+                                      .copyWith(labelText: 'Nome completo'),
+                                ),
+                                const SizedBox(height: 16),
+                                TextFormField(
+                                  enabled: editMode,
+                                  initialValue: Inputs.mascaraFone
+                                      .getMaskedString(
+                                          mDiacono.telefone.toString()),
+                                  inputFormatters: [Inputs.textoFone],
+                                  keyboardType: TextInputType.phone,
+                                  textInputAction: TextInputAction.next,
+                                  onChanged: (value) {
+                                    mDiacono.telefone = int.parse(
+                                        Inputs.mascaraFone.clearMask(value));
+                                  },
+                                  decoration: Estilos.mInputDecoration
+                                      .copyWith(labelText: 'Whatsapp'),
+                                ),
+                                SizedBox(height: editMode ? 32 : 0),
+                                editMode
+                                    ? Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          OutlinedButton.icon(
+                                            label: const Text('SAIR'),
+                                            icon: const Icon(
+                                                Icons.logout_rounded),
+                                            style: OutlinedButton.styleFrom(
+                                                primary: Colors.white,
+                                                backgroundColor: Colors.red),
+                                            onPressed: _sair,
+                                          ),
+                                          OutlinedButton.icon(
+                                            label: const Text('ATUALIZAR'),
+                                            icon:
+                                                const Icon(Icons.save_rounded),
+                                            onPressed: () {
+                                              _gravar();
+                                            },
+                                          ),
+                                        ],
+                                      )
+                                    : const SizedBox(),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -157,7 +163,7 @@ class _DiaconoPageState extends State<DiaconoPage> {
     try {
       FirebaseFirestore.instance
           .collection('diaconos')
-          .doc(widget.diaconoId)
+          .doc(widget.id)
           .set(mDiacono.toJson())
           .then((value) {
         Navigator.pop(context);
@@ -169,5 +175,10 @@ class _DiaconoPageState extends State<DiaconoPage> {
       dev.log(e.toString(), name: 'DiaconoPage');
       Navigator.pop(context);
     }
+  }
+
+  void _sair() {
+    Mensagem.aguardar(context: context, mensagem: 'Saindo...');
+    FirebaseAuth.instance.signOut().then((value) => Modular.to.navigate('/'));
   }
 }

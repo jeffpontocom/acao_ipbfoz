@@ -45,9 +45,10 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
       padding: const EdgeInsets.all(0),
       itemCount: widget.familia.moradores.length,
       itemBuilder: (context, index) {
-        var mIdade = _calcularIdade(widget.familia.moradores[index].nascimento);
+        var mIdade = _calcularIdade(
+            widget.familia.moradores[index].nascimento ?? Timestamp.now());
         String sIdade = _mostrarIdade(mIdade.keys.first, mIdade.values.first);
-        String profissao = widget.familia.moradores[index].profissao;
+        String profissao = widget.familia.moradores[index].profissao ?? '';
         return ListTile(
           horizontalTitleGap: 2,
           visualDensity: VisualDensity.compact,
@@ -66,210 +67,220 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
 
   /// Cria novo registro de morador
   void _dialogMorador(Morador? valor, int pos) {
-    Morador morador = Morador(
-        nome: '',
-        nascimento: Timestamp.fromDate(DateTime(1800)),
-        escolaridade: 0,
-        profissao: '',
-        especial: false);
+    Morador morador = Morador(nome: '', especial: false);
     if (valor != null) {
       morador = Morador.fromJson(valor.toJson());
     }
-    showModalBottomSheet(
-      isScrollControlled: true,
-      context: context,
-      isDismissible: false,
-      constraints:
-          BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.9),
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return Padding(
-              padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom,
-                  top: MediaQuery.of(context).viewInsets.top),
-              child: ListView(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 24.0, vertical: 16.0),
-                children: [
-                  Row(
-                    children: [
-                      const CloseButton(),
-                      Expanded(
-                        flex: 1,
-                        child: Text(
-                          'Cadastro do morador',
-                          textAlign: TextAlign.center,
-                          style: Estilos.titulo,
-                        ),
-                      ),
-                      const IconButton(
-                        onPressed: null,
-                        icon: Icon(Icons.person),
-                      ),
-                    ],
+    // Controladores
+    TextEditingController _dataNasc = TextEditingController(
+        text: morador.nascimento == null
+            ? ''
+            : Util.fmtDataCurta
+                .format(morador.nascimento?.toDate() ?? DateTime.now()));
+    // Widget conteudo
+    Widget _conteudo = Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Nome
+          TextFormField(
+            initialValue: morador.nome,
+            textCapitalization: TextCapitalization.words,
+            keyboardType: TextInputType.name,
+            textInputAction: TextInputAction.next,
+            decoration:
+                Estilos.mInputDecoration.copyWith(labelText: 'Nome completo'),
+            onChanged: (value) {
+              morador.nome = value;
+            },
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              // Nascimento
+              Expanded(
+                flex: 2,
+                child: TextFormField(
+                  readOnly: true,
+                  controller: _dataNasc,
+                  decoration: Estilos.mInputDecoration.copyWith(
+                    labelText: 'Nascimento',
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.calendar_today),
+                      onPressed: () async {
+                        final DateTime? picked = await showDatePicker(
+                          helpText: 'Data de Nascimento',
+                          context: context,
+                          locale: const Locale('pt', 'BR'),
+                          initialDate:
+                              morador.nascimento?.toDate() ?? DateTime.now(),
+                          firstDate: DateTime(1800),
+                          lastDate: DateTime(2100),
+                        );
+                        if (picked != null) {
+                          morador.nascimento = Timestamp.fromDate(picked);
+                          _dataNasc.text = Inputs.mascaraData
+                              .format(morador.nascimento!.toDate());
+                        }
+                      },
+                    ),
                   ),
-                  const SizedBox(height: 24.0),
-                  // Nome
-                  TextFormField(
-                    initialValue: morador.nome,
-                    textCapitalization: TextCapitalization.words,
-                    keyboardType: TextInputType.name,
-                    textInputAction: TextInputAction.next,
-                    decoration: Estilos.mInputDecoration
-                        .copyWith(labelText: 'Nome completo'),
-                    onChanged: (value) {
-                      morador.nome = value;
-                    },
-                  ),
-                  const SizedBox(height: 8.0),
-
-                  Row(
-                    children: [
-                      // Nascimento
-                      Expanded(
-                        flex: 1,
-                        child: TextFormField(
-                          initialValue: morador.nascimento.toDate().year == 1800
-                              ? ''
-                              : Inputs.mascaraData
-                                  .format(morador.nascimento.toDate()),
-                          keyboardType: TextInputType.datetime,
-                          textInputAction: TextInputAction.next,
-                          inputFormatters: [Inputs.textoData],
-                          decoration: Estilos.mInputDecoration.copyWith(
-                              labelText: 'Nascimento', hintText: 'xx/xx/xxxx'),
-                          onChanged: (value) {
-                            if (value.isEmpty || value.contains('x')) {
-                              morador.nascimento =
-                                  Timestamp.fromDate(DateTime(1800));
-                            }
-                            if (value.length >= 10) {
-                              DateTime date = Inputs.mascaraData.parse(value);
-                              morador.nascimento = Timestamp.fromDate(date);
-                            }
-                          },
-                        ),
-                      ),
-                      const Expanded(
-                        flex: 0,
-                        child: SizedBox(width: 8.0),
-                      ),
-                      // Escolaridade
-                      Expanded(
-                        flex: 2,
-                        child: DropdownButtonFormField<int>(
-                          value: morador.escolaridade,
-                          decoration: Estilos.mInputDecoration.copyWith(
-                              labelText: 'Escolaridade', isDense: true),
-                          focusNode: FocusNode(
-                            skipTraversal: true,
-                          ),
-                          items: Escolaridade.values
-                              .map(
-                                (value) => DropdownMenuItem(
-                                  value: value.index,
-                                  child: Text(getEscolaridadeString(value)),
-                                ),
-                              )
-                              .toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              morador.escolaridade = value!;
-                            });
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8.0),
-                  // Profissao
-                  TextFormField(
-                    initialValue: morador.profissao,
-                    textCapitalization: TextCapitalization.words,
-                    keyboardType: TextInputType.name,
-                    textInputAction: TextInputAction.next,
-                    decoration: Estilos.mInputDecoration
-                        .copyWith(labelText: 'Profissão'),
-                    onChanged: (value) {
-                      morador.profissao = value;
-                    },
-                  ),
-                  const SizedBox(height: 8.0),
-                  // E Especial
-                  ListTile(
-                      title: const Text("Possui necessidades especiais"),
-                      leading: Checkbox(
-                        value: morador.especial,
-                        onChanged: (value) {
-                          setState(() {
-                            morador.especial = value!;
-                          });
-                        },
-                      )),
-                  const SizedBox(height: 8.0),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      pos == 9999
-                          ? const SizedBox()
-                          : OutlinedButton.icon(
-                              label: const Text('EXCLUIR'),
-                              icon: const Icon(Icons.archive_rounded),
-                              style: OutlinedButton.styleFrom(
-                                primary: Colors.white,
-                                backgroundColor: Colors.red,
-                              ),
-                              onPressed: () {
-                                Mensagem.decisao(
-                                  context: context,
-                                  titulo: 'Excluir',
-                                  mensagem:
-                                      'Deseja excluir o registro desse morador?',
-                                  onPressed: (value) {
-                                    if (value) {
-                                      widget.familia.moradores.removeAt(pos);
-                                      widget.reference.update({
-                                        'moradores': List<dynamic>.from(widget
-                                            .familia.moradores
-                                            .map((morador) => morador.toJson()))
-                                      }).then(
-                                        // Fecha o dialogo
-                                        (value) => Navigator.pop(context),
-                                      );
-                                    }
-                                  },
-                                );
-                              },
-                            ),
-                      OutlinedButton.icon(
-                        label: const Text('SALVAR'),
-                        icon: const Icon(Icons.save_rounded),
-                        onPressed: () {
-                          Navigator.pop(context, true);
-                          if (pos == 9999) {
-                            widget.familia.moradores.add(morador);
-                          } else {
-                            widget.familia.moradores[pos] = morador;
-                          }
-                          widget.reference.update({
-                            'moradores': List<dynamic>.from(widget
-                                .familia.moradores
-                                .map((morador) => morador.toJson()))
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                ],
+                ),
               ),
-            );
-          },
-        );
-      },
-    ).then((value) {
-      setState(() {});
-    });
+              const Expanded(
+                flex: 0,
+                child: SizedBox(width: 8),
+              ),
+              // Escolaridade
+              Expanded(
+                flex: 3,
+                child: DropdownButtonFormField<int>(
+                  value: morador.escolaridade,
+                  decoration: Estilos.mInputDecoration
+                      .copyWith(labelText: 'Escolaridade'),
+                  focusNode: FocusNode(
+                    skipTraversal: true,
+                  ),
+                  items: Escolaridade.values
+                      .map(
+                        (value) => DropdownMenuItem(
+                          value: value.index,
+                          child: Text(getEscolaridadeString(value)),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      morador.escolaridade = value!;
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Profissao
+          TextFormField(
+            initialValue: morador.profissao,
+            textCapitalization: TextCapitalization.words,
+            keyboardType: TextInputType.name,
+            textInputAction: TextInputAction.next,
+            decoration:
+                Estilos.mInputDecoration.copyWith(labelText: 'Profissão'),
+            onChanged: (value) {
+              morador.profissao = value;
+            },
+          ),
+          const SizedBox(height: 16),
+          // E Especial
+          StatefulBuilder(
+            builder: (context, setState) {
+              return CheckboxListTile(
+                tristate: false,
+                title: const Text("PNE"),
+                visualDensity: VisualDensity.compact,
+                subtitle: const Text("Portador de Necessidades Especiais"),
+                secondary: const Icon(Icons.accessible),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(16)),
+                ),
+                tileColor: Colors.amber.shade100,
+                selectedTileColor: Colors.amber,
+                selected: morador.especial,
+                value: morador.especial,
+                onChanged: (value) {
+                  setState(() {
+                    morador.especial = value ?? false;
+                  });
+                },
+              );
+            },
+          ),
+          const SizedBox(height: 32),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              pos == 9999
+                  ? const SizedBox()
+                  : OutlinedButton.icon(
+                      label: const Text('EXCLUIR'),
+                      icon: const Icon(Icons.archive_rounded),
+                      style: OutlinedButton.styleFrom(
+                        primary: Colors.white,
+                        backgroundColor: Colors.red,
+                      ),
+                      onPressed: () {
+                        widget.familia.moradores.length <= 1
+                            ? Mensagem.simples(
+                                context: context,
+                                titulo: 'Atenção',
+                                mensagem:
+                                    'Não é possível excluir!\nÉ necessário no mínimo 1 morador cadastrado.')
+                            : Mensagem.decisao(
+                                context: context,
+                                titulo: 'Excluir',
+                                mensagem:
+                                    'Deseja excluir o registro desse morador?',
+                                onPressed: (value) {
+                                  if (value) {
+                                    widget.familia.moradores.removeAt(pos);
+                                    widget.reference.update({
+                                      'moradores': List<dynamic>.from(widget
+                                          .familia.moradores
+                                          .map((morador) => morador.toJson()))
+                                    }).then(
+                                      // Fecha o dialogo
+                                      (value) => Navigator.pop(context),
+                                    );
+                                  }
+                                },
+                              );
+                      },
+                    ),
+              const SizedBox(width: 16),
+              Expanded(
+                flex: 1,
+                child: OutlinedButton.icon(
+                  label: const Text('SALVAR'),
+                  icon: const Icon(Icons.save_rounded),
+                  onPressed: () {
+                    Navigator.pop(context, true);
+                    if (pos == 9999) {
+                      widget.familia.moradores.add(morador);
+                    } else {
+                      widget.familia.moradores[pos] = morador;
+                    }
+                    widget.reference.update({
+                      'moradores': List<dynamic>.from(widget.familia.moradores
+                          .map((morador) => morador.toJson()))
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    // Dialog
+    var scroll = ScrollController();
+    Mensagem.bottomDialog(
+        context: context,
+        titulo: 'Cadastro do morador',
+        scrollController: scroll,
+        conteudo: Scrollbar(
+          isAlwaysShown: true,
+          showTrackOnHover: true,
+          controller: scroll,
+          child: SingleChildScrollView(
+            child: _conteudo,
+            controller: scroll,
+          ),
+        ),
+        icon: Icons.person,
+        onPressed: () => setState(() {}));
   }
 
   /// Calcula a idade do morador

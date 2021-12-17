@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/date_symbol_data_local.dart';
 
 import 'fam_dados.dart';
 import 'fam_entregas.dart';
@@ -8,10 +7,8 @@ import 'fam_moradores.dart';
 import '/models/familia.dart';
 
 class FamiliaPage extends StatefulWidget {
-  final String? referenceId;
-  final bool? novoCadastro;
-  const FamiliaPage({Key? key, this.referenceId, this.novoCadastro})
-      : super(key: key);
+  final String? id;
+  const FamiliaPage({Key? key, this.id}) : super(key: key);
 
   @override
   _FamiliaPageState createState() => _FamiliaPageState();
@@ -21,7 +18,6 @@ class _FamiliaPageState extends State<FamiliaPage> {
   /* VARIAVEIS */
   late Familia mFamilia;
   late DocumentReference<Familia> mReference;
-  late bool novoCadastro;
 
   /* WIDGETS */
 
@@ -31,7 +27,7 @@ class _FamiliaPageState extends State<FamiliaPage> {
   DocumentReference<Familia> _getReference() {
     return FirebaseFirestore.instance
         .collection('familias')
-        .doc(widget.referenceId)
+        .doc(widget.id)
         .withConverter(
           fromFirestore: (snapshot, _) => Familia.fromJson(snapshot.data()!),
           toFirestore: (document, _) => document.toJson(),
@@ -41,8 +37,6 @@ class _FamiliaPageState extends State<FamiliaPage> {
   /* METODOS DO SISTEMA */
   @override
   void initState() {
-    initializeDateFormatting('pt_BR');
-    novoCadastro = widget.referenceId?.isEmpty ?? true;
     mReference = _getReference();
     super.initState();
   }
@@ -77,7 +71,13 @@ class _FamiliaPageState extends State<FamiliaPage> {
           );
         }
         // Preenche família
-        mFamilia = snapshot.data?.data() ?? Familia.novaFamilia();
+        mFamilia = snapshot.data?.data() ??
+            Familia(
+                cadAtivo: false,
+                cadDiacono: '',
+                cadData: Timestamp.now(),
+                cadNomeFamilia: 'Erro',
+                moradores: []);
         // Interface
         return DefaultTabController(
           length: 3,
@@ -90,9 +90,7 @@ class _FamiliaPageState extends State<FamiliaPage> {
                 children: [
                   const Text('Família', textScaleFactor: 0.6),
                   Text(
-                    mFamilia.moradores.isEmpty
-                        ? 'Novo Cadastro'
-                        : mFamilia.moradores[0].nome,
+                    mFamilia.cadNomeFamilia,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ],
@@ -108,10 +106,7 @@ class _FamiliaPageState extends State<FamiliaPage> {
             ),
             body: TabBarView(
               children: [
-                FamiliaDados(
-                    familia: mFamilia,
-                    reference: mReference,
-                    editMode: widget.novoCadastro),
+                FamiliaDados(familia: mFamilia, reference: mReference),
                 FamiliaMoradores(familia: mFamilia, reference: mReference),
                 FamiliaEntregas(refFamilia: mReference),
               ],

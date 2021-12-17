@@ -1,4 +1,5 @@
 class Diacono {
+  static const String colecao = 'diaconos';
   late final String uid;
 
   String? nome;

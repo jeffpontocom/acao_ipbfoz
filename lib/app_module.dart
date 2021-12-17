@@ -31,16 +31,13 @@ class AppModule extends Module {
     ),
     ChildRoute(
       '/diacono',
-      child: (_, args) => DiaconoPage(diaconoId: args.queryParams['id'] ?? ''),
+      child: (_, args) => DiaconoPage(id: args.queryParams['id'] ?? ''),
       transition: TransitionType.rightToLeftWithFade,
       guards: [AuthGuard(), HasQueryGuard()],
     ),
     ChildRoute(
       '/familia',
-      child: (_, args) => FamiliaPage(
-        referenceId: args.queryParams['id'],
-        novoCadastro: args.data,
-      ),
+      child: (_, args) => FamiliaPage(id: args.queryParams['id'] ?? ''),
       transition: TransitionType.leftToRightWithFade,
       guards: [AuthGuard()],
     ),

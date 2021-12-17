@@ -25,12 +25,12 @@ class Estilos {
 /// Classe para mascaras de texto
 class Inputs {
   /// Para Telefones (formato (##) _####-####)
-  static var textoFone = TextInputMask(
-      mask: ['(99) 9999-9999', '(99) 99999-9999'], reverse: false);
+  static var textoFone =
+      TextInputMask(mask: ['(99) 9999-9999', '(99) 99999-9999']);
   static var mascaraFone = MagicMask.buildMask(textoFone.mask);
 
   /// Para CEPs (formato #####-###)
-  static var textoCEP = TextInputMask(mask: '99999-999', reverse: false);
+  static var textoCEP = TextInputMask(mask: '99999-999');
   static var mascaraCEP = MagicMask.buildMask(textoCEP.mask);
 
   /// Para moeda (formato #.###,##)

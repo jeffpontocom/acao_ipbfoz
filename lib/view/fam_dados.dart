@@ -1,10 +1,12 @@
 import 'dart:developer' as dev;
 
 import 'package:acao_ipbfoz/models/familia.dart';
+import 'package:acao_ipbfoz/utils/customs.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '/app_data.dart';
 import '/data/beneficios_gov.dart';
@@ -28,7 +30,6 @@ class _FamiliaDadosState extends State<FamiliaDados> {
   /* VARIAVEIS */
   final _scrollController = ScrollController();
   late bool editMode;
-  late bool cadastroNovo;
 
   /* WIDGETS */
 
@@ -45,16 +46,10 @@ class _FamiliaDadosState extends State<FamiliaDados> {
         leading: const Icon(Icons.family_restroom),
         horizontalTitleGap: 0,
         title: Text(
-          !cadastroNovo
-              ? widget.familia.cadAtivo
-                  ? 'Situação: ATIVO'
-                  : 'Situação: INATIVO'
-              : 'EM CRIAÇÃO',
+          widget.familia.cadAtivo ? 'Situação: ATIVO' : 'Situação: INATIVO',
         ),
         subtitle: Text(
-          !cadastroNovo
-              ? 'Cadastrada em ${Util.fmtDataCurta.format(widget.familia.cadData.toDate())}.'
-              : 'Adicione um morador para salvar',
+          'Cadastrada em ${Util.fmtDataCurta.format(widget.familia.cadData.toDate())}.',
         ),
         trailing: TextButton.icon(
           label: Text(editMode ? 'SALVAR' : 'EDITAR'),
@@ -91,45 +86,38 @@ class _FamiliaDadosState extends State<FamiliaDados> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _subtitulo('CONTATO'),
-        // Familiar Responsavel
-        Visibility(
-          visible: widget.familia.moradores.isNotEmpty,
-          child: Column(
-            children: [
-              // Familiar responsável (combo box)
-              DropdownButtonFormField<int>(
-                value: widget.familia.famResponsavel,
-                iconDisabledColor: Colors.transparent,
-                decoration: Estilos.mInputDecoration.copyWith(
-                  labelText: 'Familiar responsável',
-                  enabled: editMode,
-                ),
-                items: widget.familia.moradores
-                    .map(
-                      (morador) => DropdownMenuItem(
-                        value: widget.familia.moradores.indexOf(morador),
-                        child: Text(morador.nome),
-                      ),
-                    )
-                    .toList(),
-                onChanged: editMode
-                    ? (value) {
-                        setState(() {
-                          widget.familia.famResponsavel = value!;
-                        });
-                      }
-                    : null,
-              ),
-              const SizedBox(height: 16.0),
-            ],
+        // Familiar responsável (combo box)
+        DropdownButtonFormField<int>(
+          value: widget.familia.moradores.indexWhere(
+              (element) => element.nome == widget.familia.cadNomeFamilia),
+          iconDisabledColor: Colors.transparent,
+          decoration: Estilos.mInputDecoration.copyWith(
+            labelText: 'Familiar responsável',
+            enabled: editMode,
           ),
+          items: widget.familia.moradores
+              .map(
+                (morador) => DropdownMenuItem(
+                  value: widget.familia.moradores.indexOf(morador),
+                  child: Text(morador.nome),
+                ),
+              )
+              .toList(),
+          onChanged: editMode
+              ? (value) {
+                  setState(() {
+                    widget.familia.cadNomeFamilia =
+                        widget.familia.moradores[value ?? 0].nome;
+                  });
+                }
+              : null,
         ),
-        // Telefones
+        const SizedBox(height: 16),
+        // Whatsapp
         Row(
           children: [
-            // Whatsapp
             Expanded(
-              flex: 1,
+              flex: 2,
               child: TextFormField(
                 enabled: editMode,
                 initialValue: widget.familia.famTelefone1 == 0
@@ -139,13 +127,8 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                 inputFormatters: [Inputs.textoFone],
                 keyboardType: TextInputType.number,
                 textInputAction: TextInputAction.next,
-                decoration: Estilos.mInputDecoration.copyWith(
-                  labelText: 'Whatsapp',
-                  prefixIcon: const IconButton(
-                    onPressed: null,
-                    icon: Icon(Icons.perm_phone_msg),
-                  ),
-                ),
+                decoration:
+                    Estilos.mInputDecoration.copyWith(labelText: 'Whatsapp'),
                 onChanged: (value) {
                   if (value.isEmpty) {
                     widget.familia.famTelefone1 = 0;
@@ -158,13 +141,28 @@ class _FamiliaDadosState extends State<FamiliaDados> {
             ),
             const Expanded(
               flex: 0,
-              child: SizedBox(
-                width: 16.0,
-              ),
+              child: SizedBox(width: 16),
             ),
-            // Telefone
+            // Botão de ação
             Expanded(
               flex: 1,
+              child: TextButton.icon(
+                onPressed: (widget.familia.famTelefone1 == null ||
+                        widget.familia.famTelefone1! < 1000000000)
+                    ? null
+                    : _iniciarWhatsApp,
+                icon: const Icon(Icons.perm_phone_msg),
+                label: const Text('ZAP'),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        // Telefone Secundário
+        Row(
+          children: [
+            Expanded(
+              flex: 2,
               child: TextFormField(
                 enabled: editMode,
                 initialValue: widget.familia.famTelefone2 == 0
@@ -174,13 +172,8 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                 inputFormatters: [Inputs.textoFone],
                 keyboardType: TextInputType.number,
                 textInputAction: TextInputAction.next,
-                decoration: Estilos.mInputDecoration.copyWith(
-                  labelText: 'Telefone (outro)',
-                  prefixIcon: const IconButton(
-                    onPressed: null,
-                    icon: Icon(Icons.settings_phone),
-                  ),
-                ),
+                decoration: Estilos.mInputDecoration
+                    .copyWith(labelText: 'Telefone (outro)'),
                 onChanged: (value) {
                   if (value.isEmpty) {
                     widget.familia.famTelefone2 = 0;
@@ -191,13 +184,29 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                 },
               ),
             ),
+            const Expanded(
+              flex: 0,
+              child: SizedBox(width: 16.0),
+            ),
+            // Botão de ação
+            Expanded(
+              flex: 1,
+              child: TextButton.icon(
+                onPressed: (widget.familia.famTelefone2 == null ||
+                        widget.familia.famTelefone2! < 1000000000)
+                    ? null
+                    : _iniciarTelefone,
+                icon: const Icon(Icons.phone),
+                label: const Text('LIGAR'),
+              ),
+            ),
           ],
-        )
+        ),
       ],
     );
   }
 
-  // Endereço
+  /// Endereço
   Widget get _endereco {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -207,11 +216,13 @@ class _FamiliaDadosState extends State<FamiliaDados> {
           children: [
             // CEP
             Expanded(
-              flex: 1,
+              flex: 2,
               child: TextFormField(
                 enabled: editMode,
-                initialValue: Inputs.mascaraCEP
-                    .getMaskedString(widget.familia.endCEP.toString()),
+                initialValue: widget.familia.endCEP == 0
+                    ? ''
+                    : Inputs.mascaraCEP
+                        .getMaskedString(widget.familia.endCEP.toString()),
                 inputFormatters: [Inputs.textoCEP],
                 keyboardType: TextInputType.number,
                 textInputAction: TextInputAction.next,
@@ -228,33 +239,21 @@ class _FamiliaDadosState extends State<FamiliaDados> {
             ),
             const Expanded(
               flex: 0,
-              child: SizedBox(
-                width: 16.0,
-              ),
+              child: SizedBox(width: 16.0),
             ),
-            // Número
+            // Botão de Ação (Rota do Google)
             Expanded(
               flex: 1,
-              child: TextFormField(
-                enabled: editMode,
-                initialValue: widget.familia.endNumero,
-                keyboardType: TextInputType.text,
-                textInputAction: TextInputAction.next,
-                decoration: Estilos.mInputDecoration.copyWith(
-                  labelText: 'Número',
-                  /* suffixIcon: const IconButton(
-                    onPressed: null,
-                    icon: Icon(Icons.map),
-                  ), */
-                ),
-                onChanged: (value) {
-                  widget.familia.endNumero = value;
-                },
+              child: TextButton.icon(
+                onPressed: _iniciarGoogleMaps,
+                icon: const Icon(Icons.map),
+                label: const Text('ROTA'),
               ),
             ),
           ],
         ),
         const SizedBox(height: 16.0),
+
         // Logradouro
         TextFormField(
           enabled: editMode,
@@ -269,19 +268,47 @@ class _FamiliaDadosState extends State<FamiliaDados> {
           },
         ),
         const SizedBox(height: 16.0),
-        // Bairro
-        TextFormField(
-          enabled: editMode,
-          initialValue: widget.familia.endBairro,
-          textCapitalization: TextCapitalization.words,
-          keyboardType: TextInputType.streetAddress,
-          textInputAction: TextInputAction.next,
-          selectionControls: materialTextSelectionControls,
-          decoration: Estilos.mInputDecoration.copyWith(labelText: 'Bairro'),
-          onChanged: (value) {
-            widget.familia.endBairro = value;
-          },
+        Row(
+          children: [
+            // Número
+            Expanded(
+              flex: 1,
+              child: TextFormField(
+                enabled: editMode,
+                initialValue: widget.familia.endNumero,
+                keyboardType: TextInputType.text,
+                textInputAction: TextInputAction.next,
+                decoration:
+                    Estilos.mInputDecoration.copyWith(labelText: 'Número'),
+                onChanged: (value) {
+                  widget.familia.endNumero = value;
+                },
+              ),
+            ),
+            const Expanded(
+              flex: 0,
+              child: SizedBox(width: 16.0),
+            ),
+            // Bairro
+            Expanded(
+              flex: 2,
+              child: TextFormField(
+                enabled: editMode,
+                initialValue: widget.familia.endBairro,
+                textCapitalization: TextCapitalization.words,
+                keyboardType: TextInputType.streetAddress,
+                textInputAction: TextInputAction.next,
+                selectionControls: materialTextSelectionControls,
+                decoration:
+                    Estilos.mInputDecoration.copyWith(labelText: 'Bairro'),
+                onChanged: (value) {
+                  widget.familia.endBairro = value;
+                },
+              ),
+            ),
+          ],
         ),
+
         const SizedBox(height: 16.0),
         // Referencia
         TextFormField(
@@ -338,7 +365,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
             ),
             // Beneficio Governo (combo box)
             Expanded(
-              flex: 1,
+              flex: 2,
               child: DropdownButtonFormField<int>(
                 value: widget.familia.famBeneficioGov,
                 iconDisabledColor: Colors.transparent,
@@ -440,7 +467,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
 
   // Botão ativar/desativar cadastro
   Widget get _btnAtivar {
-    return !cadastroNovo && editMode
+    return editMode
         ? ElevatedButton.icon(
             label: Text(widget.familia.cadAtivo
                 ? 'Desativar cadastro'
@@ -471,6 +498,36 @@ class _FamiliaDadosState extends State<FamiliaDados> {
 
   /* METODOS */
 
+  /// Iniciar Google Maps
+  void _iniciarGoogleMaps() {
+    var query = (widget.familia.endLogradouro ?? "") +
+        ', ' +
+        (widget.familia.endNumero ?? "") +
+        ', ' +
+        'Foz do Iguaçu';
+    MapsLauncher.launchQuery(query);
+  }
+
+  /// Iniciar Google Maps
+  void _iniciarWhatsApp() async {
+    var url = 'https://wa.me/55${widget.familia.famTelefone1}';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Não é possível abrir o Whatsapp';
+    }
+  }
+
+  /// Iniciar Google Maps
+  void _iniciarTelefone() async {
+    var url = 'tel://${widget.familia.famTelefone2}';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Não é possivel realizar ligações nesse aparelho';
+    }
+  }
+
   /// Salva as alterações no banco de dados
   void _salvarDados() {
     if (widget.familia.moradores.isEmpty) {
@@ -484,10 +541,10 @@ class _FamiliaDadosState extends State<FamiliaDados> {
       // Abre a tela de progresso
       Mensagem.aguardar(
           context: context, mensagem: 'Salvando dados cadastrais...');
+      // Executa ação
       widget.reference.set(widget.familia).then((value) {
         Navigator.pop(context); // Fecha a tela de progresso
         editMode = false;
-        cadastroNovo = false;
         setState(() {});
       }).catchError((error) {
         Navigator.pop(context); // Fecha a tela de progresso
@@ -540,13 +597,13 @@ class _FamiliaDadosState extends State<FamiliaDados> {
 
   @override
   void initState() {
-    cadastroNovo = widget.familia.moradores.isEmpty;
     editMode = widget.editMode ?? false;
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    double _collumnMaxWidth = 480;
     return CustomScrollView(
       slivers: [
         _situacao,
@@ -570,19 +627,19 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                   alignment: WrapAlignment.center,
                   children: [
                     ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 480),
+                      constraints: BoxConstraints(maxWidth: _collumnMaxWidth),
                       child: _contatos,
                     ),
                     ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 480),
+                      constraints: BoxConstraints(maxWidth: _collumnMaxWidth),
                       child: _endereco,
                     ),
                     ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 480),
+                      constraints: BoxConstraints(maxWidth: _collumnMaxWidth),
                       child: _analiseSocial,
                     ),
                     ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 480),
+                      constraints: BoxConstraints(maxWidth: _collumnMaxWidth),
                       child: _controleCadastro,
                     ),
                     Padding(
