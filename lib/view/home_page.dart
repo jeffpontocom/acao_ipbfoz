@@ -61,7 +61,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   /// Botão Novo Cadastro
   Widget get _btnNovoCadastro {
     TextEditingController ctrNomeBeneficiado = TextEditingController();
-    //TextEditingController ctrSolicitante = TextEditingController();
+    TextEditingController ctrBairro = TextEditingController();
     bool ctrEspecial = false;
 
     return TextButton.icon(
@@ -78,6 +78,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Nome do Beneficiario
               TextFormField(
                 controller: ctrNomeBeneficiado,
                 textCapitalization: TextCapitalization.words,
@@ -85,6 +86,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 textInputAction: TextInputAction.next,
                 decoration: Estilos.mInputDecoration
                     .copyWith(labelText: 'Nome do beneficiado'),
+              ),
+              const SizedBox(height: 16),
+              // Bairro
+              TextFormField(
+                controller: ctrBairro,
+                textCapitalization: TextCapitalization.words,
+                keyboardType: TextInputType.streetAddress,
+                textInputAction: TextInputAction.next,
+                decoration:
+                    Estilos.mInputDecoration.copyWith(labelText: 'Bairro'),
               ),
               const SizedBox(height: 16),
               // E Especial
@@ -96,11 +107,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     visualDensity: VisualDensity.compact,
                     subtitle: const Text("Portador de Necessidades Especiais"),
                     secondary: const Icon(Icons.accessible),
-                    //contentPadding: const EdgeInsets.all(0),
                     shape: const RoundedRectangleBorder(
                       borderRadius: BorderRadius.all(Radius.circular(16)),
                     ),
-                    tileColor: Colors.amber.shade100,
+                    tileColor: Colors.grey.shade200,
                     selectedTileColor: Colors.amber,
                     selected: ctrEspecial,
                     value: ctrEspecial,
@@ -115,12 +125,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: () {
+                  // Abre tela de progresso
+                  Mensagem.aguardar(
+                      context: context, mensagem: 'Criando registro...');
                   // Cria nova familia
                   var novaFamilia = Familia(
                       cadAtivo: true,
                       cadDiacono: auth.currentUser!.uid,
                       cadData: Timestamp.now(),
                       cadNomeFamilia: ctrNomeBeneficiado.text,
+                      endBairro: ctrBairro.text,
                       moradores: [
                         Morador(
                           nome: ctrNomeBeneficiado.text,
@@ -133,7 +147,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       .add(novaFamilia.toJson())
                       .then(
                     (value) {
-                      // Abre tela da familia
+                      // Modifica Resumo
+                      FirebaseFirestore.instance
+                          .collection(Resumo.colecao)
+                          .doc('geral')
+                          .update({
+                        'resumoFamiliasAtivas': FieldValue.increment(1)
+                      });
+                      // Fecha tela de progresso
+                      Modular.to.pop();
+                      // Fecha bottom dialog e abre tela da familia
                       Modular.to
                           .popAndPushNamed('/familia?id=${value.id}',
                               arguments: true)

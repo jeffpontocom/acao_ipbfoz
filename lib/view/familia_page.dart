@@ -108,7 +108,7 @@ class _FamiliaPageState extends State<FamiliaPage> {
               children: [
                 FamiliaDados(familia: mFamilia, reference: mReference),
                 FamiliaMoradores(familia: mFamilia, reference: mReference),
-                FamiliaEntregas(refFamilia: mReference),
+                FamiliaEntregas(familia: mFamilia, refFamilia: mReference),
               ],
             ),
           ),

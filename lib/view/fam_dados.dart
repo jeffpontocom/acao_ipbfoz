@@ -1,6 +1,7 @@
 import 'dart:developer' as dev;
 
 import 'package:acao_ipbfoz/models/familia.dart';
+import 'package:acao_ipbfoz/models/resumo.dart';
 import 'package:acao_ipbfoz/utils/customs.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
@@ -245,7 +246,10 @@ class _FamiliaDadosState extends State<FamiliaDados> {
             Expanded(
               flex: 1,
               child: TextButton.icon(
-                onPressed: _iniciarGoogleMaps,
+                onPressed: (widget.familia.endLogradouro == null ||
+                        widget.familia.endLogradouro!.isEmpty)
+                    ? null
+                    : _iniciarGoogleMaps,
                 icon: const Icon(Icons.map),
                 label: const Text('ROTA'),
               ),
@@ -472,7 +476,9 @@ class _FamiliaDadosState extends State<FamiliaDados> {
             label: Text(widget.familia.cadAtivo
                 ? 'Desativar cadastro'
                 : 'Reativar cadastro'),
-            icon: const Icon(Icons.archive_rounded),
+            icon: Icon(widget.familia.cadAtivo
+                ? Icons.archive_rounded
+                : Icons.open_in_browser),
             style: ElevatedButton.styleFrom(
                 primary: widget.familia.cadAtivo ? Colors.red : Colors.teal),
             onPressed: () {
@@ -559,20 +565,33 @@ class _FamiliaDadosState extends State<FamiliaDados> {
       context: context,
       titulo: widget.familia.cadAtivo ? 'Desativar' : 'Reativar',
       mensagem: 'Está certo que deseja executar essa ação?',
-      onPressed: (value) {
-        WidgetsBinding.instance?.addPostFrameCallback(
+      onPressed: (value) async {
+        // Abre tela de progresso
+        Mensagem.aguardar(context: context, mensagem: 'Alterando status...');
+        /* WidgetsBinding.instance?.addPostFrameCallback(
           (_) => _scrollController.jumpTo(0),
-        );
-
+        ); */
         if (value) {
+          int incremento;
           if (widget.familia.cadAtivo) {
-            widget.reference.update({'cadAtivo': false});
+            await widget.reference.update({'cadAtivo': false});
+            incremento = -1;
           } else {
-            widget.reference.update({'cadAtivo': true});
+            await widget.reference.update({'cadAtivo': true});
+            incremento = 1;
           }
+          // Modifica Resumo
+          FirebaseFirestore.instance
+              .collection(Resumo.colecao)
+              .doc('geral')
+              .update(
+                  {'resumoFamiliasAtivas': FieldValue.increment(incremento)});
           widget.familia.cadAtivo = !widget.familia.cadAtivo;
           editMode = false;
-          setState(() {});
+          Modular.to.pop(); // Fecha tela de progresso
+          setState(() {
+            _scrollController.jumpTo(0);
+          });
         }
       },
     );

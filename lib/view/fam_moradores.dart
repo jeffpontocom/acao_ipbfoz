@@ -1,6 +1,7 @@
 import 'package:acao_ipbfoz/models/familia.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 
 import '/data/escolaridade.dart';
 import '/models/morador.dart';
@@ -71,6 +72,7 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
     if (valor != null) {
       morador = Morador.fromJson(valor.toJson());
     }
+    bool isPrincipal = morador.nome == widget.familia.cadNomeFamilia;
     // Controladores
     TextEditingController _dataNasc = TextEditingController(
         text: morador.nascimento == null
@@ -100,7 +102,7 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
             children: [
               // Nascimento
               Expanded(
-                flex: 2,
+                flex: 3,
                 child: TextFormField(
                   readOnly: true,
                   controller: _dataNasc,
@@ -134,7 +136,7 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
               ),
               // Escolaridade
               Expanded(
-                flex: 3,
+                flex: 4,
                 child: DropdownButtonFormField<int>(
                   value: morador.escolaridade,
                   decoration: Estilos.mInputDecoration
@@ -185,7 +187,7 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                 shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(Radius.circular(16)),
                 ),
-                tileColor: Colors.amber.shade100,
+                tileColor: Colors.grey.shade200,
                 selectedTileColor: Colors.amber,
                 selected: morador.especial,
                 value: morador.especial,
@@ -244,17 +246,29 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                 child: OutlinedButton.icon(
                   label: const Text('SALVAR'),
                   icon: const Icon(Icons.save_rounded),
-                  onPressed: () {
+                  onPressed: () async {
+                    // Fecha dialogo
                     Navigator.pop(context, true);
+                    // Abre tela de espera
+                    Mensagem.aguardar(
+                        context: context, mensagem: 'Salvando...');
                     if (pos == 9999) {
                       widget.familia.moradores.add(morador);
                     } else {
                       widget.familia.moradores[pos] = morador;
                     }
-                    widget.reference.update({
+                    // Atualiza moradores
+                    await widget.reference.update({
                       'moradores': List<dynamic>.from(widget.familia.moradores
                           .map((morador) => morador.toJson()))
                     });
+                    // Atualiza se morador principal
+                    if (isPrincipal) {
+                      widget.familia.cadNomeFamilia = morador.nome;
+                      await widget.reference
+                          .update({'cadNomeFamilia': morador.nome});
+                    }
+                    Modular.to.pop(); // Fecha tela de espera
                   },
                 ),
               ),
@@ -316,7 +330,7 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
   String _mostrarIdade(bool isBirthday, int idade) {
     //data de nascimento não pode ser maior que data atual
     if (idade == -1) {
-      return "Sem idade definida!";
+      return "[Registrar idade]";
     }
     //Verifica se está fazendo aniversário hoje
     else if (isBirthday) {
@@ -337,12 +351,14 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
       child: SingleChildScrollView(
         controller: _scrollController,
         child: Padding(
-          padding: EdgeInsets.symmetric(
-              horizontal: Util.paddingListH(context), vertical: 24),
+          padding: EdgeInsets.symmetric(horizontal: Util.paddingListH(context)),
           child: Column(
             children: [
-              _btnAddMorador,
-              const SizedBox(height: 8.0),
+              widget.familia.cadAtivo
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24),
+                      child: _btnAddMorador)
+                  : const SizedBox(),
               _listaMoradores,
             ],
           ),

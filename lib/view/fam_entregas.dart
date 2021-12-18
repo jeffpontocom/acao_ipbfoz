@@ -1,4 +1,6 @@
 import 'package:acao_ipbfoz/models/familia.dart';
+import 'package:acao_ipbfoz/models/resumo.dart';
+import 'package:acao_ipbfoz/utils/estilos.dart';
 import 'package:acao_ipbfoz/utils/util.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -11,8 +13,11 @@ import '/models/entrega.dart';
 import '/utils/mensagens.dart';
 
 class FamiliaEntregas extends StatefulWidget {
+  final Familia familia;
   final DocumentReference<Familia> refFamilia;
-  const FamiliaEntregas({Key? key, required this.refFamilia}) : super(key: key);
+  const FamiliaEntregas(
+      {Key? key, required this.familia, required this.refFamilia})
+      : super(key: key);
 
   @override
   _FamiliaEntregasState createState() => _FamiliaEntregasState();
@@ -75,9 +80,12 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
           return const Center(child: CircularProgressIndicator());
         }
         if (snapshots.data!.size == 0) {
-          return const Center(
+          return Center(
             heightFactor: 5,
-            child: Text('Nenhuma entrega realizada ainda.'),
+            child: Text(
+              'Nenhuma entrega realizada.',
+              style: Estilos.titulo,
+            ),
           );
         }
         final data = snapshots.data;
@@ -262,7 +270,7 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     isNew
-                        ? const Expanded(flex: 1, child: SizedBox(width: 24.0))
+                        ? const SizedBox(width: 150)
                         : OutlinedButton.icon(
                             label: const Text('Excluir'),
                             icon: const Icon(Icons.archive_rounded),
@@ -275,12 +283,19 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
                                 context: context,
                                 titulo: 'Excluir',
                                 mensagem: 'Deseja excluir esse item?',
-                                onPressed: (value) {
+                                onPressed: (value) async {
                                   if (value == true) {
                                     Modular.to.pop(); // Fecha o dialogo
-                                    setState(() {
-                                      ref.delete();
-                                    });
+                                    // Tela de progresso
+                                    Mensagem.aguardar(
+                                        context: context,
+                                        mensagem: 'Excluindo...');
+                                    // Ação
+                                    await ref.delete();
+                                    // Modifica Resumo
+                                    await _incrementarEntrega(-1);
+                                    // Fecha a tela de progresso
+                                    Modular.to.pop();
                                   }
                                 },
                               );
@@ -292,11 +307,17 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
                       child: OutlinedButton.icon(
                         label: const Text('Salvar'),
                         icon: const Icon(Icons.save_rounded),
-                        onPressed: () {
-                          Navigator.pop(context, true);
-                          setState(() {
-                            ref.set(entrega);
-                          });
+                        onPressed: () async {
+                          Modular.to.pop(); // Fecha o dialogo
+                          // Tela de progresso
+                          Mensagem.aguardar(
+                              context: context, mensagem: 'Registrando...');
+                          // Ação
+                          await ref.set(entrega);
+                          // Modifica Resumo
+                          isNew ? await _incrementarEntrega(1) : null;
+                          // Fecha a tela de progresso
+                          Modular.to.pop();
                         },
                       ),
                     ),
@@ -315,6 +336,33 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
       icon: Icons.delivery_dining,
       onPressed: () => setState(() {}),
     );
+  }
+
+  Future<void> _incrementarEntrega(int incremento) async {
+    int ano = DateTime.now().year;
+    int mes = DateTime.now().month;
+    await FirebaseFirestore.instance
+        .collection(Resumo.colecao)
+        .doc('geral')
+        .withConverter<Resumo>(
+          fromFirestore: (snapshots, _) => Resumo.fromJson(snapshots.data()!),
+          toFirestore: (documento, _) => documento.toJson(),
+        )
+        .get()
+        .then((value) async {
+      List<ResumoEntregas> lista = value.data()?.resumoEntregas ?? [];
+      var index = lista
+          .indexWhere((element) => element.ano == ano && element.mes == mes);
+      if (index == -1) {
+        lista.add(ResumoEntregas(ano: ano, mes: mes, total: incremento));
+      } else {
+        lista[index].total += incremento;
+      }
+      await value.reference.update({
+        'resumoEntregas':
+            List<dynamic>.from(lista.map((entregas) => entregas.toJson()))
+      });
+    });
   }
 
   /* METODOS DO SISTEMA */
@@ -338,14 +386,14 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
       child: SingleChildScrollView(
         controller: _scrollController,
         child: Padding(
-          padding: EdgeInsets.symmetric(
-            vertical: 24,
-            horizontal: Util.paddingListH(context),
-          ),
+          padding: EdgeInsets.symmetric(horizontal: Util.paddingListH(context)),
           child: Column(
             children: [
-              _btnAddEntrega,
-              const SizedBox(height: 8.0),
+              widget.familia.cadAtivo
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24),
+                      child: _btnAddEntrega)
+                  : const SizedBox(),
               _listaEntregas,
             ],
           ),
