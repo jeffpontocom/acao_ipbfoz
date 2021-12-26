@@ -39,7 +39,7 @@ class MySliverHeaderDelegate extends SliverPersistentHeaderDelegate {
 
 class MapsLauncher {
   static String createQueryUrl(String query) {
-    var uri;
+    Uri uri;
 
     if (kIsWeb) {
       uri = Uri.https(
@@ -58,7 +58,7 @@ class MapsLauncher {
 
   static String createCoordinatesUrl(double latitude, double longitude,
       [String? label]) {
-    var uri;
+    Uri uri;
 
     if (kIsWeb) {
       uri = Uri.https('www.google.com', '/maps/search/',

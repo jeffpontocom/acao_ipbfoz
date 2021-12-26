@@ -9,12 +9,16 @@ import 'package:url_strategy/url_strategy.dart';
 import 'app_data.dart';
 import 'app_module.dart';
 
+import 'firebase_options.dart';
+
 final auth = FirebaseAuth.instance;
 
 void main() async {
   setPathUrlStrategy();
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   await AppData().loadPackageInfo();
   await AppData().loadDiaconos();
   runApp(

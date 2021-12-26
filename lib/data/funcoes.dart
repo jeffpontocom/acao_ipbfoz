@@ -26,11 +26,19 @@ class Funcao {
     // Analisa cada familia
     dev.log('Analisando entradas...', name: 'ADMIN');
     for (var element in snapFamilias.docs) {
+      Familia familia = Familia.fromJson(element.data());
       dev.log('Família: ${element.id}', name: 'ADMIN');
       // Incrementa famílias ativas
-      if (element.get('cadAtivo')) {
+      //if (element.get('cadAtivo')) {
+      if (familia.cadAtivo) {
         _resumoFamiliasAtivas++;
       }
+      // Verifica se familiar Responsavel está preenchido (cadastro da versão <= 1.1.0)
+      var nomeFamilia = await element.data().update(
+          'cadNomeFamilia', (value) => value,
+          ifAbsent: () => familia.moradores[familia.famResponsavel ?? 0].nome);
+      await element.reference.update({'cadNomeFamilia': nomeFamilia});
+      dev.log(nomeFamilia, name: 'ADMIN');
       // Analisa cada entrega
       var snapEntregas = await collection
           .doc(element.id)
