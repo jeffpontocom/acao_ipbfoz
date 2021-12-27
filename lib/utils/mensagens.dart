@@ -163,13 +163,13 @@ class Mensagem {
             children: [
               // Elemento grafico (indicador de dialog)
               Container(
-                width: 64,
+                width: 48,
                 height: 4,
                 margin: const EdgeInsets.only(top: 12),
                 decoration: const BoxDecoration(
                   shape: BoxShape.rectangle,
                   borderRadius: BorderRadius.all(Radius.circular(16.0)),
-                  color: Colors.black38,
+                  color: Colors.black26,
                 ),
               ),
               // Cabeçalho

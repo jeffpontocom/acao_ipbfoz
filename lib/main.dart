@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -16,9 +17,7 @@ final auth = FirebaseAuth.instance;
 void main() async {
   setPathUrlStrategy();
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await AppData().loadPackageInfo();
   await AppData().loadDiaconos();
   runApp(
@@ -55,6 +54,7 @@ class MyApp extends StatelessWidget {
             ),
           ),
         ),
+        // Botões com moldura
         outlinedButtonTheme: OutlinedButtonThemeData(
           style: OutlinedButton.styleFrom(
             minimumSize: const Size(150, 48),
@@ -63,6 +63,7 @@ class MyApp extends StatelessWidget {
             ),
           ),
         ),
+        // Botões de texto simples
         textButtonTheme: TextButtonThemeData(
           style: TextButton.styleFrom(
             minimumSize: const Size(double.minPositive, 48),
@@ -75,10 +76,21 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
+      // Suporte a lingua portugues nos elementos globais
       localizationsDelegates: const [GlobalMaterialLocalizations.delegate],
       supportedLocales: const [Locale('pt')],
+      scrollBehavior: MyCustomScrollBehavior(),
       // Identificador de tipo de Release
       debugShowCheckedModeBanner: !kReleaseMode,
     ).modular();
   }
+}
+
+class MyCustomScrollBehavior extends MaterialScrollBehavior {
+  // Override behavior methods and getters like dragDevices
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+      };
 }

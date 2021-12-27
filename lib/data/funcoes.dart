@@ -1,15 +1,17 @@
 import 'dart:developer' as dev;
 
-import 'package:acao_ipbfoz/models/familia.dart';
-import 'package:acao_ipbfoz/models/morador.dart';
-import 'package:acao_ipbfoz/models/resumo.dart';
-import 'package:acao_ipbfoz/utils/util.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
+import '../main.dart';
 import '/models/entrega.dart';
+import '/models/familia.dart';
+import '/models/morador.dart';
+import '/models/resumo.dart';
+import '/utils/estilos.dart';
 import '/utils/mensagens.dart';
+import '/utils/util.dart';
 
 class Funcao {
   /// Atualizar Resumos
@@ -129,5 +131,122 @@ class Funcao {
       return '$idosos idoso${Util.isPlural(idosos)}';
     }
     return 'Analisar moradores cadastrados!';
+  }
+
+  /// Criar novo cadastro
+  static void novoCadastro(BuildContext context) {
+    TextEditingController ctrNomeBeneficiado = TextEditingController();
+    TextEditingController ctrBairro = TextEditingController();
+    bool ctrEspecial = false;
+
+    // Widget
+    Widget conteudo = Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Nome do Beneficiario
+          TextFormField(
+            controller: ctrNomeBeneficiado,
+            textCapitalization: TextCapitalization.words,
+            keyboardType: TextInputType.name,
+            textInputAction: TextInputAction.next,
+            decoration: Estilos.mInputDecoration
+                .copyWith(labelText: 'Nome do beneficiado'),
+          ),
+          const SizedBox(height: 16),
+          // Bairro
+          TextFormField(
+            controller: ctrBairro,
+            textCapitalization: TextCapitalization.words,
+            keyboardType: TextInputType.streetAddress,
+            textInputAction: TextInputAction.next,
+            decoration: Estilos.mInputDecoration.copyWith(labelText: 'Bairro'),
+          ),
+          const SizedBox(height: 16),
+          // E Especial
+          StatefulBuilder(
+            builder: (context, setState) {
+              return CheckboxListTile(
+                tristate: false,
+                title: const Text("PNE"),
+                visualDensity: VisualDensity.compact,
+                subtitle: const Text("Portador de Necessidades Especiais"),
+                secondary: const Icon(Icons.accessible),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(16)),
+                ),
+                tileColor: Colors.grey.shade200,
+                selectedTileColor: Colors.amber,
+                selected: ctrEspecial,
+                value: ctrEspecial,
+                onChanged: (value) {
+                  setState(() {
+                    ctrEspecial = value ?? false;
+                  });
+                },
+              );
+            },
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () {
+              // Abre tela de progresso
+              Mensagem.aguardar(
+                  context: context, mensagem: 'Criando registro...');
+              // Cria nova familia
+              var novaFamilia = Familia(
+                  cadAtivo: true,
+                  cadDiacono: auth.currentUser!.uid,
+                  cadData: Timestamp.now(),
+                  cadNomeFamilia: ctrNomeBeneficiado.text,
+                  endBairro: ctrBairro.text,
+                  moradores: [
+                    Morador(
+                      nome: ctrNomeBeneficiado.text,
+                      especial: ctrEspecial,
+                    ),
+                  ]);
+              // Registra no Firebase
+              FirebaseFirestore.instance
+                  .collection('familias')
+                  .add(novaFamilia.toJson())
+                  .then(
+                (value) {
+                  // Modifica Resumo
+                  FirebaseFirestore.instance
+                      .collection(Resumo.colecao)
+                      .doc('geral')
+                      .update(
+                          {'resumoFamiliasAtivas': FieldValue.increment(1)});
+                  // Fecha tela de progresso
+                  Modular.to.pop();
+                  // Fecha bottom dialog e abre tela da familia
+                  Modular.to.popAndPushNamed('/familia?id=${value.id}',
+                      arguments: true);
+                },
+              );
+            },
+            child: const Text('Criar'),
+          ),
+        ],
+      ),
+    );
+    // Bottom dialog
+    var scroll = ScrollController();
+    Mensagem.bottomDialog(
+      context: context,
+      icon: Icons.add_business_sharp,
+      titulo: 'Novo cadastro',
+      conteudo: Scrollbar(
+        controller: scroll,
+        isAlwaysShown: true,
+        showTrackOnHover: true,
+        child: SingleChildScrollView(
+          controller: scroll,
+          child: conteudo,
+        ),
+      ),
+    );
   }
 }

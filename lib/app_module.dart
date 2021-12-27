@@ -39,7 +39,7 @@ class AppModule extends Module {
       '/familia',
       child: (_, args) => FamiliaPage(id: args.queryParams['id'] ?? ''),
       transition: TransitionType.leftToRightWithFade,
-      guards: [AuthGuard()],
+      guards: [AuthGuard(), HasQueryGuard()],
     ),
     WildcardRoute(child: (_, __) => const HomePage()),
   ];
