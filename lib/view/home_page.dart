@@ -124,10 +124,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         )
         .snapshots()
         .listen(
-      (event) {
-        if (event.exists) {
+      (document) {
+        if (document.exists) {
           _atualizarGrafico.value = false;
-          _indices = event.data() ??
+          _indices = document.data() ??
               Resumo(resumoFamiliasAtivas: 0, resumoEntregas: []);
           _totalFamilias.value = _indices.resumoFamiliasAtivas ?? 0;
           _resumoEntregas = _indices.resumoEntregas ?? [];
@@ -135,6 +135,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           dev.log('Resumo de dados atualizado!', name: 'HOME');
         }
       },
+      onDone: () {},
     );
   }
 
@@ -177,9 +178,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           SliverAppBar(
             // Definições
             expandedHeight: _appBarHeight,
-            //expandedHeight: 160,
             pinned: true,
-            //floating: true,
             backgroundColor: Colors.white,
             foregroundColor: Colors.black,
             systemOverlayStyle: const SystemUiOverlayStyle(
@@ -189,7 +188,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             // Stretch
             stretch: true,
             onStretchTrigger: () async {
-              _atualizarGrafico.value = true;
+              //_atualizarGrafico.value = true;
             },
             // Leading
             leadingWidth: 48,
@@ -318,19 +317,25 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     height: 150,
                     child: ValueListenableBuilder(
                       valueListenable: _atualizarGrafico,
+                      child: const Center(child: CircularProgressIndicator()),
                       builder:
                           (BuildContext context, bool value, Widget? child) {
-                        return charts.BarChart(
-                          _graficoEntregasMensais(),
-                          barRendererDecorator:
-                              charts.BarLabelDecorator<String>(),
-                          domainAxis: const charts.OrdinalAxisSpec(),
-                          behaviors: [
-                            charts.ChartTitle('Entregas',
-                                behaviorPosition:
-                                    charts.BehaviorPosition.start),
-                          ],
-                        );
+                        if (value) {
+                          return charts.BarChart(
+                            _graficoEntregasMensais(),
+                            barRendererDecorator:
+                                charts.BarLabelDecorator<String>(),
+                            domainAxis: const charts.OrdinalAxisSpec(),
+                            behaviors: [
+                              charts.ChartTitle('Entregas',
+                                  behaviorPosition:
+                                      charts.BehaviorPosition.start),
+                            ],
+                          );
+                        } else {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        }
                       },
                     ),
                   ),
@@ -341,20 +346,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       IconButton(
                         icon: const Icon(Icons.navigate_before),
                         onPressed: () {
-                          _atualizarGrafico.value = false;
                           setState(() {
                             _anoGrafico--;
                           });
+                          //_atualizarGrafico.value = true;
                         },
                       ),
                       Text('$_anoGrafico'),
                       IconButton(
                         icon: const Icon(Icons.navigate_next),
                         onPressed: () {
-                          _atualizarGrafico.value = false;
                           setState(() {
                             _anoGrafico++;
                           });
+                          //_atualizarGrafico.value = true;
                         },
                       ),
                     ],

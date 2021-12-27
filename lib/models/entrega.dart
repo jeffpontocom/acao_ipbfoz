@@ -49,7 +49,7 @@ class ItensEntrega {
       : this(
           quantidade: (json['quantidade'] ?? 1) as int,
           descricao: (json['descricao'] ?? '') as String,
-          validade: (json['validade'] ?? Timestamp.fromDate(DateTime(1800)))
+          validade: (json['validade'] ?? Timestamp.fromDate(DateTime(2000)))
               as Timestamp,
         );
 

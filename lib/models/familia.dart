@@ -7,6 +7,7 @@ class Familia {
   late String cadDiacono; // auto
   late String cadNomeFamilia; // OBRIGATORIO
   String? cadSolicitante;
+  bool? cadParticipante;
 
   String? famFoto;
   int? famTelefone1;
@@ -37,6 +38,7 @@ class Familia {
     required this.cadData,
     required this.cadNomeFamilia,
     this.cadSolicitante,
+    this.cadParticipante,
     this.famFoto,
     this.famTelefone1,
     this.famTelefone2,
@@ -66,6 +68,7 @@ class Familia {
           cadNomeFamilia:
               (json['cadNomeFamilia'] ?? '[Não definido]') as String,
           cadSolicitante: (json['cadSolicitante'] ?? '') as String,
+          cadParticipante: (json['cadParticipante'] ?? false) as bool,
           famFoto: (json['famFoto'] ?? '') as String,
           famTelefone1: (json['famTelefone1'] ?? 0) as int,
           famTelefone2: (json['famTelefone2'] ?? 0) as int,
@@ -100,6 +103,7 @@ class Familia {
       'cadData': cadData,
       'cadNomeFamilia': cadNomeFamilia,
       'cadSolicitante': cadSolicitante,
+      'cadParticipante': cadParticipante,
       'famFoto': famFoto,
       'famTelefone1': famTelefone1,
       'famTelefone2': famTelefone2,

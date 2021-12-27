@@ -40,6 +40,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
       backgroundColor:
           widget.familia.cadAtivo ? Colors.grey.shade300 : Colors.red,
       floating: true,
+      pinned: editMode,
       leading: null,
       automaticallyImplyLeading: false,
       titleSpacing: 0,
@@ -409,6 +410,34 @@ class _FamiliaDadosState extends State<FamiliaDados> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _subtitulo('CONTROLE IPBFOZ'),
+        // Participa da igreja
+        StatefulBuilder(
+          builder: (context, setState) {
+            return CheckboxListTile(
+              tristate: false,
+              title: const Text("Participa da igreja"),
+              visualDensity: VisualDensity.compact,
+              subtitle: const Text(
+                  "Ao menos um familiar é membro ou participa dos cultos"),
+              secondary: const Icon(Icons.hail),
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(16)),
+              ),
+              tileColor: Colors.grey.shade200,
+              selectedTileColor: Colors.teal.shade100,
+              selected: widget.familia.cadParticipante ?? false,
+              value: widget.familia.cadParticipante,
+              onChanged: editMode
+                  ? (value) {
+                      setState(() {
+                        widget.familia.cadParticipante = value ?? false;
+                      });
+                    }
+                  : null,
+            );
+          },
+        ),
+        const SizedBox(height: 16.0),
         // Informacao Extra
         TextFormField(
           enabled: editMode,

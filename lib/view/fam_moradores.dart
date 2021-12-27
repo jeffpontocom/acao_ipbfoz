@@ -117,7 +117,7 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                           locale: const Locale('pt', 'BR'),
                           initialDate:
                               morador.nascimento?.toDate() ?? DateTime.now(),
-                          firstDate: DateTime(1800),
+                          firstDate: DateTime(1700),
                           lastDate: DateTime(2100),
                         );
                         if (picked != null) {

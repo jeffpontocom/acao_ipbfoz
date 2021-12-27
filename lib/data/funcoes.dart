@@ -113,13 +113,13 @@ class Funcao {
       return '$criancas criança${Util.isPlural(criancas)}';
     }
     if (criancas != 0 && adultos != 0 && idosos == 0) {
-      return '$criancas criança${Util.isPlural(criancas)} e $adultos adulto${Util.isPlural(adultos)}';
+      return '$adultos adulto${Util.isPlural(adultos)} e $criancas criança${Util.isPlural(criancas)}';
     }
     if (criancas != 0 && adultos == 0 && idosos != 0) {
-      return '$criancas criança${Util.isPlural(criancas)} e $idosos idoso${Util.isPlural(idosos)}';
+      return '$idosos idoso${Util.isPlural(idosos)} e $criancas criança${Util.isPlural(criancas)}';
     }
     if (criancas != 0 && adultos != 0 && idosos != 0) {
-      return '$criancas criança${Util.isPlural(criancas)}, $adultos adulto${Util.isPlural(adultos)} e $idosos idoso${Util.isPlural(idosos)}';
+      return '$adultos adulto${Util.isPlural(adultos)}, $idosos idoso${Util.isPlural(idosos)} e $criancas criança${Util.isPlural(criancas)}';
     }
     if (criancas == 0 && adultos != 0 && idosos == 0) {
       return '$adultos adulto${Util.isPlural(adultos)}';

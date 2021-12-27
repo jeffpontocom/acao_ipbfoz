@@ -18,7 +18,7 @@ class Morador {
   Morador.fromJson(Map<String, Object?> json)
       : this(
           nome: (json['nome'] ?? '') as String,
-          nascimento: (json['nascimento'] ?? Timestamp.fromDate(DateTime(1800)))
+          nascimento: (json['nascimento'] ?? Timestamp.fromDate(DateTime(2000)))
               as Timestamp,
           escolaridade: (json['escolaridade'] ?? 0) as int,
           profissao: (json['profissao'] ?? '') as String,
@@ -44,7 +44,7 @@ int getIdade(Timestamp nascimento) {
   int idade = dataAtual.year - dataNasc.year;
 
   //data de nascimento não pode ser maior que data atual
-  if (dataAtual.isBefore(dataNasc) || dataNasc.year == 1800) {
+  if (dataAtual.isBefore(dataNasc) || dataNasc.year <= 1900) {
     return -1;
   }
   //Verifica se está fazendo aniversário hoje
