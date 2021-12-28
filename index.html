@@ -69,7 +69,7 @@
       .then(function(response) {
         console.log('Status de conexão com a internet = %d %s', response.status, response.statusText);
         if (response.status >= 200 && response.status < 300){
-          document.getElementById('mStatus').innerText = 'Conectado! Carregando app...';
+          document.getElementById('mStatus').innerText = 'Carregando app...';
           document.getElementById('mStatus').style.color = '#1e90ff'; /* Color: dodgerblue */
         } else {
           document.getElementById('mStatus').innerText = 'Não é possível acessar o sistema!\nVerifique sua conexão com a Internet ou tente em outro navegador mais atualizado.';
@@ -87,7 +87,7 @@
        application. For more information, see:
        https://developers.google.com/web/fundamentals/primers/service-workers -->
   <script>
-    var serviceWorkerVersion = '930591210';
+    var serviceWorkerVersion = '407122243';
     var scriptLoaded = false;
     function loadMainDartJs() {
       if (scriptLoaded) {
@@ -149,37 +149,7 @@
       // Service workers not supported. Just drop the <script> tag.
       loadMainDartJs();
     }
-  </script>
-
-  <!-- FIREBASE CODE -->
-  <!-- The core Firebase JS SDK is always required and must be listed first -->
-  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
-
-  <!-- TODO: Add SDKs for Firebase products that you want to use
-      https://firebase.google.com/docs/web/setup#available-libraries -->
-  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-analytics.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-firestore.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-storage.js"></script>
-
-  <script>
-    // Your web app's Firebase configuration
-    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-    var firebaseConfig = {
-      apiKey: "AIzaSyBpGNe-kKSpQIjM8qxsDs2ykhddmj3SRUg",
-      authDomain: "acaosocial-ipbfoz.firebaseapp.com",
-      databaseURL: "https://acaosocial-ipbfoz-default-rtdb.firebaseio.com",
-      projectId: "acaosocial-ipbfoz",
-      storageBucket: "acaosocial-ipbfoz.appspot.com",
-      messagingSenderId: "206698086287",
-      appId: "1:206698086287:web:b43144ee12c7bd51b915fa",
-      measurementId: "G-067WKTNQYJ"
-    };
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    firebase.analytics();
-  </script>
-  
+  </script>  
 
 </body>
 </html>
