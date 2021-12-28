@@ -16,15 +16,13 @@ class FamiliaPage extends StatefulWidget {
 
 class _FamiliaPageState extends State<FamiliaPage> {
   /* VARIAVEIS */
-  late Familia mFamilia;
-  late DocumentReference<Familia> mReference;
 
   /* WIDGETS */
 
   /* METODOS */
 
   /// Resgata a referencia ao banco de dados
-  DocumentReference<Familia> _getReference() {
+  DocumentReference<Familia> get mReference {
     return FirebaseFirestore.instance
         .collection('familias')
         .doc(widget.id)
@@ -35,12 +33,6 @@ class _FamiliaPageState extends State<FamiliaPage> {
   }
 
   /* METODOS DO SISTEMA */
-  @override
-  void initState() {
-    mReference = _getReference();
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<DocumentSnapshot<Familia>>(
@@ -71,7 +63,7 @@ class _FamiliaPageState extends State<FamiliaPage> {
           );
         }
         // Preenche família
-        mFamilia = snapshot.data?.data() ??
+        Familia mFamilia = snapshot.data?.data() ??
             Familia(
                 cadAtivo: false,
                 cadDiacono: '',

@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import 'package:ionicons/ionicons.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '/app_data.dart';
@@ -153,8 +154,8 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                         widget.familia.famTelefone1! < 1000000000)
                     ? null
                     : _iniciarWhatsApp,
-                icon: const Icon(Icons.perm_phone_msg),
-                label: const Text('ZAP'),
+                icon: const Icon(Ionicons.logo_whatsapp),
+                label: const Text('WHATS'),
               ),
             ),
           ],
@@ -195,7 +196,9 @@ class _FamiliaDadosState extends State<FamiliaDados> {
               flex: 1,
               child: TextButton.icon(
                 onPressed: (widget.familia.famTelefone2 == null ||
-                        widget.familia.famTelefone2! < 1000000000)
+                            widget.familia.famTelefone2! < 1000000000) &&
+                        (widget.familia.famTelefone1 == null ||
+                            widget.familia.famTelefone1! < 1000000000)
                     ? null
                     : _iniciarTelefone,
                 icon: const Icon(Icons.phone),
@@ -252,7 +255,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                     ? null
                     : _iniciarGoogleMaps,
                 icon: const Icon(Icons.map),
-                label: const Text('ROTA'),
+                label: const Text('MAPA'),
               ),
             ),
           ],
@@ -555,7 +558,14 @@ class _FamiliaDadosState extends State<FamiliaDados> {
 
   /// Iniciar Google Maps
   void _iniciarTelefone() async {
-    var url = 'tel://${widget.familia.famTelefone2}';
+    int? telefone;
+    if (widget.familia.famTelefone2 == null ||
+        widget.familia.famTelefone2! < 1000000000) {
+      telefone = widget.familia.famTelefone1;
+    } else {
+      telefone = widget.familia.famTelefone2;
+    }
+    var url = 'tel:${telefone.toString()}';
     if (await canLaunch(url)) {
       await launch(url);
     } else {

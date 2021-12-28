@@ -27,10 +27,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   /* VARIAVEIS */
   late double _appBarHeight;
   final _totalFamilias = ValueNotifier<int>(0);
-  final _atualizarGrafico = ValueNotifier(false);
-  late int _anoGrafico;
-  late Resumo _indices;
-  List<ResumoEntregas> _resumoEntregas = [];
+  final _anoGrafico = ValueNotifier(DateTime.now().year);
+  final ValueNotifier<List<charts.Series<ResumoEntregas, String>>>
+      _dadosGrafico = ValueNotifier([]);
+  List<ResumoEntregas> _totalEntregas = [];
 
   /* WIDGETS */
 
@@ -87,13 +87,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   /* METODOS */
 
   /// Cria uma serie para gráficos com dados das entregas mensais
-  List<charts.Series<ResumoEntregas, String>> _graficoEntregasMensais() {
+  List<charts.Series<ResumoEntregas, String>> _entregasNoAno() {
     dev.log('Gerando gráfico', name: 'HOME');
     List<ResumoEntregas> _data = [];
     for (int i = 1; i <= 12; i++) {
-      var _resumo = _resumoEntregas.singleWhere(
-          (element) => element.ano == _anoGrafico && element.mes == i,
-          orElse: () => ResumoEntregas(ano: _anoGrafico, mes: i, total: 0));
+      var _resumo = _totalEntregas.singleWhere(
+          (element) => element.ano == _anoGrafico.value && element.mes == i,
+          orElse: () =>
+              ResumoEntregas(ano: _anoGrafico.value, mes: i, total: 0));
       _data.add(_resumo);
     }
     return [
@@ -126,12 +127,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         .listen(
       (document) {
         if (document.exists) {
-          _atualizarGrafico.value = false;
-          _indices = document.data() ??
+          Resumo resumo = document.data() ??
               Resumo(resumoFamiliasAtivas: 0, resumoEntregas: []);
-          _totalFamilias.value = _indices.resumoFamiliasAtivas ?? 0;
-          _resumoEntregas = _indices.resumoEntregas ?? [];
-          _atualizarGrafico.value = true;
+          _totalFamilias.value = resumo.resumoFamiliasAtivas ?? 0;
+          _totalEntregas = resumo.resumoEntregas ?? [];
+          _dadosGrafico.value = _entregasNoAno();
           dev.log('Resumo de dados atualizado!', name: 'HOME');
         }
       },
@@ -149,7 +149,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   void initState() {
     initializeDateFormatting('pt_BR', null);
-    _anoGrafico = Timestamp.now().toDate().year;
     _escutarTotais();
     super.initState();
   }
@@ -163,8 +162,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   void dispose() {
     super.dispose();
-    _atualizarGrafico.dispose();
+    //_atualizarGrafico.dispose();
     _totalFamilias.dispose();
+    _dadosGrafico.dispose();
   }
 
   @override
@@ -298,11 +298,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 return Text(
                   '$value cadastros ativos',
                   textAlign: TextAlign.center,
-                  style: Estilos.titulo.copyWith(fontSize: 14),
+                  style: Estilos.titulo
+                      .copyWith(fontSize: 14, color: Colors.white),
                 );
               },
             ),
-            Colors.grey.shade200,
+            Colors.teal,
           ),
           // Gráfico
           SliverToBoxAdapter(
@@ -316,26 +317,22 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   SizedBox(
                     height: 150,
                     child: ValueListenableBuilder(
-                      valueListenable: _atualizarGrafico,
+                      valueListenable: _dadosGrafico,
                       child: const Center(child: CircularProgressIndicator()),
-                      builder:
-                          (BuildContext context, bool value, Widget? child) {
-                        if (value) {
-                          return charts.BarChart(
-                            _graficoEntregasMensais(),
-                            barRendererDecorator:
-                                charts.BarLabelDecorator<String>(),
-                            domainAxis: const charts.OrdinalAxisSpec(),
-                            behaviors: [
-                              charts.ChartTitle('Entregas',
-                                  behaviorPosition:
-                                      charts.BehaviorPosition.start),
-                            ],
-                          );
-                        } else {
-                          return const Center(
-                              child: CircularProgressIndicator());
-                        }
+                      builder: (BuildContext context,
+                          List<charts.Series<ResumoEntregas, String>> value,
+                          Widget? child) {
+                        return charts.BarChart(
+                          value,
+                          barRendererDecorator:
+                              charts.BarLabelDecorator<String>(),
+                          domainAxis: const charts.OrdinalAxisSpec(),
+                          behaviors: [
+                            charts.ChartTitle('Entregas',
+                                behaviorPosition:
+                                    charts.BehaviorPosition.start),
+                          ],
+                        );
                       },
                     ),
                   ),
@@ -346,20 +343,24 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       IconButton(
                         icon: const Icon(Icons.navigate_before),
                         onPressed: () {
-                          setState(() {
-                            _anoGrafico--;
-                          });
-                          //_atualizarGrafico.value = true;
+                          _anoGrafico.value--;
+                          _dadosGrafico.value = _entregasNoAno();
                         },
                       ),
-                      Text('$_anoGrafico'),
+                      ValueListenableBuilder(
+                        valueListenable: _anoGrafico,
+                        builder:
+                            (BuildContext context, int value, Widget? child) {
+                          return Text(
+                            '$value',
+                          );
+                        },
+                      ),
                       IconButton(
                         icon: const Icon(Icons.navigate_next),
                         onPressed: () {
-                          setState(() {
-                            _anoGrafico++;
-                          });
-                          //_atualizarGrafico.value = true;
+                          _anoGrafico.value++;
+                          _dadosGrafico.value = _entregasNoAno();
                         },
                       ),
                     ],

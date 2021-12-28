@@ -34,7 +34,7 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
   Widget get _btnAddEntrega {
     return OutlinedButton.icon(
       label: const Text('Nova entrega'),
-      icon: const Icon(Icons.person_add),
+      icon: const Icon(Icons.add_shopping_cart),
       onPressed: !_cadastroNovo
           ? () {
               DocumentReference<Entrega> ref = widget.refFamilia
@@ -73,19 +73,28 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
         if (snapshots.hasError) {
           return Center(
             heightFactor: 5,
-            child: Text(snapshots.error.toString()),
+            child: Text('OCORREU UM ERRO:\n' + snapshots.error.toString()),
           );
         }
         if (!snapshots.hasData) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(
+            heightFactor: 5,
+            child: CircularProgressIndicator(),
+          );
         }
         if (snapshots.data!.size == 0) {
-          return Center(
-            heightFactor: 5,
-            child: Text(
-              'Nenhuma entrega realizada.',
-              style: Estilos.titulo,
-            ),
+          return Column(
+            children: [
+              const SizedBox(height: 64),
+              Image.asset(
+                'assets/images/transportation.png',
+                width: 256,
+              ),
+              Text(
+                'Nenhuma entrega realizada',
+                style: Estilos.titulo,
+              ),
+            ],
           );
         }
         final data = snapshots.data;
