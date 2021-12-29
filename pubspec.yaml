@@ -16,6 +16,7 @@ description: Cadastro de famílias atendidas pelo projeto de Ação Social da
 # R8 is the new code shrinker from Google, and it’s enabled by default when you build a release APK or AAB.
 # To disable R8, pass the --no-shrink flag to flutter build apk or flutter build appbundle.
 # - flutter build appbundle --no-shrink
+
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -34,7 +35,13 @@ version: 1.1.2+7
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
-
+  
+# Dependencies specify other packages that your package needs in order to work.
+# To automatically upgrade your package dependencies to the latest versions
+# consider running `flutter pub upgrade --major-versions`. Alternatively,
+# dependencies can be manually updated by changing the version numbers below to
+# the latest version available on pub.dev. To see which dependencies have newer
+# versions available, run `flutter pub outdated`.
 dependencies:
   charts_flutter: ^0.12.0
   cloud_firestore: ^3.1.5
