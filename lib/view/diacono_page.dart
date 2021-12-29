@@ -133,13 +133,16 @@ class _DiaconoPageState extends State<DiaconoPage> {
                                                 backgroundColor: Colors.red),
                                             onPressed: _sair,
                                           ),
-                                          OutlinedButton.icon(
-                                            label: const Text('ATUALIZAR'),
-                                            icon:
-                                                const Icon(Icons.save_rounded),
-                                            onPressed: () {
-                                              _gravar();
-                                            },
+                                          const SizedBox(width: 16),
+                                          Expanded(
+                                            child: OutlinedButton.icon(
+                                              label: const Text('ATUALIZAR'),
+                                              icon: const Icon(
+                                                  Icons.save_rounded),
+                                              onPressed: () {
+                                                _gravar();
+                                              },
+                                            ),
                                           ),
                                         ],
                                       )

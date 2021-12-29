@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:ionicons/ionicons.dart';
+import 'package:search_cep/search_cep.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '/app_data.dart';
@@ -212,7 +213,11 @@ class _FamiliaDadosState extends State<FamiliaDados> {
   }
 
   /// Endereço
+  final TextEditingController _ctrLogradouro = TextEditingController();
+  final TextEditingController _ctrBairro = TextEditingController();
   Widget get _endereco {
+    _ctrLogradouro.text = widget.familia.endLogradouro ?? '';
+    _ctrBairro.text = widget.familia.endBairro ?? '';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -240,6 +245,9 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                         int.parse(Inputs.mascaraCEP.clearMask(value));
                   }
                 },
+                onFieldSubmitted: (value) {
+                  _completarPorCep();
+                },
               ),
             ),
             const Expanded(
@@ -265,7 +273,8 @@ class _FamiliaDadosState extends State<FamiliaDados> {
         // Logradouro
         TextFormField(
           enabled: editMode,
-          initialValue: widget.familia.endLogradouro,
+          controller: _ctrLogradouro,
+          //initialValue: widget.familia.endLogradouro,
           textCapitalization: TextCapitalization.words,
           keyboardType: TextInputType.streetAddress,
           textInputAction: TextInputAction.next,
@@ -302,7 +311,8 @@ class _FamiliaDadosState extends State<FamiliaDados> {
               flex: 2,
               child: TextFormField(
                 enabled: editMode,
-                initialValue: widget.familia.endBairro,
+                controller: _ctrBairro,
+                //initialValue: widget.familia.endBairro,
                 textCapitalization: TextCapitalization.words,
                 keyboardType: TextInputType.streetAddress,
                 textInputAction: TextInputAction.next,
@@ -505,9 +515,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
   Widget get _btnAtivar {
     return editMode
         ? ElevatedButton.icon(
-            label: Text(widget.familia.cadAtivo
-                ? 'Desativar cadastro'
-                : 'Reativar cadastro'),
+            label: Text(widget.familia.cadAtivo ? 'DESATIVAR' : 'REATIVAR'),
             icon: Icon(widget.familia.cadAtivo
                 ? Icons.archive_rounded
                 : Icons.open_in_browser),
@@ -524,7 +532,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
   Widget get _btnEliminar {
     return editMode && !widget.familia.cadAtivo
         ? ElevatedButton.icon(
-            label: const Text('Eliminar cadastro'),
+            label: const Text('ELIMINAR'),
             icon: const Icon(Icons.delete_forever),
             style: ElevatedButton.styleFrom(primary: Colors.red),
             onPressed: () {
@@ -546,7 +554,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
     MapsLauncher.launchQuery(query);
   }
 
-  /// Iniciar Google Maps
+  /// Iniciar Whatsapp
   void _iniciarWhatsApp() async {
     var url = 'https://wa.me/55${widget.familia.famTelefone1}';
     if (await canLaunch(url)) {
@@ -556,7 +564,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
     }
   }
 
-  /// Iniciar Google Maps
+  /// Iniciar Telefone
   void _iniciarTelefone() async {
     int? telefone;
     if (widget.familia.famTelefone2 == null ||
@@ -571,6 +579,43 @@ class _FamiliaDadosState extends State<FamiliaDados> {
     } else {
       throw 'Não é possivel realizar ligações nesse aparelho';
     }
+  }
+
+  /// Completar dados pelo CEP
+  void _completarPorCep() async {
+    // Abre tela de progresso
+    Mensagem.aguardar(context: context, mensagem: 'Consultando CEP...');
+    final viaCepSearchCep = ViaCepSearchCep();
+    final infoCep = await viaCepSearchCep.searchInfoByCep(
+        cep: widget.familia.endCEP.toString());
+    Navigator.pop(context); // Fecha tela de progresso
+    infoCep.fold((l) {
+      // não é possível executar alterações
+      Mensagem.simples(
+        context: context,
+        titulo: 'Atenção',
+        mensagem: l.errorMessage,
+      );
+    }, (r) {
+      //deseja executar alterações
+      Mensagem.decisao(
+        context: context,
+        titulo: 'Alterar dados',
+        mensagem:
+            'Deseja alterar os campos de Logradouro e Bairro a partir do CEP informado?',
+        onPressed: (executar) {
+          if (executar) {
+            _ctrLogradouro.text = r.logradouro ?? '';
+            _ctrBairro.text = r.bairro ?? '';
+            widget.familia.endLogradouro = r.logradouro;
+            widget.familia.endBairro = r.bairro;
+            widget.familia.endCidade = r.localidade;
+            widget.familia.endEstado = r.uf;
+            setState(() {});
+          }
+        },
+      );
+    });
   }
 
   /// Salva as alterações no banco de dados
@@ -605,12 +650,9 @@ class _FamiliaDadosState extends State<FamiliaDados> {
       titulo: widget.familia.cadAtivo ? 'Desativar' : 'Reativar',
       mensagem: 'Está certo que deseja executar essa ação?',
       onPressed: (value) async {
-        // Abre tela de progresso
-        Mensagem.aguardar(context: context, mensagem: 'Alterando status...');
-        /* WidgetsBinding.instance?.addPostFrameCallback(
-          (_) => _scrollController.jumpTo(0),
-        ); */
         if (value) {
+          // Abre tela de progresso
+          Mensagem.aguardar(context: context, mensagem: 'Alterando status...');
           int incremento;
           if (widget.familia.cadAtivo) {
             await widget.reference.update({'cadAtivo': false});
@@ -701,7 +743,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                       child: _controleCadastro,
                     ),
                     Padding(
-                      padding: const EdgeInsets.all(24),
+                      padding: const EdgeInsets.symmetric(vertical: 24),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [_btnAtivar, _btnEliminar],

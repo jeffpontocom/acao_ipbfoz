@@ -56,6 +56,14 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
           leading: const Icon(Icons.person),
           title: Text(widget.familia.moradores[index].nome),
           subtitle: Text('$sIdade • $profissao'),
+          trailing: widget.familia.moradores[index].especial
+              ? const Text('PNE',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.deepOrange,
+                  ))
+              : null,
           onTap: () {
             _dialogMorador(widget.familia.moradores[index], index);
           },
@@ -109,7 +117,7 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                   decoration: Estilos.mInputDecoration.copyWith(
                     labelText: 'Nascimento',
                     suffixIcon: IconButton(
-                      icon: const Icon(Icons.calendar_today),
+                      icon: const Icon(Icons.date_range),
                       onPressed: () async {
                         final DateTime? picked = await showDatePicker(
                           helpText: 'Data de Nascimento',

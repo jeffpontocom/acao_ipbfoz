@@ -190,150 +190,151 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
           ItensEntrega(quantidade: 1, descricao: '', validade: Timestamp.now());
     }
 
+    TextEditingController _descricao =
+        TextEditingController(text: novoItem.descricao);
+
     Widget _conteudo = StatefulBuilder(builder: (context, setState) {
       return Padding(
-        padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            top: MediaQuery.of(context).viewInsets.top),
-        child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Text(
+              entrega.entregue
+                  ? 'Entregue em ${Util.fmtDataLonga.format(entrega.data.toDate())}'
+                  : 'Entrega pendente',
+              textAlign: TextAlign.center,
+              style: TextStyle(backgroundColor: Colors.amber.shade300),
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              flex: 1,
+              child: ListView.builder(
+                  scrollDirection: Axis.vertical,
+                  shrinkWrap: true,
+                  padding: const EdgeInsets.all(0),
+                  itemCount: entrega.itens.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      horizontalTitleGap: 2,
+                      visualDensity: VisualDensity.compact,
+                      leading: Text(entrega.itens[index].quantidade.toString()),
+                      title: Text(entrega.itens[index].descricao),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.remove_circle_outline_rounded),
+                        onPressed: () {
+                          setState.call(() => entrega.itens.removeAt(index));
+                        },
+                      ),
+                    );
+                  }),
+            ),
+            Row(
               children: [
-                Text(
-                  entrega.entregue
-                      ? 'Entregue em ${Util.fmtDataLonga.format(entrega.data.toDate())}.'
-                      : 'Entrega pendente',
-                  textAlign: TextAlign.center,
+                IconButton(
+                  onPressed: () {
+                    setState.call(() => novoItem.quantidade -= 1);
+                  },
+                  icon: const Icon(Icons.remove_circle_rounded),
                 ),
-                const SizedBox(height: 24.0),
+                Text(
+                  novoItem.quantidade.toString(),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 18.0),
+                ),
+                IconButton(
+                  onPressed: () {
+                    setState.call(() => novoItem.quantidade += 1);
+                  },
+                  icon: const Icon(Icons.add_circle_rounded),
+                ),
+                // Nome
                 Expanded(
                   flex: 1,
-                  child: ListView.builder(
-                      scrollDirection: Axis.vertical,
-                      shrinkWrap: true,
-                      padding: const EdgeInsets.all(0),
-                      itemCount: entrega.itens.length,
-                      itemBuilder: (context, index) {
-                        return ListTile(
-                          horizontalTitleGap: 2,
-                          visualDensity: VisualDensity.compact,
-                          leading:
-                              Text(entrega.itens[index].quantidade.toString()),
-                          title: Text(entrega.itens[index].descricao),
-                          trailing: IconButton(
-                            icon:
-                                const Icon(Icons.remove_circle_outline_rounded),
-                            onPressed: () {
-                              setState
-                                  .call(() => entrega.itens.removeAt(index));
-                            },
-                          ),
-                        );
-                      }),
+                  child: TextFormField(
+                    controller: _descricao,
+                    textCapitalization: TextCapitalization.sentences,
+                    keyboardType: TextInputType.name,
+                    textInputAction: TextInputAction.send,
+                    onChanged: (value) {
+                      novoItem.descricao = value;
+                    },
+                    onFieldSubmitted: (value) {
+                      _addItem();
+                      _descricao.text = '';
+                      setState.call(() {});
+                    },
+                  ),
                 ),
-                Row(
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        setState.call(() => novoItem.quantidade -= 1);
-                      },
-                      icon: const Icon(Icons.remove_circle_rounded),
-                    ),
-                    Text(
-                      novoItem.quantidade.toString(),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 18.0),
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        setState.call(() => novoItem.quantidade += 1);
-                      },
-                      icon: const Icon(Icons.add_circle_rounded),
-                    ),
-                    // Nome
-                    Expanded(
-                      flex: 1,
-                      child: TextFormField(
-                        textCapitalization: TextCapitalization.sentences,
-                        keyboardType: TextInputType.name,
-                        textInputAction: TextInputAction.send,
-                        onChanged: (value) {
-                          novoItem.descricao = value;
-                        },
-                        onFieldSubmitted: (value) {
-                          setState.call(() => _addItem());
-                        },
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.send_rounded),
-                      onPressed: () {
-                        setState.call(() => _addItem());
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24.0),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    isNew
-                        ? const SizedBox(width: 150)
-                        : OutlinedButton.icon(
-                            label: const Text('Excluir'),
-                            icon: const Icon(Icons.archive_rounded),
-                            style: OutlinedButton.styleFrom(
-                              primary: Colors.white,
-                              backgroundColor: Colors.red,
-                            ),
-                            onPressed: () {
-                              Mensagem.decisao(
-                                context: context,
-                                titulo: 'Excluir',
-                                mensagem: 'Deseja excluir esse item?',
-                                onPressed: (value) async {
-                                  if (value == true) {
-                                    Modular.to.pop(); // Fecha o dialogo
-                                    // Tela de progresso
-                                    Mensagem.aguardar(
-                                        context: context,
-                                        mensagem: 'Excluindo...');
-                                    // Ação
-                                    await ref.delete();
-                                    // Modifica Resumo
-                                    await _incrementarEntrega(-1);
-                                    // Fecha a tela de progresso
-                                    Modular.to.pop();
-                                  }
-                                },
-                              );
-                            },
-                          ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      flex: 1,
-                      child: OutlinedButton.icon(
-                        label: const Text('Salvar'),
-                        icon: const Icon(Icons.save_rounded),
-                        onPressed: () async {
-                          Modular.to.pop(); // Fecha o dialogo
-                          // Tela de progresso
-                          Mensagem.aguardar(
-                              context: context, mensagem: 'Registrando...');
-                          // Ação
-                          await ref.set(entrega);
-                          // Modifica Resumo
-                          isNew ? await _incrementarEntrega(1) : null;
-                          // Fecha a tela de progresso
-                          Modular.to.pop();
-                        },
-                      ),
-                    ),
-                  ],
+                IconButton(
+                  icon: const Icon(Icons.send_rounded),
+                  onPressed: () {
+                    _addItem();
+                    _descricao.text = '';
+                    setState.call(() {});
+                  },
                 ),
               ],
-            )),
+            ),
+            const SizedBox(height: 24.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                isNew
+                    ? const SizedBox(width: 150)
+                    : OutlinedButton.icon(
+                        label: const Text('EXCLUIR'),
+                        icon: const Icon(Icons.archive_rounded),
+                        style: OutlinedButton.styleFrom(
+                          primary: Colors.white,
+                          backgroundColor: Colors.red,
+                        ),
+                        onPressed: () {
+                          Mensagem.decisao(
+                            context: context,
+                            titulo: 'Excluir',
+                            mensagem: 'Deseja excluir esse item?',
+                            onPressed: (value) async {
+                              if (value) {
+                                Modular.to.pop(); // Fecha o dialogo
+                                // Tela de progresso
+                                Mensagem.aguardar(
+                                    context: context, mensagem: 'Excluindo...');
+                                // Ação
+                                await ref.delete();
+                                // Modifica Resumo
+                                await _incrementarEntrega(-1);
+                                // Fecha a tela de progresso
+                                Modular.to.pop();
+                              }
+                            },
+                          );
+                        },
+                      ),
+                const SizedBox(width: 16),
+                Expanded(
+                  flex: 1,
+                  child: OutlinedButton.icon(
+                    label: const Text('SALVAR'),
+                    icon: const Icon(Icons.save_rounded),
+                    onPressed: () async {
+                      Modular.to.pop(); // Fecha o dialogo
+                      // Tela de progresso
+                      Mensagem.aguardar(
+                          context: context, mensagem: 'Registrando...');
+                      // Ação
+                      await ref.set(entrega);
+                      // Modifica Resumo
+                      isNew ? await _incrementarEntrega(1) : null;
+                      // Fecha a tela de progresso
+                      Modular.to.pop();
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       );
     });
 

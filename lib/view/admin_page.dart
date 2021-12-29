@@ -30,22 +30,26 @@ class _AdminPageState extends State<AdminPage> with TickerProviderStateMixin {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Hero(
-            tag: 'appname',
-            child: Text(
-              AppData.appName,
-              style: const TextStyle(
-                fontSize: 25,
-                fontFamily: 'Pacifico',
-              ),
+          const Image(
+            width: 64,
+            image: AssetImage('assets/icons/ic_launcher.png'),
+          ),
+          Text(
+            AppData.appName,
+            style: const TextStyle(
+              fontSize: 25,
+              fontFamily: 'Pacifico',
             ),
+            strutStyle: const StrutStyle(forceStrutHeight: true, height: 0.75),
           ),
           const Text(
             'Igreja Presbiteriana de Foz do Iguaçu',
           ),
+          const SizedBox(height: 16),
           Text(
             'Versão ${AppData.version}',
-            style: const TextStyle(color: Colors.grey),
+            style: const TextStyle(
+                color: Colors.grey, fontWeight: FontWeight.bold),
           ),
           const Text(
             'Publicada em dezembro de 2021',
