@@ -217,7 +217,7 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
                       label: const Text('EXCLUIR'),
                       icon: const Icon(Icons.archive_rounded),
                       style: OutlinedButton.styleFrom(
-                        primary: Colors.white,
+                        foregroundColor: Colors.white,
                         backgroundColor: Colors.red,
                       ),
                       onPressed: () {
@@ -292,14 +292,9 @@ class _FamiliaMoradoresState extends State<FamiliaMoradores> {
         context: context,
         titulo: 'Cadastro do morador',
         scrollController: scroll,
-        conteudo: Scrollbar(
-          isAlwaysShown: true,
-          showTrackOnHover: true,
+        conteudo: SingleChildScrollView(
           controller: scroll,
-          child: SingleChildScrollView(
-            child: _conteudo,
-            controller: scroll,
-          ),
+          child: _conteudo,
         ),
         icon: Icons.person,
         onPressed: () => setState(() {}));

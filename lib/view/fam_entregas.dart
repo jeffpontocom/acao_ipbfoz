@@ -286,7 +286,7 @@ class _FamiliaEntregasState extends State<FamiliaEntregas> {
                         label: const Text('EXCLUIR'),
                         icon: const Icon(Icons.archive_rounded),
                         style: OutlinedButton.styleFrom(
-                          primary: Colors.white,
+                          foregroundColor: Colors.white,
                           backgroundColor: Colors.red,
                         ),
                         onPressed: () {

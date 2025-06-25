@@ -1,7 +1,7 @@
 import 'dart:developer' as dev;
 
 import 'package:acao_ipbfoz/data/funcoes.dart';
-import 'package:charts_flutter/flutter.dart' as charts;
+//import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,7 +9,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import '/app_data.dart';
-import '/models/entrega.dart';
+//import '/models/entrega.dart';
 import '/models/familia.dart';
 import '/models/resumo.dart';
 import '/utils/customs.dart';
@@ -28,9 +28,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late double _appBarHeight;
   final _totalFamilias = ValueNotifier<int>(0);
   final _anoGrafico = ValueNotifier(DateTime.now().year);
-  final ValueNotifier<List<charts.Series<ResumoEntregas, String>>>
-      _dadosGrafico = ValueNotifier([]);
-  List<ResumoEntregas> _totalEntregas = [];
+  //final ValueNotifier<List<charts.Series<ResumoEntregas, String>>>
+  final ValueNotifier<List> _dadosGrafico = ValueNotifier([]);
+  //List<ResumoEntregas> _totalEntregas = [];
 
   /* WIDGETS */
 
@@ -87,7 +87,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   /* METODOS */
 
   /// Cria uma serie para gráficos com dados das entregas mensais
-  List<charts.Series<ResumoEntregas, String>> _entregasNoAno() {
+  /* List<charts.Series<ResumoEntregas, String>> _entregasNoAno() {
     dev.log('Gerando gráfico', name: 'HOME');
     List<ResumoEntregas> _data = [];
     for (int i = 1; i <= 12; i++) {
@@ -112,7 +112,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             entrega.total > 0 ? '${entrega.total}' : '',
       )
     ];
-  }
+  } */
 
   /// Listener para contagem de famílias e entregas
   void _escutarTotais() {
@@ -130,8 +130,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           Resumo resumo = document.data() ??
               Resumo(resumoFamiliasAtivas: 0, resumoEntregas: []);
           _totalFamilias.value = resumo.resumoFamiliasAtivas ?? 0;
-          _totalEntregas = resumo.resumoEntregas ?? [];
-          _dadosGrafico.value = _entregasNoAno();
+          //_totalEntregas = resumo.resumoEntregas ?? [];
+          //_dadosGrafico.value = _entregasNoAno();
           dev.log('Resumo de dados atualizado!', name: 'HOME');
         }
       },
@@ -314,7 +314,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               child: Column(
                 children: [
                   // Box do gráfico
-                  SizedBox(
+/*                   SizedBox(
                     height: 150,
                     child: ValueListenableBuilder(
                       valueListenable: _dadosGrafico,
@@ -335,7 +335,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         );
                       },
                     ),
-                  ),
+                  ), */
                   // Box para seleção do ano
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -344,7 +344,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         icon: const Icon(Icons.navigate_before),
                         onPressed: () {
                           _anoGrafico.value--;
-                          _dadosGrafico.value = _entregasNoAno();
+                          //_dadosGrafico.value = _entregasNoAno();
                         },
                       ),
                       ValueListenableBuilder(
@@ -360,7 +360,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         icon: const Icon(Icons.navigate_next),
                         onPressed: () {
                           _anoGrafico.value++;
-                          _dadosGrafico.value = _entregasNoAno();
+                          //_dadosGrafico.value = _entregasNoAno();
                         },
                       ),
                     ],

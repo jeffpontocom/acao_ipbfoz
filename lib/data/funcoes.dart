@@ -238,14 +238,9 @@ class Funcao {
       context: context,
       icon: Icons.add_business_sharp,
       titulo: 'Novo cadastro',
-      conteudo: Scrollbar(
+      conteudo: SingleChildScrollView(
         controller: scroll,
-        isAlwaysShown: true,
-        showTrackOnHover: true,
-        child: SingleChildScrollView(
-          controller: scroll,
-          child: conteudo,
-        ),
+        child: conteudo,
       ),
     );
   }

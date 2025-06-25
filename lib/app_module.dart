@@ -1,7 +1,7 @@
-import 'package:acao_ipbfoz/view/admin_page.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
 import 'main.dart';
+import 'view/admin_page.dart';
 import 'view/diacono_page.dart';
 import 'view/familia_page.dart';
 import 'view/home_page.dart';
@@ -9,40 +9,42 @@ import 'view/login_page.dart';
 
 class AppModule extends Module {
   @override
-  final List<Bind> binds = [];
-
-  @override
-  final List<ModularRoute> routes = [
-    ChildRoute(
+  void routes(RouteManager r) {
+    r.child(
       '/',
-      child: (_, __) => const HomePage(),
       guards: [AuthGuard()],
-    ),
-    ChildRoute(
+      child: (context) {
+        return HomePage();
+      },
+    );
+    r.child(
       '/login',
-      child: (_, __) => const LoginPage(),
-      transition: TransitionType.fadeIn,
-    ),
-    ChildRoute(
+      child: (context) {
+        return LoginPage();
+      },
+    );
+    r.child(
       '/admin',
-      child: (_, __) => const AdminPage(),
-      transition: TransitionType.downToUp,
       guards: [AuthGuard()],
-    ),
-    ChildRoute(
+      child: (context) {
+        return AdminPage();
+      },
+    );
+    r.child(
       '/diacono',
-      child: (_, args) => DiaconoPage(id: args.queryParams['id'] ?? ''),
-      transition: TransitionType.rightToLeftWithFade,
       guards: [AuthGuard(), HasQueryGuard()],
-    ),
-    ChildRoute(
+      child: (context) {
+        return DiaconoPage(id: r.args.queryParams['id'] ?? '');
+      },
+    );
+    r.child(
       '/familia',
-      child: (_, args) => FamiliaPage(id: args.queryParams['id'] ?? ''),
-      transition: TransitionType.leftToRightWithFade,
       guards: [AuthGuard(), HasQueryGuard()],
-    ),
-    WildcardRoute(child: (_, __) => const HomePage()),
-  ];
+      child: (context) {
+        return FamiliaPage(id: r.args.queryParams['id'] ?? '');
+      },
+    );
+  }
 }
 
 class AuthGuard extends RouteGuard {
