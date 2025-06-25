@@ -52,7 +52,7 @@ class _AdminPageState extends State<AdminPage> with TickerProviderStateMixin {
                 color: Colors.grey, fontWeight: FontWeight.bold),
           ),
           const Text(
-            'Publicada em dezembro de 2021',
+            'Publicada em junho de 2025',
             style: TextStyle(color: Colors.grey),
           ),
         ],
