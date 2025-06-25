@@ -103,37 +103,32 @@ class _AdminPageState extends State<AdminPage> with TickerProviderStateMixin {
           );
         }
         // Widget
-        return Scrollbar(
+        return ListView.builder(
           controller: _scrollController,
-          isAlwaysShown: true,
-          showTrackOnHover: true,
-          child: ListView.builder(
-            controller: _scrollController,
-            scrollDirection: Axis.vertical,
-            shrinkWrap: true, // Obrigatorio (gera erro se falso)
-            itemCount: snapshots.data?.size ?? 0,
-            itemBuilder: (context, index) {
-              Familia familia = snapshots.data!.docs[index].data();
-              // Elementos
-              return ListTile(
-                horizontalTitleGap: 2,
-                visualDensity: VisualDensity.compact,
-                isThreeLine: true,
-                leading: const Icon(Icons.family_restroom_rounded),
-                // Nome do morador
-                title: Text(
-                  familia.moradores[familia.famResponsavel ?? 0].nome,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                // Bairro
-                subtitle: Text('Bairro: ${familia.endBairro}'),
-                onTap: () {
-                  Modular.to.pushNamed('/familia?id=' +
-                      snapshots.data!.docs[index].reference.id);
-                },
-              );
-            },
-          ),
+          scrollDirection: Axis.vertical,
+          shrinkWrap: true, // Obrigatorio (gera erro se falso)
+          itemCount: snapshots.data?.size ?? 0,
+          itemBuilder: (context, index) {
+            Familia familia = snapshots.data!.docs[index].data();
+            // Elementos
+            return ListTile(
+              horizontalTitleGap: 2,
+              visualDensity: VisualDensity.compact,
+              isThreeLine: true,
+              leading: const Icon(Icons.family_restroom_rounded),
+              // Nome do morador
+              title: Text(
+                familia.moradores[familia.famResponsavel ?? 0].nome,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              // Bairro
+              subtitle: Text('Bairro: ${familia.endBairro}'),
+              onTap: () {
+                Modular.to.pushNamed(
+                    '/familia?id=' + snapshots.data!.docs[index].reference.id);
+              },
+            );
+          },
         );
       },
     );
@@ -141,36 +136,31 @@ class _AdminPageState extends State<AdminPage> with TickerProviderStateMixin {
 
   Widget get listaDiaconos {
     List<String> ids = AppData.diaconos.keys.toList();
-    return Scrollbar(
+    return ListView.builder(
       controller: _scrollController,
-      isAlwaysShown: true,
-      showTrackOnHover: true,
-      child: ListView.builder(
-        controller: _scrollController,
-        scrollDirection: Axis.vertical,
-        shrinkWrap: true, // Obrigatorio (gera erro se falso)
-        itemCount: AppData.diaconos.length,
-        itemBuilder: (context, i) {
-          return ListTile(
-            leading: IconButton(
-              icon: Hero(
-                tag: ids[i],
-                child: const Icon(Icons.account_circle),
-              ),
-              onPressed: null,
+      scrollDirection: Axis.vertical,
+      shrinkWrap: true, // Obrigatorio (gera erro se falso)
+      itemCount: AppData.diaconos.length,
+      itemBuilder: (context, i) {
+        return ListTile(
+          leading: IconButton(
+            icon: Hero(
+              tag: ids[i],
+              child: const Icon(Icons.account_circle),
             ),
-            title: Text(AppData.diaconos[ids[i]]?.nome ?? '[Erro]'),
-            subtitle: Text(AppData.diaconos[ids[i]]?.email ?? '[Erro]'),
-            trailing: const IconButton(
-              icon: Icon(Icons.phone),
-              onPressed: null,
-            ),
-            onTap: () {
-              Modular.to.pushNamed('/diacono?id=' + ids[i]);
-            },
-          );
-        },
-      ),
+            onPressed: null,
+          ),
+          title: Text(AppData.diaconos[ids[i]]?.nome ?? '[Erro]'),
+          subtitle: Text(AppData.diaconos[ids[i]]?.email ?? '[Erro]'),
+          trailing: const IconButton(
+            icon: Icon(Icons.phone),
+            onPressed: null,
+          ),
+          onTap: () {
+            Modular.to.pushNamed('/diacono?id=' + ids[i]);
+          },
+        );
+      },
     );
   }
 
@@ -183,60 +173,57 @@ class _AdminPageState extends State<AdminPage> with TickerProviderStateMixin {
         title: const Text('Administração do sistema'),
         titleSpacing: 0,
       ),
-      body: Scrollbar(
-        isAlwaysShown: true,
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(
-            vertical: 12,
-            horizontal: Util.paddingListH(context),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              appInfo,
-              const Divider(),
-              tituloSecao('Gerenciar base de dados'),
-              ListTile(
-                leading: const Icon(Icons.refresh),
-                title: const Text('Refazer índices'),
-                subtitle: const Text(
-                    'Recria o índice com total de famílias e entregas'),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-                onTap: () => Funcao.atualizarResumos(context),
-              ),
-              ListTile(
-                leading: const Icon(Icons.groups),
-                title: const Text('Relação de Diáconos'),
-                subtitle: const Text(
-                    'Consultar e/ou alterar dados de acesso dos diáconos'),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-                onTap: () {
-                  Mensagem.bottomDialog(
-                    context: context,
-                    icon: Icons.groups,
-                    titulo: 'Relação de diáconos',
-                    conteudo: listaDiaconos,
-                  );
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.no_accounts),
-                title: const Text('Cadastros inativos'),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-                subtitle: const Text(
-                    'Consultar famílias que já foram atendidas pela Ação Social'),
-                onTap: () {
-                  Mensagem.bottomDialog(
-                    context: context,
-                    icon: Icons.no_accounts,
-                    titulo: 'Cadastros inativos',
-                    conteudo: listaInativos,
-                  );
-                },
-              )
-              //const Divider(),
-            ],
-          ),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.symmetric(
+          vertical: 12,
+          horizontal: Util.paddingListH(context),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            appInfo,
+            const Divider(),
+            tituloSecao('Gerenciar base de dados'),
+            ListTile(
+              leading: const Icon(Icons.refresh),
+              title: const Text('Refazer índices'),
+              subtitle: const Text(
+                  'Recria o índice com total de famílias e entregas'),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+              onTap: () => Funcao.atualizarResumos(context),
+            ),
+            ListTile(
+              leading: const Icon(Icons.groups),
+              title: const Text('Relação de Diáconos'),
+              subtitle: const Text(
+                  'Consultar e/ou alterar dados de acesso dos diáconos'),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+              onTap: () {
+                Mensagem.bottomDialog(
+                  context: context,
+                  icon: Icons.groups,
+                  titulo: 'Relação de diáconos',
+                  conteudo: listaDiaconos,
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.no_accounts),
+              title: const Text('Cadastros inativos'),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+              subtitle: const Text(
+                  'Consultar famílias que já foram atendidas pela Ação Social'),
+              onTap: () {
+                Mensagem.bottomDialog(
+                  context: context,
+                  icon: Icons.no_accounts,
+                  titulo: 'Cadastros inativos',
+                  conteudo: listaInativos,
+                );
+              },
+            )
+            //const Divider(),
+          ],
         ),
       ),
     );

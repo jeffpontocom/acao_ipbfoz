@@ -23,8 +23,8 @@ void main() async {
   runApp(
     ModularApp(
       module: AppModule(),
-      child: const MyApp(),
       debugMode: !kReleaseMode,
+      child: const MyApp(),
     ),
   );
 }
@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       // Título
       title: 'Ação Social IPBFoz',
       // Tema
@@ -82,7 +82,8 @@ class MyApp extends StatelessWidget {
       scrollBehavior: MyCustomScrollBehavior(),
       // Identificador de tipo de Release
       debugShowCheckedModeBanner: !kReleaseMode,
-    ).modular();
+      routerConfig: Modular.routerConfig,
+    );
   }
 }
 

@@ -175,94 +175,90 @@ class _LoginPageState extends State<LoginPage> {
           FocusScope.of(context).requestFocus(FocusNode());
         },
         child: Center(
-          child: Scrollbar(
-            isAlwaysShown: true,
-            showTrackOnHover: true,
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  vertical: Util.margemV(context),
-                  horizontal: Util.margemH(context),
-                ),
-                child: Container(
-                  alignment: Alignment.center,
-                  child: Wrap(
-                    alignment: WrapAlignment.center,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    runAlignment: WrapAlignment.center,
-                    runSpacing: 32,
-                    spacing: 32,
-                    children: [
-                      // LOGOTIPO
-                      logotipo,
-                      ConstrainedBox(
-                        constraints:
-                            const BoxConstraints(minWidth: 200, maxWidth: 450),
-                        child: Form(
-                          key: _formKey,
-                          autovalidateMode: AutovalidateMode.disabled,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              // USUARIO
-                              TextFormField(
-                                controller: _formUsuario,
-                                validator: Util.validarEmail,
-                                keyboardType: TextInputType.emailAddress,
-                                textInputAction: TextInputAction.next,
-                                autofillHints: const [AutofillHints.username],
-                                decoration: const InputDecoration(
-                                  labelText: 'E-mail',
-                                  prefixIcon: Icon(Icons.email_rounded),
-                                ),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                vertical: Util.margemV(context),
+                horizontal: Util.margemH(context),
+              ),
+              child: Container(
+                alignment: Alignment.center,
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  runAlignment: WrapAlignment.center,
+                  runSpacing: 32,
+                  spacing: 32,
+                  children: [
+                    // LOGOTIPO
+                    logotipo,
+                    ConstrainedBox(
+                      constraints:
+                          const BoxConstraints(minWidth: 200, maxWidth: 450),
+                      child: Form(
+                        key: _formKey,
+                        autovalidateMode: AutovalidateMode.disabled,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // USUARIO
+                            TextFormField(
+                              controller: _formUsuario,
+                              validator: Util.validarEmail,
+                              keyboardType: TextInputType.emailAddress,
+                              textInputAction: TextInputAction.next,
+                              autofillHints: const [AutofillHints.username],
+                              decoration: const InputDecoration(
+                                labelText: 'E-mail',
+                                prefixIcon: Icon(Icons.email_rounded),
                               ),
-                              const SizedBox(height: 8.0),
-                              // SENHA
-                              TextFormField(
-                                controller: _formSenha,
-                                validator: Util.validarSenha,
-                                obscureText: true,
-                                keyboardType: TextInputType.visiblePassword,
-                                textInputAction: TextInputAction.done,
-                                autofillHints: const [AutofillHints.password],
-                                enableSuggestions: false,
-                                decoration: const InputDecoration(
-                                  labelText: 'Senha',
-                                  prefixIcon: Icon(Icons.password_rounded),
-                                ),
-                                onFieldSubmitted: (_) => _logar(),
+                            ),
+                            const SizedBox(height: 8.0),
+                            // SENHA
+                            TextFormField(
+                              controller: _formSenha,
+                              validator: Util.validarSenha,
+                              obscureText: true,
+                              keyboardType: TextInputType.visiblePassword,
+                              textInputAction: TextInputAction.done,
+                              autofillHints: const [AutofillHints.password],
+                              enableSuggestions: false,
+                              decoration: const InputDecoration(
+                                labelText: 'Senha',
+                                prefixIcon: Icon(Icons.password_rounded),
                               ),
-                              const SizedBox(height: 24.0),
-                              // BOTAO ENTRAR
-                              ElevatedButton.icon(
-                                icon: const Icon(Icons.login_rounded),
-                                label: const Text('ENTRAR'),
-                                onPressed: _logar,
+                              onFieldSubmitted: (_) => _logar(),
+                            ),
+                            const SizedBox(height: 24.0),
+                            // BOTAO ENTRAR
+                            ElevatedButton.icon(
+                              icon: const Icon(Icons.login_rounded),
+                              label: const Text('ENTRAR'),
+                              onPressed: _logar,
+                            ),
+                            const SizedBox(height: 24.0),
+                            // BOTAO ESQUECI SENHA
+                            TextButton(
+                              child: const Text(
+                                'Esqueci minha senha',
+                                style: TextStyle(color: Colors.red),
                               ),
-                              const SizedBox(height: 24.0),
-                              // BOTAO ESQUECI SENHA
-                              TextButton(
-                                child: const Text(
-                                  'Esqueci minha senha',
-                                  style: TextStyle(color: Colors.red),
-                                ),
-                                onPressed: _esqueciSenha,
-                              ),
-                            ],
-                          ),
+                              onPressed: _esqueciSenha,
+                            ),
+                          ],
                         ),
                       ),
-                      // Texto Informativo
-                      const SizedBox(
-                        width: double.maxFinite,
-                        child: Text(
-                          'Apenas usuários cadastrados pelo administrador tem acesso ao sistema.',
-                          style: TextStyle(color: Colors.grey),
-                          textAlign: TextAlign.center,
-                        ),
+                    ),
+                    // Texto Informativo
+                    const SizedBox(
+                      width: double.maxFinite,
+                      child: Text(
+                        'Apenas usuários cadastrados pelo administrador tem acesso ao sistema.',
+                        style: TextStyle(color: Colors.grey),
+                        textAlign: TextAlign.center,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),

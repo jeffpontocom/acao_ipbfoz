@@ -58,7 +58,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
         trailing: TextButton.icon(
           label: Text(editMode ? 'SALVAR' : 'EDITAR'),
           icon: Icon(editMode ? Icons.save_rounded : Icons.mode_edit_rounded),
-          style: TextButton.styleFrom(primary: Colors.black),
+          style: TextButton.styleFrom(foregroundColor: Colors.black),
           onPressed: () {
             if (editMode) {
               _salvarDados();
@@ -520,7 +520,8 @@ class _FamiliaDadosState extends State<FamiliaDados> {
                 ? Icons.archive_rounded
                 : Icons.open_in_browser),
             style: ElevatedButton.styleFrom(
-                primary: widget.familia.cadAtivo ? Colors.red : Colors.teal),
+                foregroundColor:
+                    widget.familia.cadAtivo ? Colors.red : Colors.teal),
             onPressed: () {
               _alterarSituacaoCadastro();
             },
@@ -534,7 +535,7 @@ class _FamiliaDadosState extends State<FamiliaDados> {
         ? ElevatedButton.icon(
             label: const Text('ELIMINAR'),
             icon: const Icon(Icons.delete_forever),
-            style: ElevatedButton.styleFrom(primary: Colors.red),
+            style: ElevatedButton.styleFrom(foregroundColor: Colors.red),
             onPressed: () {
               _eliminarCadastro();
             },
@@ -716,8 +717,6 @@ class _FamiliaDadosState extends State<FamiliaDados> {
             child: Scrollbar(
               key: const PageStorageKey('dados'),
               controller: _scrollController,
-              isAlwaysShown: true,
-              showTrackOnHover: true,
               child: SingleChildScrollView(
                 controller: _scrollController,
                 padding: const EdgeInsets.symmetric(horizontal: 12),
